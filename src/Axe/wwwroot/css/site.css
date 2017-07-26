@@ -1,6 +1,24 @@
-﻿body {
+﻿html {
+    position: relative;
+    min-height: 100%;
+}
+
+body {
+    margin: 0 0 64px; /* bottom = footer height */
     padding-top: 50px;
     padding-bottom: 20px;
+}
+
+
+/*https://stackoverflow.com/questions/3443606/make-footer-stick-to-bottom-of-page-correctly*/
+footer {
+    position: absolute;
+    bottom: 0;
+    left: 5%;
+    right: 5%;
+    height: 64px;    
+    overflow: hidden;
+    text-align: center;
 }
 
 /* Wrapping element */
@@ -10,11 +28,16 @@
     padding-right: 15px;
 }
 
+footer{    
+    bottom: 10px;    
+}
+
 /* Set widths on the form inputs since otherwise they're 100% wide */
 input,
 select,
 textarea {
-    max-width: 280px;
+    max-width: 480px;
+    white-space:pre-wrap;
 }
 
 /* Carousel */
@@ -24,15 +47,30 @@ textarea {
 }
 
 /* Make .svg files in the carousel display properly in older browsers */
-.carousel-inner .item img[src$=".svg"]
-{
+.carousel-inner .item img[src$=".svg"] {
     width: 100%;
+}
+
+.techCard {
+    padding: 16px;
+    margin: 8px;
+    text-align: center;
+    display: inline-block;
+    vertical-align: middle;
+}
+
+li.techCard {
+    max-width: 480px;
+    list-style-type: none;
+    border: 2px solid lightblue;
+    border-radius: 4px;
+    background-color: wheat;
 }
 
 /* Hide/rearrange for smaller screens */
 @media screen and (max-width: 767px) {
-  /* Hide captions */
-  .carousel-caption {
+    /* Hide captions */
+    .carousel-caption {
     display: none
   }
 }

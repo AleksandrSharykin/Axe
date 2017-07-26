@@ -3,14 +3,23 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using Axe.Models;
 
 namespace Axe.Controllers
 {
     public class HomeController : Controller
     {
-        public IActionResult Index()
+        private readonly AxeDbContext context;
+
+        public HomeController(AxeDbContext context)
         {
-            return View();
+            this.context = context;
+        }
+
+        public async Task<IActionResult> Index()
+        {
+            return View(await this.context.Technology.ToListAsync());
         }
 
         public IActionResult About()
