@@ -8,6 +8,11 @@ namespace Axe.Models.ProfileViewModels
 {
     public class IndexViewModel
     {
+        public string Id { get; set; }
+        public string UserName { get; set; }
+
+        public string ContactInfo { get; set; }
+
         public bool HasPassword { get; set; }
 
         public IList<UserLoginInfo> Logins { get; set; }

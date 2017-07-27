@@ -78,6 +78,20 @@ textarea {
     background-color: white;
 }
 
+.userCard {
+    border: solid 1px gainsboro;
+    margin: 4px;
+    padding: 4px;
+    font-size: 14px;
+    color: black;
+    text-align: center;
+}
+
+.userCard:hover {
+    background-color: #039;
+    color: white;
+}
+
 /* Hide/rearrange for smaller screens */
 @media screen and (max-width: 767px) {
     /* Hide captions */

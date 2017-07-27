@@ -1,85 +1,66 @@
-﻿@model Axe.Models.ProfileViewModels.IndexViewModel
+@model IEnumerable<Axe.Models.ProfileViewModels.IndexViewModel>
+
 @{
-    ViewData["Title"] = "Edit your profile";
+    ViewData["Title"] = "Index";
 }
 
-<h2>@ViewData["Title"]</h2>
-<p class="text-success">@ViewData["StatusMessage"]</p>
-
-<div>
-    <div class="row">
-        <div class="col-md-3">
-            <select size="@Model.TechStats.Count">
-                @foreach (var stats in Model.TechStats)
-                {
-                    <option value="@stats.Tech.Id">
-                        @stats.Tech.Name
-                    </option>
-                }
-            </select>
-        </div>
-        <div class="col-md-9">
-        </div>
-    </div>
-    <h4>Change your account settings</h4>
-    <hr />
-    <dl class="dl-horizontal">
-        <dt>Password:</dt>
-        <dd>
-            @if (Model.HasPassword)
-            {
-                <a asp-controller="Profile" asp-action="ChangePassword" class="btn-bracketed">Change</a>
-            }
-            else
-            {
-                <a asp-controller="Profile" asp-action="SetPassword" class="btn-bracketed">Create</a>
-            }
-        </dd>
-        <dt>External Logins:</dt>
-        <dd>
-
-            @Model.Logins.Count <a asp-controller="Profile" asp-action="ManageLogins" class="btn-bracketed">Manage</a>
-        </dd>
-        <dt>Phone Number:</dt>
-        <dd>
-            <p>
-                Phone Numbers can be used as a second factor of verification in two-factor authentication.
-                See <a href="https://go.microsoft.com/fwlink/?LinkID=532713">this article</a>
-                for details on setting up this ASP.NET application to support two-factor authentication using SMS.
-            </p>
-            @*@(Model.PhoneNumber ?? "None")
-                @if (Model.PhoneNumber != null)
-                {
-                    <br />
-                    <a asp-controller="Profile" asp-action="AddPhoneNumber" class="btn-bracketed">Change</a>
-                    <form asp-controller="Manage" asp-action="RemovePhoneNumber" method="post">
-                        [<button type="submit" class="btn-link">Remove</button>]
-                    </form>
-                }
-                else
-                {
-                    <a asp-controller="Profile" asp-action="AddPhoneNumber" class="btn-bracketed">Add</a>
-                }*@
-        </dd>
-
-        <dt>Two-Factor Authentication:</dt>
-        <dd>
-            <p>
-                There are no two-factor authentication providers configured. See <a href="https://go.microsoft.com/fwlink/?LinkID=532713">this article</a>
-                for setting up this application to support two-factor authentication.
-            </p>
-            @*@if (Model.TwoFactor)
-                {
-                    <form asp-controller="Profile" asp-action="DisableTwoFactorAuthentication" method="post" class="form-horizontal">
-                        Enabled <button type="submit" class="btn-link btn-bracketed">Disable</button>
-                    </form>
-                }
-                else
-                {
-                    <form asp-controller="Profile" asp-action="EnableTwoFactorAuthentication" method="post" class="form-horizontal">
-                        <button type="submit" class="btn-link btn-bracketed">Enable</button> Disabled
-                    </form>
-                }*@
-        </dd>
-    </dl>
+<div>    
+        <em>Search</em>        
+        <input type="text" />    
 </div>
+
+@foreach (var item in Model.Select((u, i) => new { user = u, idx = i % 3 }))
+{
+    @if (item.idx == 0)
+    {
+        @:<div class="row">
+    }
+    <div class="col-md-4">
+        <a href="@Url.Action("Visit", "Profile", new { id = item.user.Id })">
+            <div class="row userCard">
+                <div class="col-sm-2">
+                    <img src="https://avatars1.githubusercontent.com/u/30412176?v=4&s=460" width="40" height="40" />
+                </div>
+                <div class="col-sm-10">                        
+                    <h4>@item.user.UserName</h4>
+                </div>
+            </div>
+        </a>
+    </div>
+
+    @if (item.idx == 3)
+    {
+        @:</div>
+    }
+}
+</div>
+
+@*<table class="table">
+    <thead>
+        <tr>            
+                <th>
+                    @Html.DisplayNameFor(model => model.UserName)
+                </th>
+                <th>
+                    @Html.DisplayNameFor(model => model.ContactInfo)
+                </th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+
+@foreach (var item in Model) {
+        <tr>
+            <td>
+                @Html.DisplayFor(modelItem => item.UserName)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.ContactInfo)
+            </td>
+            <td>
+                @Html.ActionLink("Profile", "Visit", new { id = item.Id })
+            </td>
+        </tr>
+}
+    </tbody>
+</table>*@

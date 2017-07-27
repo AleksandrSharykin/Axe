@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Microsoft.EntityFrameworkCore;
 using Axe.Models;
 using Axe.Models.ProfileViewModels;
 
@@ -17,42 +18,56 @@ namespace Axe.Controllers
     {
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly SignInManager<ApplicationUser> _signInManager;
+        private readonly AxeDbContext context;
         private readonly string _externalCookieScheme;
         private readonly ILogger _logger;
 
         public ProfileController(
           UserManager<ApplicationUser> userManager,
           SignInManager<ApplicationUser> signInManager,
+          AxeDbContext context,
           IOptions<IdentityCookieOptions> identityCookieOptions,
           ILoggerFactory loggerFactory)
         {
             _userManager = userManager;
             _signInManager = signInManager;
+            this.context = context;
             _externalCookieScheme = identityCookieOptions.Value.ExternalCookieAuthenticationScheme;
             _logger = loggerFactory.CreateLogger<ProfileController>();
+        }
+
+        public async Task<IActionResult> Index()
+        {
+            return View(context.Users.Select(u => new IndexViewModel { Id = u.Id, UserName = u.UserName, ContactInfo = u.Email }));
         }
 
         //
         // GET: /Manage/Index
         [HttpGet]
-        public async Task<IActionResult> Index(ManageMessageId? message = null)
+        public async Task<IActionResult> Visit(string id = null)
         {
-            ViewData["StatusMessage"] =
-                message == ManageMessageId.ChangePasswordSuccess ? "Your password has been changed."
-                : message == ManageMessageId.SetPasswordSuccess ? "Your password has been set."
-                : message == ManageMessageId.SetTwoFactorSuccess ? "Your two-factor authentication provider has been set."
-                : message == ManageMessageId.Error ? "An error has occurred."
-                : message == ManageMessageId.AddPhoneSuccess ? "Your phone number was added."
-                : message == ManageMessageId.RemovePhoneSuccess ? "Your phone number was removed."
-                : "";
+            //ViewData["StatusMessage"] =
+            //    message == ManageMessageId.ChangePasswordSuccess ? "Your password has been changed."
+            //    : message == ManageMessageId.SetPasswordSuccess ? "Your password has been set."
+            //    : message == ManageMessageId.SetTwoFactorSuccess ? "Your two-factor authentication provider has been set."
+            //    : message == ManageMessageId.Error ? "An error has occurred."
+            //    : message == ManageMessageId.AddPhoneSuccess ? "Your phone number was added."
+            //    : message == ManageMessageId.RemovePhoneSuccess ? "Your phone number was removed."
+            //    : "";
 
-            var user = await GetCurrentUserAsync();
+            var user = id != null ?
+                await this.context.Users.SingleOrDefaultAsync(u => u.Id == id) :
+                await GetCurrentUserAsync();
+
             if (user == null)
             {
                 return View("Error");
             }
+            
             var model = new IndexViewModel
             {
+                UserName = user.UserName,
+                ContactInfo = user.Email,
                 HasPassword = await _userManager.HasPasswordAsync(user),
                 PhoneNumber = await _userManager.GetPhoneNumberAsync(user),
                 TwoFactor = await _userManager.GetTwoFactorEnabledAsync(user),
@@ -60,9 +75,9 @@ namespace Axe.Controllers
                 BrowserRemembered = await _signInManager.IsTwoFactorClientRememberedAsync(user),
                 TechStats =
                 {
-                    new UserTechnologyStats { Tech = new Technology { Id = 2, Name = "JavaScript" }},
-                    new UserTechnologyStats { Tech = new Technology { Id = 1, Name = "C#" }, ExamDate = DateTime.Today, ExamScore = 89, },
-                    new UserTechnologyStats { Tech = new Technology { Id = 3, Name = "SQL" }},                    
+                    new UserTechnologyStats { Tech = new Technology { Id = 2, Name = "JavaScript" }, ExamDate = DateTime.Today, ExamScore = 88, },
+                    new UserTechnologyStats { Tech = new Technology { Id = 1, Name = "C#" }, ExamDate = DateTime.Today.AddDays(-2), ExamScore = 95, },
+                    new UserTechnologyStats { Tech = new Technology { Id = 3, Name = "SQL" }},
                 }
             };
             return View(model);
