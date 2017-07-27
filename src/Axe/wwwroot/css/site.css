@@ -69,6 +69,15 @@ textarea {
     color: white;
 }
 
+.techTitle {
+    margin-bottom: 8px;
+    padding: 4px 28px;    
+    border: solid 1px gray;
+    font-size: 20px;
+    color: black;
+    background-color: white;
+}
+
 /* Hide/rearrange for smaller screens */
 @media screen and (max-width: 767px) {
     /* Hide captions */

@@ -3,77 +3,89 @@
     ViewData["Title"] = "Home Page";
 }
 
-<div id="myCarousel" class="carousel slide" data-ride="carousel" data-interval="4000">
-    <ol class="carousel-indicators">
-    @{        
-        @foreach (var item in Model.Select((t, idx) => new { Tech = t, Idx = idx }))
-        {
-            var active = item.Idx == 0 ? "active" : null;
-            <li data-target="#myCarousel" data-slide-to="@item.Idx" class="@active" title="@item.Tech.Name"></li>
-        }
-    }
-    </ol>
-
-    <div class="carousel-inner" role="listbox">
-        @{ 
-            int itemIdx = 0;
-            @foreach (var tech in Model)
+@if (Model.Any())
+{
+    <div id="myCarousel" class="carousel slide" data-ride="carousel" data-interval="6000">
+        <ol class="carousel-indicators">
+        @{        
+            @foreach (var item in Model.Select((t, idx) => new { Tech = t, Idx = idx }))
             {
-                var itemActive = itemIdx == 0 ? "active" : null;
-                itemIdx = itemIdx + 1;
-
-                <div class="item @itemActive">
-                    <img src="~/images/background_header.svg" alt="ASP.NET" class="img-responsive" />
-                    <div class="carousel-caption" role="option">
-                        <p>
-                            @tech.Name
-                            <br />
-                            @Html.DisplayFor(t => tech.InformationText)
-                            <br />
-                            <br />
-                            @Html.ActionLink("Take a test", "Edit", "Technologies", new { id = tech.Id }, new { @class = "btn btn-default" })
-                            <br /><br />
-                        </p>
-                    </div>
-                </div>
+                var active = item.Idx == 0 ? "active" : null;
+                <li data-target="#myCarousel" data-slide-to="@item.Idx" class="@active" title="@item.Tech.Name"></li>
             }
         }
-    </div>
+        </ol>
 
-    <a class="left carousel-control" href="#myCarousel" role="button" data-slide="prev">
-        <span class="glyphicon glyphicon-chevron-left" aria-hidden="true"></span>
-        <span class="sr-only">Previous</span>
-    </a>
-    <a class="right carousel-control" href="#myCarousel" role="button" data-slide="next">
-        <span class="glyphicon glyphicon-chevron-right" aria-hidden="true"></span>
-        <span class="sr-only">Next</span>
-    </a>
-</div>
+        <div class="carousel-inner" role="listbox">
+            @{ 
+                int itemIdx = 0;
+                @foreach (var tech in Model)
+                {
+                    var itemActive = itemIdx == 0 ? "active" : null;
+                    itemIdx = itemIdx + 1;
 
-@* Technologies metro panel aka https://docs.microsoft.com/en-us/ with 3 columns *@ 
-    
-@foreach (var item in Model.Select((t, i) => new { Tech = t, Idx = i % 3 }))
-{
-    @* begin new row *@
-    @if (@item.Idx == 0)
-    {
-        @:<div class="row">
-    }
+                    <div class="item @itemActive">
+                        <img src="~/images/background_header.svg" alt="ASP.NET" class="img-responsive" />
+                        <div class="carousel-caption" role="option">
+                            <div>
+                                <span class="techTitle">@tech.Name</span>
+                                <p>                                
+                                    @Html.DisplayFor(t => tech.InformationText)
+                                    <br /> <br />
+                                    <a href="@Url.Action("Edit", "Technologies", new { id = tech.Id })" class="btn btn-primary">
+                                        <span class="glyphicon glyphicon-education"></span>
+                                        <span>Take a test</span>
+                                    </a>
 
-    <div class="col-md-4">
-        <a class="metro" href="@Url.Action("Edit", "Technologies", new { id = item.Tech.Id})">
-            <div class="techCard">
-                @item.Tech.Name
-            </div>
+                                    <br /><br />
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                }
+            }
+        </div>
+
+        <a class="left carousel-control" href="#myCarousel" role="button" data-slide="prev">
+            <span class="glyphicon glyphicon-chevron-left" aria-hidden="true"></span>
+            <span class="sr-only">Previous</span>
+        </a>
+        <a class="right carousel-control" href="#myCarousel" role="button" data-slide="next">
+            <span class="glyphicon glyphicon-chevron-right" aria-hidden="true"></span>
+            <span class="sr-only">Next</span>
         </a>
     </div>
 
-    @* close row *@
-    @if (@item.Idx == 2)
-    {
-        @:</div>
-    }
-}
+    @* Technologies metro panel aka https://docs.microsoft.com/en-us/ with 3 columns *@ 
 
-@* end metro panel *@
+    @foreach (var item in Model.Select((t, i) => new { Tech = t, Idx = i % 3 }))
+    {
+        @* begin new row *@
+        @if (@item.Idx == 0)
+        {
+            @:<div class="row">
+        }
+
+        <div class="col-md-4">
+            <a class="metro" href="@Url.Action("Edit", "Technologies", new { id = item.Tech.Id })">
+                <div class="techCard" title="@item.Tech.InformationText">
+                    @item.Tech.Name
+                </div>
+            </a>
+        </div>
+
+        @* close row *@
+        @if (@item.Idx == 2)
+        {
+            @:</div>
+        }
+    }
+
+    @* end metro panel *@
+
+}
+else
+{
+        <img src="~/images/background_header.svg" alt="ASP.NET" class="img-responsive" />
+}
 
