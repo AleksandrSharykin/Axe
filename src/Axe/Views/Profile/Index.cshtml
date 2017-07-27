@@ -7,8 +7,8 @@
 <p class="text-success">@ViewData["StatusMessage"]</p>
 
 <div>
-    <div>
-        <div class="left-menu">
+    <div class="row">
+        <div class="col-md-3">
             <select size="@Model.TechStats.Count">
                 @foreach (var stats in Model.TechStats)
                 {
@@ -18,8 +18,7 @@
                 }
             </select>
         </div>
-        <div>
-
+        <div class="col-md-9">
         </div>
     </div>
     <h4>Change your account settings</h4>

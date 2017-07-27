@@ -3,15 +3,13 @@
     ViewData["Title"] = "Home Page";
 }
 
-<div id="myCarousel" class="carousel slide" data-ride="carousel" data-interval="6000">
+<div id="myCarousel" class="carousel slide" data-ride="carousel" data-interval="4000">
     <ol class="carousel-indicators">
-    @{
-        int idx = 0;
-        @foreach (var item in Model)
+    @{        
+        @foreach (var item in Model.Select((t, idx) => new { Tech = t, Idx = idx }))
         {
-            var active = idx == 0 ? "active" : null;
-            <li data-target="#myCarousel" data-slide-to="@idx" class="@active"></li>            
-            idx = idx + 1;
+            var active = item.Idx == 0 ? "active" : null;
+            <li data-target="#myCarousel" data-slide-to="@item.Idx" class="@active" title="@item.Tech.Name"></li>
         }
     }
     </ol>
@@ -25,15 +23,16 @@
                 itemIdx = itemIdx + 1;
 
                 <div class="item @itemActive">
-                    <img src="~/images/sky.svg" alt="ASP.NET" class="img-responsive" />
+                    <img src="~/images/background_header.svg" alt="ASP.NET" class="img-responsive" />
                     <div class="carousel-caption" role="option">
-                        <p class="techCard">
-                            <span class="techCardTitle">@tech.Name</span>
+                        <p>
+                            @tech.Name
                             <br />
                             @Html.DisplayFor(t => tech.InformationText)
                             <br />
                             <br />
                             @Html.ActionLink("Take a test", "Edit", "Technologies", new { id = tech.Id }, new { @class = "btn btn-default" })
+                            <br /><br />
                         </p>
                     </div>
                 </div>
@@ -51,19 +50,30 @@
     </a>
 </div>
 
-<!--  todo make metro panel aka https://docs.microsoft.com/en-us/-->
-@*<div class="row">
-    <ul>
-        @foreach (var tech in Model)
-        {
-            <a href="@Url.Action("Edit", "Technologies", new { id = tech.Id})">
-                <li class="techCard">
-                    <span class="techCardTitle">@tech.Name</span>
-                    <br />
-                    @Html.DisplayFor(t => tech.InformationText)
-                </li>
-            </a>
-        }
-</ul>
-</div>*@
+@* Technologies metro panel aka https://docs.microsoft.com/en-us/ with 3 columns *@ 
+    
+@foreach (var item in Model.Select((t, i) => new { Tech = t, Idx = i % 3 }))
+{
+    @* begin new row *@
+    @if (@item.Idx == 0)
+    {
+        @:<div class="row">
+    }
+
+    <div class="col-md-4">
+        <a class="metro" href="@Url.Action("Edit", "Technologies", new { id = item.Tech.Id})">
+            <div class="techCard">
+                @item.Tech.Name
+            </div>
+        </a>
+    </div>
+
+    @* close row *@
+    @if (@item.Idx == 2)
+    {
+        @:</div>
+    }
+}
+
+@* end metro panel *@
 

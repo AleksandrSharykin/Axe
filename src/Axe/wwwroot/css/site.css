@@ -9,6 +9,9 @@ body {
     padding-bottom: 20px;
 }
 
+a:hover {
+    text-decoration: none;
+}
 
 /*https://stackoverflow.com/questions/3443606/make-footer-stick-to-bottom-of-page-correctly*/
 footer {
@@ -52,19 +55,18 @@ textarea {
 }
 
 .techCard {
+    border: solid 2px gainsboro;
+    margin-top: 8px;
+    margin-left: 8px;
     padding: 16px;
-    margin: 8px;
+    font-size: 28px;
+    color: black;
     text-align: center;
-    display: inline-block;
-    vertical-align: middle;
 }
 
-li.techCard {
-    max-width: 480px;
-    list-style-type: none;
-    border: 2px solid lightblue;
-    border-radius: 4px;
-    background-color: wheat;
+.techCard:hover {
+    background-color: #039;
+    color: white;
 }
 
 /* Hide/rearrange for smaller screens */
