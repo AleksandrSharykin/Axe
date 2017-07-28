@@ -36,9 +36,20 @@ namespace Axe.Controllers
             _logger = loggerFactory.CreateLogger<ProfileController>();
         }
 
-        public async Task<IActionResult> Index()
+        /// <summary>
+        /// Return list of all registered users (possibly filtered)
+        /// </summary>
+        /// <param name="userFilter">Seacrh filter to match UserNames</param>
+        /// <returns></returns>
+        public async Task<IActionResult> Index(string userFilter = null)
         {
-            return View(context.Users.Select(u => new IndexViewModel { Id = u.Id, UserName = u.UserName, ContactInfo = u.Email }));
+            IQueryable<ApplicationUser> userList = context.Users;
+            if (false == String.IsNullOrWhiteSpace(userFilter))
+                userList = userList.Where(u => u.UserName.Contains(userFilter));                
+
+            ViewData[nameof(userFilter)] = userFilter;
+
+            return View(userList.Select(u => new IndexViewModel { Id = u.Id, UserName = u.UserName, ContactInfo = u.Email }));
         }
 
         //

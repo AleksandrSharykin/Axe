@@ -4,10 +4,17 @@
     ViewData["Title"] = "Index";
 }
 
-<div>    
-        <em>Search</em>        
-        <input type="text" />    
-</div>
+<br/>
+
+@*https://docs.microsoft.com/en-us/aspnet/core/tutorials/first-mvc-app/search*@
+<form asp-controller="Profile" asp-action="index" method="get" class="form-inline">    
+    <div class="form-group">
+        <label>Search</label>
+        <input type="text" name="userFilter" value="@ViewData["userFilter"]" class="form-control"/>
+        <input type="submit" value="GO" class="btn btn-primary"/>
+    </div>
+</form>
+<hr/>
 
 @foreach (var item in Model.Select((u, i) => new { user = u, idx = i % 3 }))
 {

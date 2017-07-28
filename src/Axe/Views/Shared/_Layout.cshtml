@@ -34,12 +34,12 @@
                 <a asp-area="" asp-controller="Home" asp-action="Index" class="navbar-brand">Axe</a>
             </div>
             <div class="navbar-collapse collapse">
-                <ul class="nav navbar-nav">                    
-@if (SignInManager.IsSignedIn(User))
-{
-    <li><a asp-area="" asp-controller="Profile" asp-action="Index">Collegues</a></li>
-}
-                    <li><a asp-area="" asp-controller="Home" asp-action="About">About</a></li>                    
+                <ul class="nav navbar-nav">
+                    @if (SignInManager.IsSignedIn(User))
+                    {
+                        <li><a asp-area="" asp-controller="Profile" asp-action="Index"><span class="glyphicon glyphicon-user"></span> Colleagues</a></li>
+                    }
+                    <li><a asp-area="" asp-controller="Home" asp-action="About">About</a></li>
                     <li><a asp-area="" asp-controller="Home" asp-action="Contact">Contact</a></li>
                 </ul>
                 @await Html.PartialAsync("_LoginPartial")
