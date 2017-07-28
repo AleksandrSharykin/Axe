@@ -38,6 +38,7 @@
                     @if (SignInManager.IsSignedIn(User))
                     {
                         <li><a asp-area="" asp-controller="Profile" asp-action="Index"><span class="glyphicon glyphicon-user"></span> Colleagues</a></li>
+                        <li><a asp-area="" asp-controller="Technologies" asp-action="Index"><span class="glyphicon glyphicon-book"></span> Technologies</a></li>
                     }
                     <li><a asp-area="" asp-controller="Home" asp-action="About">About</a></li>
                     <li><a asp-area="" asp-controller="Home" asp-action="Contact">Contact</a></li>

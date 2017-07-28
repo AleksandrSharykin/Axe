@@ -90,6 +90,8 @@ namespace Axe.Controllers
             var rnd = new Random();
 
             var tasks = this.context.ExamTask.Where(t => t.TechnologyId == selectedTech.Id).ToList();
+            if (tasks.Count == 0)
+                tasks.Add(new ExamTask { Technology = selectedTech, Objective = "test", Title = selectedTech.Name + " #Test" });
 
             var attempts = Enumerable.Range(0, 5)
                                 .Select(i => new ExamAttempt
