@@ -1,0 +1,54 @@
+@model Axe.Models.ExamAttempt
+
+@{
+    ViewData["Title"] = Model.Task?.Technology?.Name + " Exam";
+}
+
+<br />
+
+<div class="jumbotron">
+    <h2><kbd>@Model.Task.Title</kbd></h2>
+    <p>
+        @Model.Task.Objective
+    </p>
+</div>
+
+<div class="row">
+    <div class="col-sm-11">
+        @*exam navigation*@
+        <ul class="nav nav-tabs">
+            @foreach (var item in Model.Questions.Select((q, i) => new { Question = q, Idx = i }))
+            {
+                var active = item.Idx == 0 ? "active" : null;
+                <li class="@active"><a href="#q_@item.Idx" data-toggle="tab"> #@(item.Idx + 1)</a></li>
+            }
+        </ul>
+
+        @*questions content*@
+        <div class="tab-content">
+            <br />
+            @foreach (var item in Model.Questions.Select((q, i) => new { Question = q, Idx = i }))
+            {
+                var isFirstQuestion = item.Idx == 0 ? "in active" : null;
+
+                <div id="q_@item.Idx" class="tab-pane fade @isFirstQuestion">
+                    @item.Question.TaskQuestion.Text
+                    <hr />
+                    <ul>
+                        @foreach (var a in item.Question.TaskQuestion.Answers)
+                {
+                            <li class="radio"><input type="radio" name="q_@item.Idx" /> @a.Text</li>
+                        }
+                    </ul>
+                </div>
+            }
+        </div>
+    </div>
+
+    <div class="col-sm-1">
+        <button class="btn btn-primary">Submit</button>
+    </div>
+</div>
+
+
+

@@ -6,35 +6,26 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using Axe.Models;
-using Axe.Models.TechnologiesVm;
 
 namespace Axe.Controllers
 {
-    public class TechnologiesController : Controller
+    public class TasksController : Controller
     {
-        private readonly AxeDbContext context;
+        private readonly AxeDbContext _context;
 
-        public TechnologiesController(AxeDbContext context)
+        public TasksController(AxeDbContext context)
         {
-            this.context = context;    
+            _context = context;    
         }
 
-        // GET: Technologies
-        public async Task<IActionResult> Index(int? technologyId = null)
+        // GET: ExamTasks
+        public async Task<IActionResult> Index()
         {
-            var techs = await this.context.Technology.ToListAsync();
-            var selectedTech = techs.FirstOrDefault(t => t.Id == technologyId) ??
-                               techs.FirstOrDefault();
-
-            var vm = new TechnologiesIndexVm
-            {
-                Technologies = techs,
-                SelectedTechnology = selectedTech
-            };
-            return View(vm);
+            var axeDbContext = _context.ExamTask.Include(e => e.Technology);
+            return View(await axeDbContext.ToListAsync());
         }
 
-        // GET: Technologies/Details/5
+        // GET: ExamTasks/Details/5
         public async Task<IActionResult> Details(int? id)
         {
             if (id == null)
@@ -42,39 +33,42 @@ namespace Axe.Controllers
                 return NotFound();
             }
 
-            var technology = await this.context.Technology
+            var examTask = await _context.ExamTask
+                .Include(e => e.Technology)
                 .SingleOrDefaultAsync(m => m.Id == id);
-            if (technology == null)
+            if (examTask == null)
             {
                 return NotFound();
             }
 
-            return View(technology);
+            return View(examTask);
         }
 
-        // GET: Technologies/Create
+        // GET: ExamTasks/Create
         public IActionResult Create()
         {
+            ViewData["TechnologyId"] = new SelectList(_context.Technology, "Id", "InformationText");
             return View();
         }
 
-        // POST: Technologies/Create
+        // POST: ExamTasks/Create
         // To protect from overposting attacks, please enable the specific properties you want to bind to, for 
         // more details see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Id,Name,InformationText")] Technology technology)
+        public async Task<IActionResult> Create([Bind("Id,Title,Objective,TechnologyId")] ExamTask examTask)
         {
             if (ModelState.IsValid)
             {
-                this.context.Add(technology);
-                await this.context.SaveChangesAsync();
+                _context.Add(examTask);
+                await _context.SaveChangesAsync();
                 return RedirectToAction("Index");
             }
-            return View(technology);
+            ViewData["TechnologyId"] = new SelectList(_context.Technology, "Id", "InformationText", examTask.TechnologyId);
+            return View(examTask);
         }
 
-        // GET: Technologies/Edit/5
+        // GET: ExamTasks/Edit/5
         public async Task<IActionResult> Edit(int? id)
         {
             if (id == null)
@@ -82,22 +76,23 @@ namespace Axe.Controllers
                 return NotFound();
             }
 
-            var technology = await this.context.Technology.SingleOrDefaultAsync(m => m.Id == id);
-            if (technology == null)
+            var examTask = await _context.ExamTask.SingleOrDefaultAsync(m => m.Id == id);
+            if (examTask == null)
             {
                 return NotFound();
             }
-            return View(technology);
+            ViewData["TechnologyId"] = new SelectList(_context.Technology, "Id", "InformationText", examTask.TechnologyId);
+            return View(examTask);
         }
 
-        // POST: Technologies/Edit/5
+        // POST: ExamTasks/Edit/5
         // To protect from overposting attacks, please enable the specific properties you want to bind to, for 
         // more details see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,Name,InformationText")] Technology technology)
+        public async Task<IActionResult> Edit(int id, [Bind("Id,Title,Objective,TechnologyId")] ExamTask examTask)
         {
-            if (id != technology.Id)
+            if (id != examTask.Id)
             {
                 return NotFound();
             }
@@ -106,12 +101,12 @@ namespace Axe.Controllers
             {
                 try
                 {
-                    this.context.Update(technology);
-                    await this.context.SaveChangesAsync();
+                    _context.Update(examTask);
+                    await _context.SaveChangesAsync();
                 }
                 catch (DbUpdateConcurrencyException)
                 {
-                    if (!TechnologyExists(technology.Id))
+                    if (!ExamTaskExists(examTask.Id))
                     {
                         return NotFound();
                     }
@@ -122,10 +117,11 @@ namespace Axe.Controllers
                 }
                 return RedirectToAction("Index");
             }
-            return View(technology);
+            ViewData["TechnologyId"] = new SelectList(_context.Technology, "Id", "InformationText", examTask.TechnologyId);
+            return View(examTask);
         }
 
-        // GET: Technologies/Delete/5
+        // GET: ExamTasks/Delete/5
         public async Task<IActionResult> Delete(int? id)
         {
             if (id == null)
@@ -133,30 +129,31 @@ namespace Axe.Controllers
                 return NotFound();
             }
 
-            var technology = await this.context.Technology
+            var examTask = await _context.ExamTask
+                .Include(e => e.Technology)
                 .SingleOrDefaultAsync(m => m.Id == id);
-            if (technology == null)
+            if (examTask == null)
             {
                 return NotFound();
             }
 
-            return View(technology);
+            return View(examTask);
         }
 
-        // POST: Technologies/Delete/5
+        // POST: ExamTasks/Delete/5
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            var technology = await this.context.Technology.SingleOrDefaultAsync(m => m.Id == id);
-            this.context.Technology.Remove(technology);
-            await this.context.SaveChangesAsync();
+            var examTask = await _context.ExamTask.SingleOrDefaultAsync(m => m.Id == id);
+            _context.ExamTask.Remove(examTask);
+            await _context.SaveChangesAsync();
             return RedirectToAction("Index");
         }
 
-        private bool TechnologyExists(int id)
+        private bool ExamTaskExists(int id)
         {
-            return this.context.Technology.Any(e => e.Id == id);
+            return _context.ExamTask.Any(e => e.Id == id);
         }
     }
 }

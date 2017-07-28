@@ -1,41 +1,105 @@
-@model IEnumerable<Axe.Models.Technology>
+@model Axe.Models.TechnologiesVm.TechnologiesIndexVm
 
-@{
-    ViewData["Title"] = "Index";
+<br/>
+
+@if (Model.SelectedTechnology != null)
+{
+    <div class="row">
+        <div class="jumbotron">
+            <h2><kbd>@Model.SelectedTechnology.Name</kbd></h2>
+            <p>@Model.SelectedTechnology.InformationText</p>
+        </div>
+    </div>    
 }
 
-<h2>Index</h2>
+<div class="row">
+    <div class="btn-group">
+        @Html.ActionLink("Add", "Create", "Technologies", null, new { @class = "btn btn-primary" })
+        @Html.ActionLink("Edit", "Edit", "Technologies", new { id = Model.SelectedTechnology?.Id }, new { @class = "btn btn-primary" })
+        @Html.ActionLink("Delete", "Delete", "Technologies", new { id = Model.SelectedTechnology?.Id }, new { @class = "btn btn-primary" })
+    </div>
+    <hr/>
+</div>
 
-<p>
-    <a asp-action="Create">Create New</a>
-</p>
-<table class="table">
-    <thead>
-        <tr>
-                <th>
-                    @Html.DisplayNameFor(model => model.Name)
-                </th>
-                <th>
-                    @Html.DisplayNameFor(model => model.InformationText)
-                </th>
-            <th></th>
-        </tr>
-    </thead>
-    <tbody>
-@foreach (var item in Model) {
-        <tr>
-            <td>
-                @Html.DisplayFor(modelItem => item.Name)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.InformationText)
-            </td>
-            <td>
-                <a asp-action="Edit" asp-route-id="@item.Id">Edit</a> |
-                <a asp-action="Details" asp-route-id="@item.Id">Details</a> |
-                <a asp-action="Delete" asp-route-id="@item.Id">Delete</a>
-            </td>
-        </tr>
-}
-    </tbody>
-</table>
+<div class="row">
+
+    <div class="col-md-2">
+        <form asp-controller="Profiles" asp-action="Visit">
+            <ul class="nav nav-pills nav-stacked">
+
+                @foreach (var t in Model.Technologies)
+                {
+                    string active = t.Id == Model.SelectedTechnology?.Id ? "active" : null;
+                    <li class="@active">@Html.ActionLink(t.Name, "Index", "Technologies", new { technologyId = t.Id })</li>
+                }
+            </ul>
+        </form>
+    </div>
+
+    <div class="col-md-10">
+        <ul class="nav nav-tabs nav-justified">
+            <li class="active"><a data-toggle="tab" href="#menuQuestions">Questions</a></li>
+            <li><a data-toggle="tab" href="#menuExams">Exams</a></li>
+            <li><a data-toggle="tab" href="#menuMonitor">Monitor</a></li>
+        </ul>
+
+        <div class="tab-content">
+            @*exam question*@
+            <div id="menuQuestions" class="tab-pane fade in active">
+                menuQuestion
+                @*<table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th></th>
+                                <th>Date</th>
+                                <th>Technology</th>
+                                <th>Exam</th>
+                                <th>Score</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var a in Model.BestAttempts.OrderByDescending(a => a.ExamScore))
+                            {
+                                <tr>
+                                    <td><span class="glyphicon glyphicon-thumbs-up"></span></td>
+                                    <td>@a.ExamDate</td>
+                                    <td>@a.Technology.Name</td>
+                                    <td>@a.Task.Title</td>
+                                    <td>@a.ExamScore</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>*@
+            </div>
+
+            @*exams*@
+            <div id="menuExams" class="tab-pane fade">
+                menuExams
+                @*<table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Exam</th>
+                                <th>Score</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var a in Model.AllAttempts.OrderByDescending(a => a.ExamDate))
+                            {
+                                <tr>
+                                    <td>@a.ExamDate</td>
+                                    <td>@a.Task.Title</td>
+                                    <td>@a.ExamScore</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>*@
+            </div>
+
+            @*Active exams*@
+            <div id="menuMonitor" class="tab-pane fade">
+                Active exams
+            </div>
+        </div>
+    </div>
+</div>

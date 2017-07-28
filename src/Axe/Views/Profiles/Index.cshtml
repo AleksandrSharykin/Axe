@@ -7,7 +7,7 @@
 <br/>
 
 @*https://docs.microsoft.com/en-us/aspnet/core/tutorials/first-mvc-app/search*@
-<form asp-controller="Profile" asp-action="index" method="get" class="form-inline">    
+<form asp-controller="Profiles" asp-action="index" method="get" class="form-inline">    
     <div class="form-group">
         <label>Search</label>
         <input type="text" name="userFilter" value="@ViewData["userFilter"]" class="form-control"/>
@@ -23,7 +23,7 @@
         @:<div class="row">
     }
     <div class="col-md-4">
-        <a href="@Url.Action("Visit", "Profile", new { id = item.user.Id })">
+        <a href="@Url.Action("Visit", "Profiles", new { id = item.user.Id })">
             <div class="row userCard">
                 <div class="col-sm-2">
                     <img src="https://avatars1.githubusercontent.com/u/30412176?v=4&s=460" width="40" height="40" />
@@ -65,7 +65,7 @@
                 @Html.DisplayFor(modelItem => item.ContactInfo)
             </td>
             <td>
-                @Html.ActionLink("Profile", "Visit", new { id = item.Id })
+                @Html.ActionLink("Profiles", "Visit", new { id = item.Id })
             </td>
         </tr>
 }

@@ -14,7 +14,7 @@ using Axe.Models.ProfileViewModels;
 namespace Axe.Controllers
 {
     [Authorize]
-    public class ProfileController : Controller
+    public class ProfilesController : Controller
     {
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly SignInManager<ApplicationUser> _signInManager;
@@ -22,7 +22,7 @@ namespace Axe.Controllers
         private readonly string _externalCookieScheme;
         private readonly ILogger _logger;
 
-        public ProfileController(
+        public ProfilesController(
           UserManager<ApplicationUser> userManager,
           SignInManager<ApplicationUser> signInManager,
           AxeDbContext context,
@@ -33,7 +33,7 @@ namespace Axe.Controllers
             _signInManager = signInManager;
             this.context = context;
             _externalCookieScheme = identityCookieOptions.Value.ExternalCookieAuthenticationScheme;
-            _logger = loggerFactory.CreateLogger<ProfileController>();
+            _logger = loggerFactory.CreateLogger<ProfilesController>();
         }
 
         /// <summary>
@@ -83,30 +83,36 @@ namespace Axe.Controllers
                 return View("Error");
             }
 
-            var techs = this.context.Technology.ToList();
+            var techs = await this.context.Technology.ToListAsync();            
             var selectedTech = techs.FirstOrDefault(t => t.Id == technologyId) ??
                                techs.FirstOrDefault();
 
             var rnd = new Random();
 
-            var tasks = this.context.ExamTask.Where(t => t.TechnologyId == selectedTech.Id).ToList();
-            if (tasks.Count == 0)
-                tasks.Add(new ExamTask { Technology = selectedTech, Objective = "test", Title = selectedTech.Name + " #Test" });
+            IList<ExamTask> tasks = null;
+            IList<ExamAttempt> attempts = null;
+            IList<ExamAttempt> bestAttempts = null;
+            if (selectedTech != null)
+            {
+                tasks = await this.context.ExamTask.Where(t => t.TechnologyId == selectedTech.Id).ToListAsync();
+                if (tasks.Count == 0)
+                    tasks.Add(new ExamTask { Technology = selectedTech, Objective = "test", Title = selectedTech.Name + " #Test" });
 
-            var attempts = Enumerable.Range(0, 5)
-                                .Select(i => new ExamAttempt
-                                {
-                                    Technology = selectedTech,
-                                    Task = tasks[rnd.Next(tasks.Count)],
-                                    ExamScore = rnd.Next(36) + 64,
-                                    ExamDate = new DateTime(DateTime.Today.Year, rnd.Next(12) + 1, rnd.Next(28) + 1),
-                                })
-                                .ToList();
+                attempts = Enumerable.Range(0, 5)
+                                    .Select(i => new ExamAttempt
+                                    {
+                                        Technology = selectedTech,
+                                        Task = tasks[rnd.Next(tasks.Count)],
+                                        ExamScore = rnd.Next(36) + 64,
+                                        ExamDate = new DateTime(DateTime.Today.Year, rnd.Next(12) + 1, rnd.Next(28) + 1),
+                                    })
+                                    .ToList();
 
-            var bestAttempts = attempts.Where(a => a.Technology.Id == selectedTech.Id)
-                .GroupBy(a => a.Task.Id)
-                .Select(g => g.OrderByDescending(a => a.ExamScore).First())
-                .ToList();
+                bestAttempts = attempts.Where(a => a.Technology.Id == selectedTech.Id)
+                    .GroupBy(a => a.Task.Id)
+                    .Select(g => g.OrderByDescending(a => a.ExamScore).First())
+                    .ToList();
+            }
 
             var model = new ProfileInfoViewModel
             {
@@ -128,9 +134,9 @@ namespace Axe.Controllers
 
                 Technologies = techs,
                 SelectedTechnology = selectedTech,
-                AllAttempts = attempts,
-                BestAttempts = bestAttempts,
-                Tasks = self ? tasks : null,
+                AllAttempts = attempts ?? new List<ExamAttempt>(),
+                BestAttempts = bestAttempts ?? new List<ExamAttempt>(),
+                Tasks = self ? ( tasks ?? new List<ExamTask>() ) : null,
             };
 
             return View(model);
@@ -197,7 +203,7 @@ namespace Axe.Controllers
                 await _signInManager.SignInAsync(user, isPersistent: false);
                 _logger.LogInformation(1, "User enabled two-factor authentication.");
             }
-            return RedirectToAction(nameof(Index), "Profile");
+            return RedirectToAction(nameof(Index), "Profiles");
         }
 
         //
@@ -213,7 +219,7 @@ namespace Axe.Controllers
                 await _signInManager.SignInAsync(user, isPersistent: false);
                 _logger.LogInformation(2, "User disabled two-factor authentication.");
             }
-            return RedirectToAction(nameof(Index), "Profile");
+            return RedirectToAction(nameof(Index), "Profiles");
         }
 
         //
@@ -377,7 +383,7 @@ namespace Axe.Controllers
             await HttpContext.Authentication.SignOutAsync(_externalCookieScheme);
 
             // Request a redirect to the external login provider to link a login for the current user
-            var redirectUrl = Url.Action(nameof(LinkLoginCallback), "Profile");
+            var redirectUrl = Url.Action(nameof(LinkLoginCallback), "Profiles");
             var properties = _signInManager.ConfigureExternalAuthenticationProperties(provider, redirectUrl, _userManager.GetUserId(User));
             return Challenge(properties, provider);
         }

@@ -1,0 +1,59 @@
+@model Axe.Models.ExamAttempt
+
+@{
+    ViewData["Title"] = "Delete";
+}
+
+<h2>Delete</h2>
+
+<h3>Are you sure you want to delete this?</h3>
+<div>
+    <h4>ExamAttempt</h4>
+    <hr />
+    <dl class="dl-horizontal">
+        <input type="hidden" asp-for="Id" />
+        <dt>
+            @Html.DisplayNameFor(model => model.ExamDate)
+        </dt>
+        <dd>
+            @Html.DisplayFor(model => model.ExamDate)
+        </dd>
+        <dt>
+            @Html.DisplayNameFor(model => model.ExamScore)
+        </dt>
+        <dd>
+            @Html.DisplayFor(model => model.ExamScore)
+        </dd>
+        <dt>
+            @Html.DisplayNameFor(model => model.IsPassed)
+        </dt>
+        <dd>
+            @Html.DisplayFor(model => model.IsPassed)
+        </dd>
+        <dt>
+            @Html.DisplayNameFor(model => model.Student)
+        </dt>
+        <dd>
+            @Html.DisplayFor(model => model.Student.Id)
+        </dd>
+        <dt>
+            @Html.DisplayNameFor(model => model.Task)
+        </dt>
+        <dd>
+            @Html.DisplayFor(model => model.Task.Id)
+        </dd>
+        <dt>
+            @Html.DisplayNameFor(model => model.Technology)
+        </dt>
+        <dd>
+            @Html.DisplayFor(model => model.Technology.InformationText)
+        </dd>
+    </dl>
+    
+    <form asp-action="Delete">
+        <div class="form-actions no-color">
+            <input type="submit" value="Delete" class="btn btn-default" /> |
+            <a asp-action="Index">Back to List</a>
+        </div>
+    </form>
+</div>

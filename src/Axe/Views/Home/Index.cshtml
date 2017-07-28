@@ -32,7 +32,8 @@
                                 <p>                                
                                     @Html.DisplayFor(t => tech.InformationText)
                                     <br /> <br />
-                                    <a href="@Url.Action("Edit", "Technologies", new { id = tech.Id })" class="btn btn-primary">
+                                    
+                                    <a href="@Url.Action("Details", "Exams", new { id = tech.Id })" class="btn btn-primary">
                                         <span class="glyphicon glyphicon-education"></span>
                                         <span>Take a test</span>
                                     </a>
@@ -67,7 +68,7 @@
         }
 
         <div class="col-md-4">
-            <a class="metro" href="@Url.Action("Edit", "Technologies", new { id = item.Tech.Id })">
+            <a class="metro" href="@Url.Action("Details", "Exams", new { id = item.Tech.Id })">
                 <div class="techCard" title="@item.Tech.InformationText">
                     @item.Tech.Name
                 </div>
