@@ -55,7 +55,7 @@ namespace Axe.Controllers
         //
         // GET: /Manage/Index
         [HttpGet]
-        public async Task<IActionResult> Visit(string id = null)
+        public async Task<IActionResult> Visit(string id = null, int? technologyId = null)
         {
             //ViewData["StatusMessage"] =
             //    message == ManageMessageId.ChangePasswordSuccess ? "Your password has been changed."
@@ -66,31 +66,71 @@ namespace Axe.Controllers
             //    : message == ManageMessageId.RemovePhoneSuccess ? "Your phone number was removed."
             //    : "";
 
-            var user = id != null ?
-                await this.context.Users.SingleOrDefaultAsync(u => u.Id == id) :
-                await GetCurrentUserAsync();
-
+            ApplicationUser user = await GetCurrentUserAsync();
+            bool self = true;
+            if (id != null && id != user.Id)
+            {
+                var profile = await this.context.Users.SingleOrDefaultAsync(u => u.Id == id);
+                if (profile != null)
+                {
+                    user = profile;
+                    self = false;
+                }
+            }
+            
             if (user == null)
             {
                 return View("Error");
             }
-            
-            var model = new IndexViewModel
+
+            var techs = this.context.Technology.ToList();
+            var selectedTech = techs.FirstOrDefault(t => t.Id == technologyId) ??
+                               techs.FirstOrDefault();
+
+            var rnd = new Random();
+
+            var tasks = this.context.ExamTask.Where(t => t.TechnologyId == selectedTech.Id).ToList();
+
+            var attempts = Enumerable.Range(0, 5)
+                                .Select(i => new ExamAttempt
+                                {
+                                    Technology = selectedTech,
+                                    Task = tasks[rnd.Next(tasks.Count)],
+                                    ExamScore = rnd.Next(36) + 64,
+                                    ExamDate = new DateTime(DateTime.Today.Year, rnd.Next(12) + 1, rnd.Next(28) + 1),
+                                })
+                                .ToList();
+
+            var bestAttempts = attempts.Where(a => a.Technology.Id == selectedTech.Id)
+                .GroupBy(a => a.Task.Id)
+                .Select(g => g.OrderByDescending(a => a.ExamScore).First())
+                .ToList();
+
+            var model = new ProfileInfoViewModel
             {
                 UserName = user.UserName,
                 ContactInfo = user.Email,
+
                 HasPassword = await _userManager.HasPasswordAsync(user),
                 PhoneNumber = await _userManager.GetPhoneNumberAsync(user),
                 TwoFactor = await _userManager.GetTwoFactorEnabledAsync(user),
                 Logins = await _userManager.GetLoginsAsync(user),
                 BrowserRemembered = await _signInManager.IsTwoFactorClientRememberedAsync(user),
+
                 TechStats =
                 {
                     new UserTechnologyStats { Tech = new Technology { Id = 2, Name = "JavaScript" }, ExamDate = DateTime.Today, ExamScore = 88, },
                     new UserTechnologyStats { Tech = new Technology { Id = 1, Name = "C#" }, ExamDate = DateTime.Today.AddDays(-2), ExamScore = 95, },
                     new UserTechnologyStats { Tech = new Technology { Id = 3, Name = "SQL" }},
-                }
+                },
+
+                Technologies = techs,
+                SelectedTechnology = selectedTech,
+                AllAttempts = attempts,
+                BestAttempts = bestAttempts,
+                Tasks = self ? tasks : null,
             };
+
             return View(model);
         }
 

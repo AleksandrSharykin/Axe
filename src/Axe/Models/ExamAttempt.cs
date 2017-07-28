@@ -13,6 +13,10 @@ namespace Axe.Models
 
         public Technology Technology { get; set; }
 
+        public int TaskId { get; set; }
+
+        public ExamTask Task { get; set; }
+
         public string StudentId { get; set; }
 
         public ApplicationUser Student { get; set; }

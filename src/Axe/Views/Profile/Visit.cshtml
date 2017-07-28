@@ -1,19 +1,11 @@
-﻿@model Axe.Models.ProfileViewModels.IndexViewModel
+﻿@model Axe.Models.ProfileViewModels.ProfileInfoViewModel
 
 <p class="text-success">@ViewData["StatusMessage"]</p>
 
 <div>
+    @*personal info*@
     <div class="row">
         <div class="col-md-3">
-            @*<select size="@Model.TechStats.Count">
-                @foreach (var stats in Model.TechStats)
-                {
-                    <option value="@stats.Tech.Id">
-                        @stats.Tech.Name
-                    </option>
-                }
-            </select>*@
-
             <img src="https://avatars1.githubusercontent.com/u/30412176?v=4&s=460" width="230" height="230"/>
         </div>
         <div class="col-md-9">
@@ -26,7 +18,7 @@
             <h3> <span class="label label-primary"> Skills </span> </h3>                         
 
             <h4>
-                @foreach (var stats in Model.TechStats.Where(t=>t.ExamScore.HasValue))
+                @foreach (var stats in Model.TechStats.Where(t=>t.ExamScore.HasValue).OrderByDescending(t=>t.ExamScore))
                 {
                     <kbd value="@stats.Tech.Id">
                         @stats.Tech.Name
@@ -37,6 +29,113 @@
                 }                
             </h4>
             
+        </div>
+    </div>
+
+    <hr />
+
+    @*exams*@
+    <div class="row">
+        <form asp-controller="Profile" asp-action="Visit">
+            <div class="col-md-2">
+                <ul class="nav nav-pills nav-stacked">
+
+                    @foreach (var t in Model.Technologies)
+                    {
+                        string active = t.Id == Model.SelectedTechnology?.Id ? "active" : null;
+                        <li class="@active">@Html.ActionLink(t.Name, "Visit", "Profile", new { technologyId = t.Id })</li>
+                    }
+                </ul>
+            </div>
+        </form>
+
+        <div class="col-md-10">
+            <ul class="nav nav-tabs nav-justified">
+                <li class="active"><a data-toggle="tab" href="#menuBest">Best Scores</a></li>     
+                @if (Model.Tasks != null)
+                {
+                    <li><a data-toggle="tab" href="#menuExams">Exams</a></li>
+                }
+                <li><a data-toggle="tab" href="#menuAll">All Attempts</a></li>
+            </ul>
+
+            <div class="tab-content">
+                @*best scores*@
+                <div id="menuBest" class="tab-pane fade in active">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>                                
+                                <th></th>
+                                <th>Date</th>
+                                <th>Technology</th>
+                                <th>Exam</th>
+                                <th>Score</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var a in Model.BestAttempts.OrderByDescending(a=>a.ExamScore))
+                            {
+                                <tr>
+                                    <td><span class="glyphicon glyphicon-thumbs-up"></span></td>
+                                    <td>@a.ExamDate</td>
+                                    <td>@a.Technology.Name</td>
+                                    <td>@a.Task.Title</td>
+                                    <td>@a.ExamScore</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+
+                @*take exams*@
+                @if (Model.Tasks != null)
+                {
+                    <div id="menuExams" class="tab-pane fade">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Title</th>
+                                    <th>Objective</th>
+                                    <th>Take</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var t in Model.Tasks)
+                                {
+                                    <tr>
+                                        <td>@t.Title</td>
+                                        <td>@t.Objective</td>
+                                        <td>lets do it</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                }
+
+                @*all attempts*@
+                <div id="menuAll" class="tab-pane fade">                    
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Exam</th>
+                                <th>Score</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var a in Model.AllAttempts.OrderByDescending(a=>a.ExamDate))
+                            {
+                                <tr>
+                                    <td>@a.ExamDate</td>
+                                    <td>@a.Task.Title</td>
+                                    <td>@a.ExamScore</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
         </div>
     </div>
 

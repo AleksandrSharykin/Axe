@@ -34,10 +34,11 @@ namespace Axe.Models
         }
 
         protected override void OnModelCreating(ModelBuilder builder)
-        {
+        {            
             builder.Entity<SkillAssessment>().HasOne(a => a.Student).WithMany(u => u.AssessmentsAsStudent);
             builder.Entity<SkillAssessment>().HasOne(a => a.Examiner).WithMany(u => u.AssessmentsAsExaminer);
 
+            builder.Entity<ExamAttempt>().HasOne(ea => ea.Task).WithMany().OnDelete(DeleteBehavior.Restrict);
             builder.Entity<AttemptQuestion>().HasOne(q => q.TaskQuestion).WithMany().OnDelete(DeleteBehavior.Restrict);
             builder.Entity<AttemptAnswer>().HasOne(q => q.TaskAnswer).WithMany().OnDelete(DeleteBehavior.Restrict);
 
