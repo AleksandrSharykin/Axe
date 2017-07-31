@@ -82,9 +82,9 @@ namespace Axe.Controllers
 
             ApplicationUser user = await GetCurrentUserAsync();
 
-            var users = this.context.Users.Include(u => u.AssessmentsAsStudent);
-            ApplicationUser profile = await this.context.Users.Include(u => u.AssessmentsAsStudent).SingleOrDefaultAsync(u => u.Id == id) ??
-                await this.context.Users.Include(u => u.AssessmentsAsStudent).SingleOrDefaultAsync(u => u.Id == user.Id);
+            var users = this.context.Users.Include(u => u.AssessmentsAsStudent).ThenInclude(a => a.Examiner);
+            ApplicationUser profile = await users.SingleOrDefaultAsync(u => u.Id == id) ??
+                                      await users.SingleOrDefaultAsync(u => u.Id == user.Id);
 
             if (profile == null)
             {
@@ -125,12 +125,14 @@ namespace Axe.Controllers
             bool self = profile.Id == user.Id;
             var model = new ProfileInfoVm
             {
+                Id = profile.Id,
                 Self = self,
                 UserName = profile.UserName,
                 JobPosition = profile.JobPosition,
                 ContactInfo = profile.Email,
 
-                Skills = profile.GetSkills().ToList(),
+                Skills = profile.GetSkills().Concat(profile.AssessmentsAsStudent.Where(a=>a.ExamScore is null)).ToList(),
+                Assessments = profile.AssessmentsAsStudent.Where(a=>a.TechnologyId == selectedTech.Id),
 
                 Technologies = techs,
                 SelectedTechnology = selectedTech,

@@ -26,7 +26,7 @@ namespace Axe.Models
 
         public DbSet<AttemptQuestion> AttemptQuestion { get; set; }
 
-        public DbSet<AttemptAnswer> AttemptAnswer { get; set; }
+        public DbSet<AttemptAnswer> AttemptAnswer { get; set; }        
 
         public AxeDbContext (DbContextOptions<AxeDbContext> options)
             : base(options)

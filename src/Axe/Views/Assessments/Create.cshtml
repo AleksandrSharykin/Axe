@@ -1,0 +1,62 @@
+@model Axe.Models.AssessmentsVm.AssessmentCreateVm
+
+@*@{
+    ViewData["Title"] = "Create";
+}*@
+
+<h2>Create</h2>
+
+<form asp-action="Create">
+    <div class="form-horizontal">
+        <h4>SkillAssessment</h4>
+        <hr />
+        <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+        <div class="form-group">
+            <label asp-for="StudentId" class="col-md-2 control-label"></label>
+            <div class="col-md-10">
+                <select asp-for="StudentId" class ="form-control" asp-items="@Model.Students"></select>
+            </div>
+        </div>
+        <div class="form-group">
+            <label asp-for="ExaminerId" class="col-md-2 control-label"></label>
+            <div class="col-md-10">
+                <select asp-for="ExaminerId" class ="form-control" asp-items="@Model.Examiners"></select>
+            </div>
+        </div>
+        <div class="form-group">
+            <label asp-for="TechnologyId" class="col-md-2 control-label"></label>
+            <div class="col-md-10">
+                <select asp-for="TechnologyId" class ="form-control" asp-items="@Model.Technologies"></select>
+            </div>
+        </div>
+        <div class="form-group">
+            <label asp-for="ExamDate" class="col-md-2 control-label"></label>
+            <div class="col-md-10">
+                <input asp-for="ExamDate" class="form-control"/>
+                <span asp-validation-for= "ExamDate" class="text-danger"></span>
+            </div>
+        </div>
+        <div class="form-group">
+            <label asp-for="ExamTime" class="col-md-2 control-label"></label>
+            <div class="col-md-10">
+                <input asp-for="ExamTime" class="form-control" />
+                <span asp-validation-for="ExamTime" class="text-danger"></span>
+            </div>
+        </div>
+
+        @*<div class="form-group">
+            @Html.EditorFor(m=>m.ExamDate)
+        </div>*@
+
+        <div class="form-group">
+            <div class="col-md-offset-2 col-md-10">
+                <input type="submit" value="Assign" class="btn btn-default" />
+            </div>
+        </div>
+    </div>
+</form>
+
+<div>
+    <a asp-action="Index">Back to List</a>
+</div>
+

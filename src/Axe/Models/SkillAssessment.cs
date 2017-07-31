@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
+using System.ComponentModel.DataAnnotations;
 
 namespace Axe.Models
 {
@@ -21,10 +21,16 @@ namespace Axe.Models
 
         public Technology Technology { get; set; }
 
+        [DisplayFormat(DataFormatString ="{0:dd.MM.yyy HH:mm}")]
+        [Display(Name = "Date")]
         public DateTime? ExamDate { get; set; }
 
+        [Display(Name = "Score")]
+        [Range(0,100)]
+        [Required]
         public int? ExamScore { get; set; }
 
+        [Display(Name = "Exam passed")]
         public bool? IsPassed { get; set; }
     }
 }

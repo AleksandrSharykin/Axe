@@ -1,0 +1,83 @@
+@model Axe.Models.AssessmentsVm.AssessmentDetailsVm
+
+@{
+    ViewData["Title"] = "Details";
+}
+
+<h4> @Model.Student.UserName skill assessment</h4>
+<hr />
+
+<div>        
+
+    <form method="post">
+        <dl class="dl-horizontal">
+            <dt>
+                @Html.DisplayNameFor(model => model.Technology)
+            </dt>
+            <dd>
+                @Html.DisplayFor(model => model.Technology.Name)
+            </dd>
+
+            <dt>
+                @Html.DisplayNameFor(model => model.Examiner)
+            </dt>
+            <dd>
+                @Html.DisplayFor(model => model.Examiner.UserName)
+            </dd>
+
+            <dt>
+                @Html.DisplayNameFor(model => model.ExamDate)
+            </dt>            
+            <dd>
+                @Html.DisplayFor(model => model.ExamDate)
+            </dd>
+                        
+            <dt>
+                @Html.DisplayNameFor(model => model.ExamScore)
+            </dt>
+            <dd>
+                @if (Model.CanMark)
+                {
+                    <div class="form-group">
+                        @Html.EditorFor(model => model.ExamScore)
+                        <span asp-validation-for="ExamScore" class="text-warning"></span>
+                    </div>
+                }
+                else
+                {                    
+                    @Html.DisplayFor(model => model.ExamScore)
+                }
+            </dd>            
+
+            <dt>
+                @Html.DisplayNameFor(model => model.IsPassed)
+            </dt>
+            <dd>
+                @if (Model.CanMark)
+                {
+                    <div class="btn-group">
+                        <button asp-controller="Assessments" asp-route-id="@Model.Id" class="btn btn-success" value="success" name="cmd">                            
+                                <span class="glyphicon glyphicon-thumbs-up"></span> success
+                        </button>
+                        
+                        <button class="btn btn-danger" value="failure" name="cmd">
+                            <span class="glyphicon glyphicon-thumbs-down"></span> &nbsp; failure
+                        </button>
+                    </div>
+                }
+                else
+                {
+                    @if (Model.IsPassed == true)
+                    {
+                        <span class="label label-success">yes</span>
+                    }
+                    else if (Model.IsPassed == false)
+                    {
+                        <span class="label label-danger">no</span>
+                    }
+                }
+
+            </dd>
+        </dl>
+    </form>
+</div>
