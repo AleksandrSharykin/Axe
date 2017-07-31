@@ -1,4 +1,4 @@
-﻿@model Axe.Models.ProfileViewModels.ProfileInfoViewModel
+﻿@model Axe.Models.ProfileViewModels.ProfileInfoVm
 
 <p class="text-success">@ViewData["StatusMessage"]</p>
 
@@ -9,7 +9,34 @@
             <img src="https://avatars1.githubusercontent.com/u/30412176?v=4&s=460" width="230" height="230"/>
         </div>
         <div class="col-md-9">
-            <h2 class="bg-info"> @Model.UserName </h2>
+            <div class="row bg-info">                
+                <h2 class="">
+                    @Model.UserName
+
+                    @if (Model.JobPosition != null)
+                    {
+                    <span> (@Model.JobPosition) </span>
+                    }
+                </h2>                              
+            </div>
+
+            @if (Model.Self)
+            {
+                @*profile setting*@
+                <div class="row">
+                    <div class="col-md-1">
+                        <a asp-controller="Profiles" asp-action="Edit">
+                            <span class="glyphicon glyphicon-pencil"></span>edit
+                        </a>
+                    </div>
+                
+                    <div class="col-md-2">
+                        <a asp-controller="Profiles" asp-action="ChangePassword">
+                            <span class="glyphicon glyphicon-lock"></span>security
+                        </a>
+                    </div>
+                </div>
+            }
 
             <h3> <span class="label label-primary"> Contacts </span> </h3>
 
@@ -18,15 +45,15 @@
             <h3> <span class="label label-primary"> Skills </span> </h3>                         
 
             <h4>
-                @foreach (var stats in Model.TechStats.Where(t=>t.ExamScore.HasValue).OrderByDescending(t=>t.ExamScore))
+                @foreach (var skill in Model.Skills.Where(t=>t.ExamScore.HasValue).OrderByDescending(t=>t.ExamScore))
                 {
-                    <kbd value="@stats.Tech.Id">
-                        @stats.Tech.Name
+                    <kbd value="@skill.Technology.Id">
+                        @skill.Technology.Name
                     </kbd>                    
 
-                    <code title="@stats.ExamDate">@stats.ExamScore</code>
+                    <code title="@skill.ExamDate">@skill.ExamScore</code>
                     @Html.Raw("&nbsp")
-                }                
+                }
             </h4>
             
         </div>
@@ -67,7 +94,7 @@
 
             <div class="tab-content">
                 @*take exams*@
-                @if (Model.Tasks != null)
+                @if (Model.Self)
                 {
                     <div id="menuExams" class="tab-pane fade in active">
                         <table class="table table-striped">
@@ -75,7 +102,7 @@
                                 <tr>
                                     <th>Title</th>
                                     <th>Objective</th>
-                                    <th>Take</th>
+                                    <th>Take a test</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -87,7 +114,7 @@
                                         <td>
                                             <a href="@Url.Action("Take", "Exams", new { id = t.Id })" class="btn btn-primary">
                                                 <span class="glyphicon glyphicon-education"></span>
-                                                <span>Take a test</span>
+                                                <span>Lets do it</span>
                                             </a>
                                         </td>
                                     </tr>

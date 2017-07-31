@@ -43,17 +43,31 @@ namespace Axe.Controllers
         /// <returns></returns>
         public async Task<IActionResult> Index(string userFilter = null)
         {
-            IQueryable<ApplicationUser> userList = context.Users;
+            IQueryable<ApplicationUser> userList = context.Users.Include(u => u.AssessmentsAsStudent).ThenInclude(a => a.Technology);
             if (false == String.IsNullOrWhiteSpace(userFilter))
-                userList = userList.Where(u => u.UserName.Contains(userFilter));                
+                userList = userList.Where(u => u.UserName.Contains(userFilter) || u.Email.Contains(userFilter) || u.JobPosition.Contains(userFilter));                
 
             ViewData[nameof(userFilter)] = userFilter;
 
-            return View(userList.Select(u => new IndexViewModel { Id = u.Id, UserName = u.UserName, ContactInfo = u.Email }));
-        }
+            var data = (await userList.ToListAsync())
+                .Select(u => new IndexVm
+                {
+                    Id = u.Id,
+                    UserName = u.UserName,
+                    ContactInfo = u.Email,
+                    JobPosition = u.JobPosition,
+                    Skills = u.GetSkills().ToList(),
+                }).ToList();
 
-        //
-        // GET: /Manage/Index
+            return View(data);
+        }
+               
+        /// <summary>
+        /// Returns data for user profile
+        /// </summary>
+        /// <param name="id"></param>
+        /// <param name="technologyId"></param>
+        /// <returns></returns>
         [HttpGet]
         public async Task<IActionResult> Visit(string id = null, int? technologyId = null)
         {
@@ -67,18 +81,12 @@ namespace Axe.Controllers
             //    : "";
 
             ApplicationUser user = await GetCurrentUserAsync();
-            bool self = true;
-            if (id != null && id != user.Id)
-            {
-                var profile = await this.context.Users.SingleOrDefaultAsync(u => u.Id == id);
-                if (profile != null)
-                {
-                    user = profile;
-                    self = false;
-                }
-            }
-            
-            if (user == null)
+
+            var users = this.context.Users.Include(u => u.AssessmentsAsStudent);
+            ApplicationUser profile = await this.context.Users.Include(u => u.AssessmentsAsStudent).SingleOrDefaultAsync(u => u.Id == id) ??
+                await this.context.Users.Include(u => u.AssessmentsAsStudent).SingleOrDefaultAsync(u => u.Id == user.Id);
+
+            if (profile == null)
             {
                 return View("Error");
             }
@@ -114,23 +122,15 @@ namespace Axe.Controllers
                     .ToList();
             }
 
-            var model = new ProfileInfoViewModel
+            bool self = profile.Id == user.Id;
+            var model = new ProfileInfoVm
             {
-                UserName = user.UserName,
-                ContactInfo = user.Email,
+                Self = self,
+                UserName = profile.UserName,
+                JobPosition = profile.JobPosition,
+                ContactInfo = profile.Email,
 
-                HasPassword = await _userManager.HasPasswordAsync(user),
-                PhoneNumber = await _userManager.GetPhoneNumberAsync(user),
-                TwoFactor = await _userManager.GetTwoFactorEnabledAsync(user),
-                Logins = await _userManager.GetLoginsAsync(user),
-                BrowserRemembered = await _signInManager.IsTwoFactorClientRememberedAsync(user),
-
-                TechStats =
-                {
-                    new UserTechnologyStats { Tech = new Technology { Id = 2, Name = "JavaScript" }, ExamDate = DateTime.Today, ExamScore = 88, },
-                    new UserTechnologyStats { Tech = new Technology { Id = 1, Name = "C#" }, ExamDate = DateTime.Today.AddDays(-2), ExamScore = 95, },
-                    new UserTechnologyStats { Tech = new Technology { Id = 3, Name = "SQL" }},
-                },
+                Skills = profile.GetSkills().ToList(),
 
                 Technologies = techs,
                 SelectedTechnology = selectedTech,
@@ -281,6 +281,35 @@ namespace Axe.Controllers
             return RedirectToAction(nameof(Index), new { Message = ManageMessageId.Error });
         }
 
+        [HttpGet]
+        public async Task<IActionResult> Edit()
+        {
+            var user = await GetCurrentUserAsync();
+            if (user == null)
+                return RedirectToAction(nameof(Index));
+
+            return View(new EditProfileVm { UserName = user.UserName, JobPosition = user.JobPosition });
+        }
+
+        public async Task<IActionResult> Edit(EditProfileVm model)
+        {
+            if (!ModelState.IsValid)
+            {
+                return View(model);
+            }
+
+            var user = await GetCurrentUserAsync();
+            if (user == null)
+                return RedirectToAction(nameof(Index));
+
+            user.UserName = model.UserName;
+            user.JobPosition = model.JobPosition;
+            this.context.Update(user);
+            this.context.SaveChanges();
+
+            return RedirectToAction(nameof(Visit));
+        }
+
         //
         // GET: /Manage/ChangePassword
         [HttpGet]
@@ -307,7 +336,7 @@ namespace Axe.Controllers
                 {
                     await _signInManager.SignInAsync(user, isPersistent: false);
                     _logger.LogInformation(3, "User changed their password successfully.");
-                    return RedirectToAction(nameof(Index), new { Message = ManageMessageId.ChangePasswordSuccess });
+                    return RedirectToAction(nameof(Visit), new { Message = ManageMessageId.ChangePasswordSuccess });
                 }
                 AddErrors(result);
                 return View(model);

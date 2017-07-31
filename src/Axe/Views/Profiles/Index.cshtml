@@ -1,4 +1,4 @@
-@model IEnumerable<Axe.Models.ProfileViewModels.IndexViewModel>
+@model IEnumerable<Axe.Models.ProfileViewModels.IndexVm>
 
 @{
     ViewData["Title"] = "Index";
@@ -28,8 +28,34 @@
                 <div class="col-sm-2">
                     <img src="https://avatars1.githubusercontent.com/u/30412176?v=4&s=460" width="40" height="40" />
                 </div>
+                @*user card*@
                 <div class="col-sm-10">                        
                     <h4>@item.user.UserName</h4>
+                    
+                    @if (item.user.JobPosition != null)
+                    {
+                        <p>@item.user.JobPosition</p>
+                    }
+
+                    @if (item.user.ContactInfo != item.user.UserName)
+                    {
+                        <p>@item.user.ContactInfo</p>
+                    }
+
+                    @if (item.user.Skills != null)
+                    {
+                        <p>
+                            @foreach (var skill in item.user.Skills.Where(t => t.ExamScore.HasValue).OrderByDescending(t => t.ExamScore))
+                            {
+                                <kbd value="@skill.Technology.Id">
+                                    @skill.Technology.Name
+                                </kbd>
+
+                                <code title="@skill.ExamDate">@skill.ExamScore</code>
+                                @Html.Raw("&nbsp")
+                            }
+                        </p>
+                    }
                 </div>
             </div>
         </a>
