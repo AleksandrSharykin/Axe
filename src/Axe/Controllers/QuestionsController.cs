@@ -42,6 +42,7 @@ namespace Axe.Controllers
         {
             var question = await this.context.TaskQuestion                                
                 .Include(q => q.Answers)
+                .AsNoTracking()
                 .SingleOrDefaultAsync(q => q.Id == id);
 
             if (question == null)
@@ -84,23 +85,58 @@ namespace Axe.Controllers
                 // saving valid question
                 if (ModelState.IsValid)
                 {
-                    var q = await this.context.TaskQuestion.SingleOrDefaultAsync(t => t.Id == questionVm.Id)
-                            ?? new TaskQuestion();
-                    q.Text = questionVm.Text;
-                    q.Answers = questionVm.Answers;
-                    foreach (var a in q.Answers)
-                        a.Question = q;
-                    if (q.AuthorId == null)
-                        q.Author = await GetCurrentUserAsync();
-                    q.TechnologyId = questionVm.TechnologyId.Value;
+                    var question = await this.context.TaskQuestion.Include(q => q.Answers)
+                                             .SingleOrDefaultAsync(t => t.Id == questionVm.Id);
 
-                    if (q.Id > 0)
-                        this.context.Update(q);
+                    if (question == null)
+                    {
+                        question = new TaskQuestion();
+                        question.Answers = questionVm.Answers;
+                        foreach (var a in question.Answers)
+                            a.Question = question;
+                    }
                     else
-                        this.context.Add(q);
+                    {
+                        // add new asnwers, apply changes from modified answers
+                        foreach(var answer in questionVm.Answers)
+                        {
+                            var original = question.Answers.SingleOrDefault(a => a.Id == answer.Id);
+                            if (original == null)
+                            {
+                                question.Answers.Add(answer);
+                                answer.Question = question;
+                            }
+                            else
+                            {
+                                original.Text = answer.Text;
+                                original.Score = answer.Score;
+                                original.Value = answer.Value;
+                            }
+                        }
+                        // delete removed answers
+                        var deleted = question.Answers
+                                              .Where(a => false == questionVm.Answers.Any(x => x.Id == a.Id))
+                                              .ToList();
+
+                        this.context.RemoveRange(deleted);
+                        foreach (var d in deleted)
+                            question.Answers.Remove(d);
+                    }
+
+                    question.Text = questionVm.Text;                    
+
+                    if (question.AuthorId == null)
+                        question.Author = await GetCurrentUserAsync();
+
+                    question.TechnologyId = questionVm.TechnologyId.Value;
+
+                    if (question.Id > 0)
+                        this.context.Update(question);
+                    else
+                        this.context.Add(question);
                     await this.context.SaveChangesAsync();
 
-                    return RedirectToAction("Index", "Technologies", new { technologyId = q.TechnologyId });
+                    return RedirectToAction("Index", "Technologies", new { technologyId = question.TechnologyId });
                 }
             }
 
