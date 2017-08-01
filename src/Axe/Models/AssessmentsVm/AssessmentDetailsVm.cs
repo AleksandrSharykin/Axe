@@ -10,5 +10,7 @@ namespace Axe.Models.AssessmentsVm
         public bool CanDelete { get; set; }
 
         public bool CanMark { get; set; }
+
+        public bool CanEdit { get; set; }
     }
 }

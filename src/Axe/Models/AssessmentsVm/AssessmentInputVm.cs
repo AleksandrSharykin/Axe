@@ -6,8 +6,10 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 
 namespace Axe.Models.AssessmentsVm
 {
-    public class AssessmentCreateVm
+    public class AssessmentInputVm
     {
+        public int Id { get; set; }
+
         public SelectList Students { get; set; }
 
         [Required]

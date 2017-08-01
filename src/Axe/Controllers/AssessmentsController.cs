@@ -61,10 +61,12 @@ namespace Axe.Controllers
                 Examiner = a.Examiner,
                 Technology = a.Technology,
                 ExamScore = a.ExamScore,
+                ExamComment = a.ExamComment,
                 ExamDate = a.ExamDate,
                 IsPassed = a.IsPassed,
                 CanMark = a.ExamScore == null,
-                CanDelete = a.ExamScore == null
+                CanEdit = a.ExamScore == null,
+                CanDelete = a.ExamScore == null,
             });
         }
 
@@ -77,7 +79,8 @@ namespace Axe.Controllers
                 if (assessment != null)
                 {
                     assessment.ExamScore = vm.ExamScore;
-                    switch(cmd)
+                    assessment.ExamComment = vm.ExamComment;
+                    switch (cmd)
                     {
                         case "success": assessment.IsPassed = true; break;
                         case "failure": assessment.IsPassed = false; break;
@@ -89,11 +92,11 @@ namespace Axe.Controllers
             return await Details(vm?.Id);
         }
 
-        private async Task<AssessmentCreateVm> GetAssessmentCreateModel(int? technologyId = null, string studentId = null, string examinerId = null)
+        private async Task<AssessmentInputVm> GetAssessmentCreateModel(int? technologyId = null, string studentId = null, string examinerId = null)
         {
             var profile = await GetCurrentUserAsync();
             var users = await context.Users.ToListAsync();
-            var data = new AssessmentCreateVm
+            var data = new AssessmentInputVm
             {
                 Technologies = new SelectList(context.Technology, "Id", "Name", technologyId),
                 Students = new SelectList(users, "Id", "UserName", studentId),
@@ -114,7 +117,7 @@ namespace Axe.Controllers
         // more details see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Id,StudentId,ExaminerId,TechnologyId,ExamDate,ExamTime")] AssessmentCreateVm a)
+        public async Task<IActionResult> Create([Bind("Id,StudentId,ExaminerId,TechnologyId,ExamDate,ExamTime")] AssessmentInputVm a)
         {
             if (ModelState.IsValid)
             {
@@ -127,7 +130,7 @@ namespace Axe.Controllers
                 };
                 context.Add(assessment);
                 await context.SaveChangesAsync();
-                return RedirectToAction("Index");
+                return RedirectToAction("Visit", "Profiles", new { id = a.StudentId, technologyId = a.TechnologyId, });
             }            
 
             var data = await GetAssessmentCreateModel(a.TechnologyId, a.StudentId, a.ExaminerId);
@@ -142,15 +145,24 @@ namespace Axe.Controllers
                 return NotFound();
             }
 
-            var skillAssessment = await context.SkillAssessment.SingleOrDefaultAsync(m => m.Id == id);
-            if (skillAssessment == null)
+            var data = await context.SkillAssessment.SingleOrDefaultAsync(m => m.Id == id);
+            if (data == null)
             {
                 return NotFound();
             }
-            ViewData["ExaminerId"] = new SelectList(context.Users, "Id", "Id", skillAssessment.ExaminerId);
-            ViewData["StudentId"] = new SelectList(context.Users, "Id", "Id", skillAssessment.StudentId);
-            ViewData["TechnologyId"] = new SelectList(context.Technology, "Id", "InformationText", skillAssessment.TechnologyId);
-            return View(skillAssessment);
+            
+            var users = await context.Users.ToListAsync();
+            var vm = new AssessmentInputVm
+            {
+                Id = data.Id,
+                ExamDate = data.ExamDate,
+                ExamTime = data.ExamDate,
+                Technologies = new SelectList(context.Technology, "Id", "Name", data.TechnologyId),
+                Students = new SelectList(users, "Id", "UserName",  data.StudentId),
+                Examiners = new SelectList(users, "Id", "UserName", data.ExaminerId),
+            };
+
+            return View(vm);
         }
 
         // POST: Assessments/Edit/5
@@ -158,9 +170,9 @@ namespace Axe.Controllers
         // more details see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,StudentId,ExaminerId,TechnologyId,ExamDate,ExamScore,IsPassed")] SkillAssessment skillAssessment)
+        public async Task<IActionResult> Edit(int id, [Bind("Id,StudentId,ExaminerId,TechnologyId,ExamDate,ExamTime")] AssessmentInputVm assessmentInput)
         {
-            if (id != skillAssessment.Id)
+            if (id != assessmentInput.Id)
             {
                 return NotFound();
             }
@@ -169,12 +181,27 @@ namespace Axe.Controllers
             {
                 try
                 {
-                    context.Update(skillAssessment);
-                    await context.SaveChangesAsync();
+                    var a = await context.SkillAssessment.SingleOrDefaultAsync(e => e.Id == assessmentInput.Id);
+                    if (a != null)
+                    {
+                        a.StudentId = assessmentInput.StudentId;
+                        a.ExaminerId = assessmentInput.ExaminerId;
+                        a.TechnologyId = assessmentInput.TechnologyId.Value;
+                        a.ExamDate = assessmentInput.ExamDate.Value.Date.Add(assessmentInput.ExamTime.Value.TimeOfDay);
+
+                        context.Update(a);
+                        await context.SaveChangesAsync();
+
+                        return RedirectToAction("Visit", "Profiles", new { id = a.StudentId, technologyId = a.TechnologyId, });
+                    }
+                    else
+                    {
+                        ModelState.AddModelError("Id", "Item not found");
+                    }
                 }
                 catch (DbUpdateConcurrencyException)
                 {
-                    if (!SkillAssessmentExists(skillAssessment.Id))
+                    if (false == context.SkillAssessment.Any(e => e.Id == assessmentInput.Id))
                     {
                         return NotFound();
                     }
@@ -183,12 +210,17 @@ namespace Axe.Controllers
                         throw;
                     }
                 }
-                return RedirectToAction("Index");
             }
-            ViewData["ExaminerId"] = new SelectList(context.Users, "Id", "Id", skillAssessment.ExaminerId);
-            ViewData["StudentId"] = new SelectList(context.Users, "Id", "Id", skillAssessment.StudentId);
-            ViewData["TechnologyId"] = new SelectList(context.Technology, "Id", "InformationText", skillAssessment.TechnologyId);
-            return View(skillAssessment);
+
+            var users = await context.Users.ToListAsync();
+            var vm = new AssessmentInputVm
+            {                
+                Technologies = new SelectList(context.Technology, "Id", "Name", assessmentInput.TechnologyId),
+                Students = new SelectList(users, "Id", "UserName", assessmentInput.StudentId),
+                Examiners = new SelectList(users, "Id", "UserName", assessmentInput.ExaminerId),
+            };
+
+            return View(vm);
         }
 
         // GET: Assessments/Delete/5
@@ -221,11 +253,6 @@ namespace Axe.Controllers
             context.SkillAssessment.Remove(skillAssessment);
             await context.SaveChangesAsync();
             return RedirectToAction("Index");
-        }
-
-        private bool SkillAssessmentExists(int id)
-        {
-            return context.SkillAssessment.Any(e => e.Id == id);
         }
     }
 }

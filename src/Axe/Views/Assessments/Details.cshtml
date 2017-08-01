@@ -1,14 +1,17 @@
 @model Axe.Models.AssessmentsVm.AssessmentDetailsVm
 
 @{
-    ViewData["Title"] = "Details";
+    ViewData["Title"] = "Skill Assessment";
 }
 
 <h4> @Model.Student.UserName skill assessment</h4>
+@if (Model.CanEdit)
+{
+    @Html.ActionLink("Edit", "Edit", "Assessments", new { id = Model.Id }, new { @class = "btn btn-primary" })
+}
 <hr />
 
-<div>        
-
+<div>
     <form method="post">
         <dl class="dl-horizontal">
             <dt>
@@ -47,7 +50,24 @@
                 {                    
                     @Html.DisplayFor(model => model.ExamScore)
                 }
-            </dd>            
+            </dd>  
+            
+            <dt>
+                @Html.DisplayNameFor(model => model.ExamComment)
+            </dt>
+            <dd>
+                @if (Model.CanMark)
+                {
+                    <div class="form-group">
+                        @Html.EditorFor(model => model.ExamComment)
+                        <span asp-validation-for="ExamComment" class="text-warning"></span>
+                    </div>
+                }
+                else
+                {
+                    @Html.DisplayFor(model => model.ExamComment)
+                }
+            </dd>                        
 
             <dt>
                 @Html.DisplayNameFor(model => model.IsPassed)
@@ -56,7 +76,7 @@
                 @if (Model.CanMark)
                 {
                     <div class="btn-group">
-                        <button asp-controller="Assessments" asp-route-id="@Model.Id" class="btn btn-success" value="success" name="cmd">                            
+                        <button class="btn btn-success" value="success" name="cmd">                            
                                 <span class="glyphicon glyphicon-thumbs-up"></span> success
                         </button>
                         
@@ -76,8 +96,8 @@
                         <span class="label label-danger">no</span>
                     }
                 }
-
             </dd>
         </dl>
+
     </form>
 </div>

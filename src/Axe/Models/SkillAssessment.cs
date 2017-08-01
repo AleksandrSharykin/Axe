@@ -30,6 +30,10 @@ namespace Axe.Models
         [Required]
         public int? ExamScore { get; set; }
 
+        [Display(Name = "Comment")]
+        [MaxLength(1000)]
+        public string ExamComment { get; set; }
+
         [Display(Name = "Exam passed")]
         public bool? IsPassed { get; set; }
     }

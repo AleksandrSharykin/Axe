@@ -218,8 +218,10 @@
                                     <td>@a.ExamDate</td>
                                     <td>@a.ExamScore</td>
                                     <td>
+                                        @Html.ActionLink("details", "Details", "Assessments", new { id = a.Id })
                                         @if (a.ExamScore.HasValue == false)
                                         {
+                                            <span>|</span>
                                             @Html.ActionLink("edit", "Edit", "Assessments", new { id = a.Id });
                                             <span>|</span>
                                             @Html.ActionLink("delete", "Delete", "Assessments", new { id = a.Id });
