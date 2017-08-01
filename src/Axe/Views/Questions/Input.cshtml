@@ -1,0 +1,93 @@
+@model Axe.Models.QuestionsVm.QuestionInputVm
+
+@{
+    ViewData["Title"] = "New Question";
+}
+
+<h2>Ask new question</h2>
+
+<form asp-action="Input" asp-controller="Questions" method="post">
+
+    <div class="form-group">        
+        <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+        <input type="hidden" asp-for="Id" />
+
+        <div class="form-group">
+            <label asp-for="TechnologyId" class="control-label"></label>
+            <div class="row">
+                <div class="col-md-6">
+                    <select asp-for="TechnologyId" class="form-control" asp-items="@Model.Technologies"></select>
+                </div>
+            </div>
+        </div>
+
+        <label asp-for="Text" class="control-label"></label>        
+
+        <div class="row">
+            <div class="col-md-6 form-group">
+                <textarea asp-for="Text" class="form-control" rows="16"></textarea>
+                <span asp-validation-for="Text" class="text-danger"></span>
+            </div>
+
+            <div class="col-md-6 form-group">
+                @Model.Text
+                @*todo: markdown parser and preview*@
+            </div>
+        </div>
+    </div>
+
+    <div class="form-group">        
+
+        <div class="row form-group">
+            <div class="col-md-10">
+                <label class="control-label">Answer text</label>
+            </div>
+
+            <div class="col-md-1">
+                <label class="control-label">Value</label>
+            </div>
+
+            <div class="col-md-1">
+                <label class="control-label">Score</label>
+            </div>
+        </div>
+        
+        @for (int i = 0; i < Model.Answers.Count; i++)
+        {
+            <div class="row form-group">
+
+                <div class="col-md-10">
+                    <input type="hidden" asp-for="@Model.Answers[i].Id" />
+                    <input asp-for="@Model.Answers[i].Text" class="form-control" />
+                </div>
+
+                <div class="col-md-1">
+                    @Html.CheckBoxFor(m => m.Answers[i].IsCorrect)
+                </div>
+
+                <div class="col-md-1">
+                    @Html.EditorFor(m => m.Answers[i].Score)
+
+                </div>
+            </div>
+        }
+        
+    </div>
+    
+    <div class="row">
+        <div class="btn-group col-md-3">
+            <input type="submit" value="&nbsp;Add&nbsp;" name="cmd" class="btn btn-default" title="Add an answer" />
+            <input type="submit" value="Remove" name="cmd" class="btn btn-default" title="Remove last answer" />
+        </div>
+
+        <div class="col-md-offset-8  col-md-1">
+            <input type="submit" value="Save" name="cmd" class="btn btn-primary" />
+        </div>
+    </div>
+
+    <hr/>
+    @Html.ActionLink("Back to Technologies", "Index", "Technologies", new { technologyId = Model.TechnologyId })
+</form>
+
+
+

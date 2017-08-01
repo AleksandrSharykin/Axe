@@ -9,15 +9,19 @@ namespace Axe.Models
     {
         public int Id { get; set; }
 
-        public int TaskId { get; set; }
+        public int? TaskId { get; set; }
 
         public ExamTask Task { get; set; }
+
+        public int TechnologyId { get; set; }
+
+        public Technology Technology { get; set; }
 
         public string Text { get; set; }
 
         public int Type { get; set; }        
 
-        public IList<TaskAnswer> Answers { get; set; }
+        public ICollection<TaskAnswer> Answers { get; set; }
 
         public string AuthorId { get; set; }
 

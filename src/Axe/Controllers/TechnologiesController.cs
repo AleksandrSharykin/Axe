@@ -29,7 +29,10 @@ namespace Axe.Controllers
             var vm = new TechnologiesIndexVm
             {
                 Technologies = techs,
-                SelectedTechnology = selectedTech
+                SelectedTechnology = selectedTech,
+                Questions = this.context.TaskQuestion.Include(q=>q.Author)
+                                .Where(q => q.TechnologyId == selectedTech.Id)
+                                .ToList(),
             };
             return View(vm);
         }
