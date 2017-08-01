@@ -39,8 +39,8 @@ footer{
 input,
 select,
 textarea {
-    max-width: 480px;
-    white-space:pre-wrap;
+    /*max-width: 810px;*/
+    white-space:pre-wrap;    
 }
 
 /* Carousel */

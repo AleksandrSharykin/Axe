@@ -17,7 +17,7 @@ namespace Axe.Models
 
         public int Type { get; set; }        
 
-        public ICollection<TaskAnswer> Answers { get; set; }
+        public IList<TaskAnswer> Answers { get; set; }
 
         public string AuthorId { get; set; }
 

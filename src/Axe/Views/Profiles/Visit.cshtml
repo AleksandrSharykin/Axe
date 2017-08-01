@@ -200,9 +200,10 @@
                 </div>
 
                 <div id="menuSkills" class="tab-pane fade">
-                    <table class="table table-striped">
+                    <table class="table">
                         <thead>
                             <tr>
+                                <th></th>
                                 <th>Examiner</th>
                                 <th>Date</th>                                
                                 <th>Score</th>
@@ -214,6 +215,12 @@
                             {
                                 var success = a.IsPassed == true ? "success" : null;
                                 <tr class="@success">
+                                    <td> 
+                                        @if (a.IsPassed == true)
+                                        {
+                                            <span class="glyphicon glyphicon-thumbs-up"></span>
+                                        }
+                                    </td>
                                     <td>@a.Examiner?.UserName</td>
                                     <td>@a.ExamDate</td>
                                     <td>@a.ExamScore</td>
@@ -232,7 +239,10 @@
                         </tbody>
                     </table>
 
-                    @Html.ActionLink("Add", "Create", "Assessments", new { studentId = Model.Id, technologyId = Model.SelectedTechnology?.Id }, new { @class = "btn btn-primary" })
+                    @if (false == Model.Self)
+                    {
+                        @Html.ActionLink("Add", "Create", "Assessments", new { studentId = Model.Id, technologyId = Model.SelectedTechnology?.Id }, new { @class = "btn btn-primary" })
+                    }
                 </div>
             </div>
         </div>

@@ -4,7 +4,7 @@
     ViewData["Title"] = "Skill Assessment";
 }
 
-<h4> @Model.Student.UserName skill assessment</h4>
+<h4> @Html.ActionLink(@Model.Student.UserName, "Visit", "Profiles", new { id = Model.Student.Id }) skill assessment</h4>
 @if (Model.CanEdit)
 {
     @Html.ActionLink("Edit", "Edit", "Assessments", new { id = Model.Id }, new { @class = "btn btn-primary" })

@@ -24,8 +24,7 @@ namespace Axe.Models
         [DisplayFormat(DataFormatString ="{0:dd.MM.yyy HH:mm}")]
         [Display(Name = "Date")]
         public DateTime? ExamDate { get; set; }
-
-        [Display(Name = "Score")]
+        
         [Range(0,100)]
         [Required]
         public int? ExamScore { get; set; }
