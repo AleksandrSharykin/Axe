@@ -1,44 +1,80 @@
-@model Axe.Models.ExamTask
+@model Axe.Models.ExamTasksVm.TaskInputVm
 
 @{
     ViewData["Title"] = "Task Editor";
 }
 
-<h2>Create a test task</h2>
+@section Scripts
+{    
+    <script src="~/js/tasks.input.js"></script>
+}
+
+<h2>Create @Model.TechnologyName Test Task</h2>
 
 <form asp-action="Input">
-    <div class="form-horizontal">
+    <div class="form-group">
         <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-        <input type="hidden" asp-for="Id" />
+        <input type="hidden" asp-for="@Model.Id" />
+        <input type="hidden" asp-for="@Model.TechnologyId" />
 
-        <div class="form-group">
-            <label asp-for="Title" class="col-md-2 control-label"></label>
-            <div class="col-md-10">
+        <label asp-for="Title" class="control-label"></label>
+
+        <div class="form-group row">            
+            <div class="col-md-6">
                 <input asp-for="Title" class="form-control" />
                 <span asp-validation-for="Title" class="text-danger"></span>
             </div>
         </div>
-        <div class="form-group">
-            <label asp-for="Objective" class="col-md-2 control-label"></label>
-            <div class="col-md-10">
+
+        <label asp-for="Objective" class="control-label"></label>
+
+        <div class="form-group row">            
+            <div class="col-md-6">
                 <input asp-for="Objective" class="form-control" />
                 <span asp-validation-for="Objective" class="text-danger"></span>
             </div>
         </div>
-        <div class="form-group">
-            <label asp-for="TechnologyId" class="control-label col-md-2"></label>
-            <div class="col-md-10">
-                <select asp-for="TechnologyId" class="form-control" asp-items="ViewBag.TechnologyId"></select>
-                <span asp-validation-for="TechnologyId" class="text-danger"></span>
+
+        <label asp-for="Questions" class="control-label"></label>
+
+        <div class="form-group row">                        
+            <div class="col-md-3">
+                <input id="questionsSearch" type="text" class="form-control" placeholder="Search">
+            </div>
+
+            <label id="searchReset" class="btn btn-default" title="Clear search"><span class="glyphicon glyphicon-flash"></span></label>            
+        </div>
+
+        <div class="form-group row">
+            <div class="table-responsive">
+                <table class="table" id="questionsTable">
+                    <tbody>
+                        @for (int i = 0; i < Model.Questions.Count; i++)
+                        {
+                            <tr title="@Model.Questions[i].Text">
+                                <td>
+                                    <input type="hidden" asp-for="@Model.Questions[i].Id" />
+                                    @Html.CheckBoxFor(m => m.Questions[i].IsSelected)
+                                </td>
+                                <td>
+                                    <p>@Model.Questions[i].Preview</p>
+                                </td>
+                            </tr>
+
+                        }
+                    </tbody>
+                </table>
             </div>
         </div>
-        <div class="form-group">
-            <div class="col-md-offset-2 col-md-10">
-                <input type="submit" value="Save" class="btn btn-default" />
+
+        <hr />
+        <div class="form-group row">
+            <div class="col-md-10">
+                @Html.ActionLink("Back to Technologies", "Index", "Technologies", new { technologyId = Model.TechnologyId })
+            </div>
+            <div class="col-md-2">
+                <input type="submit" value="Save" class="btn btn-primary" />
             </div>
         </div>
     </div>
-
-    <hr />
-    @Html.ActionLink("Back to Technologies", "Index", "Technologies", new { technologyId = Model.TechnologyId })
 </form>

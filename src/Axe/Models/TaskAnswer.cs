@@ -22,6 +22,7 @@ namespace Axe.Models
         public string Value { get; set; }
 
         [Display(Prompt = "answer score")]
+        [Range(0,100)]
         public int Score { get; set; }
 
         [NotMapped]

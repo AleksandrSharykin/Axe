@@ -64,7 +64,7 @@
                             <tr>
                                 <td>@item.idx</td>
                                 <td>@item.question.Text</td>
-                                <td>@item.question.Author.UserName</td>
+                                <td>@item.question.Author?.UserName</td>
                                 <td>
                                     @Html.ActionLink("edit", "Input", "Questions", new { id = item.question.Id })
                                     |
@@ -75,8 +75,12 @@
                         }
                     </tbody>
                 </table>
-                <br />
-                @Html.ActionLink("Add", "Input", "Questions", new { technologyId = Model.SelectedTechnology.Id }, new { @class = "btn btn-primary" })
+
+                @if (Model.SelectedTechnology != null)
+                {
+                    <br />
+                    @Html.ActionLink("Add", "Input", "Questions", new { technologyId = Model.SelectedTechnology?.Id }, new { @class = "btn btn-primary" })
+                }
             </div>
 
             @*exams*@
@@ -88,8 +92,10 @@
                             <th>
                                 <span class="glyphicon glyphicon-th"></span>
                             </th>
+                            <th>Title</th>
                             <th>Objective</th>
                             <th>Author</th>
+                            <th>Questions</th>
                             <th>Actions</th>
                         </tr>
                     </thead>
@@ -98,8 +104,10 @@
                         {
                             <tr>
                                 <td>@item.idx</td>
+                                <td>@item.exam.Title</td>
                                 <td>@item.exam.Objective</td>
-                                <td>@*item.exam.Author.UserName*@</td>
+                                <td>@item.exam.Author?.UserName</td>
+                                <td>@item.exam.Questions?.Count</td>
                                 <td>
                                     @Html.ActionLink("edit", "Input", "Tasks", new { id = item.exam.Id })
                                     |
@@ -110,8 +118,12 @@
                         }
                     </tbody>
                 </table>
-                <br />
-                @Html.ActionLink("Add", "Input", "Tasks", new { technologyId = Model.SelectedTechnology.Id }, new { @class = "btn btn-primary" })
+                
+                @if (Model.SelectedTechnology != null)
+                {
+                    <br />
+                    @Html.ActionLink("Add", "Input", "Tasks", new { technologyId = Model.SelectedTechnology?.Id }, new { @class = "btn btn-primary" })
+                }
             </div>
 
             @*Active exams*@

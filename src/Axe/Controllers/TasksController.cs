@@ -2,26 +2,35 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using Axe.Models;
+using Axe.Models.ExamTasksVm;
 
 namespace Axe.Controllers
 {
     public class TasksController : Controller
     {
-        private readonly AxeDbContext _context;
+        private readonly UserManager<ApplicationUser> userManager;
+        private readonly AxeDbContext context;
 
-        public TasksController(AxeDbContext context)
+        public TasksController(UserManager<ApplicationUser> userManager, AxeDbContext context)
         {
-            _context = context;    
+            this.userManager = userManager;
+            this.context = context;    
+        }
+
+        private Task<ApplicationUser> GetCurrentUserAsync()
+        {
+            return userManager.GetUserAsync(HttpContext.User);
         }
 
         // GET: ExamTasks
         public async Task<IActionResult> Index()
         {
-            var axeDbContext = _context.ExamTask.Include(e => e.Technology);
+            var axeDbContext = context.ExamTask.Include(e => e.Technology);
             return View(await axeDbContext.ToListAsync());
         }
 
@@ -33,7 +42,7 @@ namespace Axe.Controllers
                 return NotFound();
             }
 
-            var examTask = await _context.ExamTask
+            var examTask = await context.ExamTask
                 .Include(e => e.Technology)
                 .SingleOrDefaultAsync(m => m.Id == id);
             if (examTask == null)
@@ -47,16 +56,54 @@ namespace Axe.Controllers
         // GET: ExamTasks/Edit/5
         public async Task<IActionResult> Input(int? id, int? technologyId = null)
         {
-            var examTask = await _context.ExamTask.SingleOrDefaultAsync(m => m.Id == id)
-                           ?? new ExamTask();
+            ExamTask examTask = null;            
 
-            if (technologyId.HasValue)
+            if (id.HasValue)
             {
-                examTask.TechnologyId = technologyId.Value;
+                // edit existing exam task
+                examTask = await context.ExamTask.Include(t => t.Technology)
+                                                 .Include(t => t.Questions)                                                 
+                                                 .SingleOrDefaultAsync(m => m.Id == id);
+                if (examTask == null)
+                {
+                    return NotFound();
+                }
+            }
+            else
+            {
+                // create new exam task
+                var tech = await this.context.Technology.SingleOrDefaultAsync(t => t.Id == technologyId);
+                if (tech == null)
+                {
+                    return NotFound();
+                }
+
+                examTask = new ExamTask()
+                {
+                    Technology = tech,
+                    Questions = new List<TaskQuestionLink>(),
+                };
             }
 
-            ViewData["TechnologyId"] = new SelectList(_context.Technology, "Id", "Name", technologyId);
-            return View(examTask);
+            // get all questions for selected technology. for exam task 
+            var questions = this.context.TaskQuestion.Where(q => q.TechnologyId == examTask.Technology.Id).ToList();
+
+            var task = new TaskInputVm
+            {
+                Id = examTask.Id,
+                TechnologyName = examTask.Technology.Name,
+                TechnologyId = examTask.Technology.Id,
+                Title = examTask.Title,
+                Objective = examTask.Objective,                
+                Questions = questions.Select(q => new QuestionSelectionVm
+                {
+                    Id = q.Id,
+                    Text = q.Text,
+                    IsSelected = examTask.Questions.Any(x => x.QuestionId == q.Id),                    
+                }).ToList()
+            };
+
+            return View(task);
         }
 
         // POST: ExamTasks/Edit/5
@@ -64,9 +111,9 @@ namespace Axe.Controllers
         // more details see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Input(int id, ExamTask examTask)
+        public async Task<IActionResult> Input(int id, TaskInputVm taskInput)
         {
-            if (id != examTask.Id)
+            if (id != taskInput.Id)
             {
                 return NotFound();
             }
@@ -75,20 +122,60 @@ namespace Axe.Controllers
             {
                 try
                 {
-                    if (examTask.Id > 0)
+                    ExamTask task;
+
+                    // questions selected for task
+                    var ids = taskInput.Questions
+                                        .Where(q => q.IsSelected)
+                                        .Select(q => q.Id)
+                                        .ToList();
+
+                    if (taskInput.Id > 0)
                     {
-                        _context.Update(examTask);
+                        task = await this.context.ExamTask.Include(t=>t.Questions).SingleOrDefaultAsync(t => t.Id == id);
+                        task.Title = taskInput.Title;
+                        task.Objective = taskInput.Objective;
+
+                        // remove unselected questions
+                        var deletedQuestion = task.Questions.Where(q => false == ids.Contains(q.QuestionId)).ToList();
+                        foreach (var question in deletedQuestion)
+                            task.Questions.Remove(question);
+                        
+                        // add new selected question 
+                        foreach(int questionId in ids)
+                        {
+                            if (false == task.Questions.Any(q => q.QuestionId == questionId))
+                            {
+                                task.Questions.Add(new TaskQuestionLink { Task = task, QuestionId = questionId });
+                            }
+                        }
+
+                        context.Update(task);
                     }
                     else
                     {
-                        _context.Add(examTask);
+                        task = new ExamTask()
+                        {
+                            Title = taskInput.Title,
+                            Objective = taskInput.Objective,
+                            TechnologyId = taskInput.TechnologyId,                            
+                        };
+
+                        var taskQuestions = this.context.TaskQuestion.Where(q => ids.Contains(q.Id)).ToList();
+
+                        task.Questions = taskQuestions.Select(q => new TaskQuestionLink { Task = task, Question = q }).ToList();
+
+                        context.Add(task);
                     }
-                    
-                    await _context.SaveChangesAsync();
+
+                    if (task.AuthorId == null)
+                        task.AuthorId = (await GetCurrentUserAsync()).Id;
+
+                    await context.SaveChangesAsync();
                 }
                 catch (DbUpdateConcurrencyException)
                 {
-                    if (!ExamTaskExists(examTask.Id))
+                    if (!ExamTaskExists(taskInput.Id))
                     {
                         return NotFound();
                     }
@@ -97,11 +184,21 @@ namespace Axe.Controllers
                         throw;
                     }
                 }
-                return RedirectToAction("Index", "Technologies", new { technologyId = examTask.TechnologyId });
+                return RedirectToAction("Index", "Technologies", new { technologyId = taskInput.TechnologyId });
             }
 
-            ViewData["TechnologyId"] = new SelectList(_context.Technology, "Id", "Name", examTask.TechnologyId);
-            return View(examTask);
+            // restore vm information fields which were not posted
+            taskInput.TechnologyName = (await this.context.Technology.SingleOrDefaultAsync(t => t.Id == taskInput.TechnologyId)).Name;
+
+            var questions = this.context.TaskQuestion.Where(q => q.TechnologyId == taskInput.TechnologyId).ToList();
+            foreach (var q in taskInput.Questions)
+            {
+                var original = questions.FirstOrDefault(x => x.Id == q.Id);
+                if (original != null)
+                    q.Text = original.Text;                               
+            }
+            
+            return View(taskInput);
         }
 
         // GET: ExamTasks/Delete/5
@@ -112,7 +209,7 @@ namespace Axe.Controllers
                 return NotFound();
             }
 
-            var examTask = await _context.ExamTask
+            var examTask = await context.ExamTask
                 .Include(e => e.Technology)
                 .SingleOrDefaultAsync(m => m.Id == id);
             if (examTask == null)
@@ -128,15 +225,15 @@ namespace Axe.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            var examTask = await _context.ExamTask.SingleOrDefaultAsync(m => m.Id == id);
-            _context.ExamTask.Remove(examTask);
-            await _context.SaveChangesAsync();
+            var examTask = await context.ExamTask.SingleOrDefaultAsync(m => m.Id == id);
+            context.ExamTask.Remove(examTask);
+            await context.SaveChangesAsync();
             return RedirectToAction("Index");
         }
 
         private bool ExamTaskExists(int id)
         {
-            return _context.ExamTask.Any(e => e.Id == id);
+            return context.ExamTask.Any(e => e.Id == id);
         }
     }
 }

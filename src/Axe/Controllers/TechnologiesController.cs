@@ -25,15 +25,18 @@ namespace Axe.Controllers
             var techs = await this.context.Technology.ToListAsync();
             var selectedTech = techs.FirstOrDefault(t => t.Id == technologyId) ??
                                techs.FirstOrDefault();
+            technologyId = selectedTech?.Id;
 
             var vm = new TechnologiesIndexVm
             {
                 Technologies = techs,
                 SelectedTechnology = selectedTech,
                 Questions = this.context.TaskQuestion.Include(q => q.Author)
-                                .Where(q => q.TechnologyId == selectedTech.Id)
+                                .Where(q => q.TechnologyId == technologyId)
                                 .ToList(),
-                Exams = this.context.ExamTask.Where(t => t.TechnologyId == selectedTech.Id).ToList(),
+                Exams = this.context.ExamTask.Include(t => t.Author).Include(t=>t.Questions)
+                            .Where(t => t.TechnologyId == technologyId)
+                            .ToList(),
             };
             return View(vm);
         }
@@ -83,7 +86,7 @@ namespace Axe.Controllers
         {
             if (id == null)
             {
-                return NotFound();
+                return RedirectToAction("Create");
             }
 
             var technology = await this.context.Technology.SingleOrDefaultAsync(m => m.Id == id);

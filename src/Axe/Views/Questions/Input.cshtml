@@ -19,6 +19,7 @@
                     <select asp-for="TechnologyId" class="form-control" asp-items="@Model.Technologies"></select>
                 </div>
             </div>
+            <span asp-validation-for="TechnologyId" class="text-danger"></span>
         </div>
 
         <label asp-for="Text" class="control-label"></label>        
@@ -59,6 +60,7 @@
                 <div class="col-md-10">
                     <input type="hidden" asp-for="@Model.Answers[i].Id" />
                     <input asp-for="@Model.Answers[i].Text" class="form-control" />
+                    <span asp-validation-for="@Model.Answers[i].Text" class="text-danger"></span>
                 </div>
 
                 <div class="col-md-1">
@@ -67,7 +69,7 @@
 
                 <div class="col-md-1">
                     @Html.EditorFor(m => m.Answers[i].Score)
-
+                    <span asp-validation-for="@Model.Answers[i].Score" class="text-danger"></span>
                 </div>
             </div>
         }

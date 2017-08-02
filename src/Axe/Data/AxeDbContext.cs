@@ -35,7 +35,9 @@ namespace Axe.Models
 
         protected override void OnModelCreating(ModelBuilder builder)
         {
-            builder.Entity<TaskAnswer>().Property(a => a.Value).HasColumnName("Value").HasColumnType("nvarchar(1000)");
+            builder.Entity<TaskQuestionLink>().HasKey(t => new { t.TaskId , t.QuestionId });
+            builder.Entity<TaskQuestionLink>().HasOne(pt => pt.Task).WithMany(t => t.Questions);
+            builder.Entity<TaskQuestionLink>().HasOne(pt => pt.Question).WithMany(t => t.Tasks);
 
             builder.Entity<SkillAssessment>().HasOne(a => a.Student).WithMany(u => u.AssessmentsAsStudent);
             builder.Entity<SkillAssessment>().HasOne(a => a.Examiner).WithMany(u => u.AssessmentsAsExaminer);

@@ -9,6 +9,10 @@ body {
     padding-bottom: 20px;
 }
 
+.table-responsive {
+    max-height: 360px;
+}
+
 a:hover {
     text-decoration: none;
 }
