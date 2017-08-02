@@ -21,5 +21,7 @@ namespace Axe.Models
         public ApplicationUser Author { get; set; }
 
         public IList<TaskQuestionLink> Questions { get; set; }
+
+        public bool IsDemonstration { get; set; }
     }
 }

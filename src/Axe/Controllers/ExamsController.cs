@@ -12,12 +12,14 @@ namespace Axe.Controllers
 {
     public class ExamsController : Controller
     {
+        private readonly SignInManager<ApplicationUser> signInManager;
         private readonly UserManager<ApplicationUser> userManager;
-        private readonly AxeDbContext _context;
+        private readonly AxeDbContext context;
 
-        public ExamsController(UserManager<ApplicationUser> userManager, AxeDbContext context)
+        public ExamsController(SignInManager<ApplicationUser> signInManager, UserManager<ApplicationUser> userManager, AxeDbContext context)
         {
-            _context = context;
+            this.signInManager = signInManager;
+            this.context = context;
             this.userManager = userManager;
         }
 
@@ -29,7 +31,7 @@ namespace Axe.Controllers
         // GET: Exams
         public async Task<IActionResult> Index()
         {
-            var axeDbContext = _context.ExamAttempt.Include(e => e.Student).Include(e => e.Task).Include(e => e.Technology);
+            var axeDbContext = context.ExamAttempt.Include(e => e.Student).Include(e => e.Task).Include(e => e.Technology);
             return View(await axeDbContext.ToListAsync());
         }
 
@@ -44,68 +46,61 @@ namespace Axe.Controllers
             var user = await GetCurrentUserAsync();
             // redirect registered users to their profile page where they can select exam
             if (user != null)
-                return RedirectToAction("Visit", "Profiles", new { id = user.Id, technologyId = id });
+                return RedirectToAction("Visit", "Profiles", new { id = user.Id, technologyId = id });        
 
-            // redirect anonymous users to sample exam
-            var examAttempt = await _context.ExamAttempt            
-                .FirstOrDefaultAsync(m => m.TechnologyId == id);
-
-            return RedirectToAction("Take", "Exams", new { id = examAttempt?.Id });
+            return RedirectToAction("Take", "Exams", new { technologyId = id });
         }
 
-        public async Task<IActionResult> Take(int? id)
+        public async Task<IActionResult> Take(int? id, int? technologyId = null)
         {
-            // redirect anonymous users to sample exam
-            var examAttempt = await _context.ExamAttempt
-                .Include(e => e.Student)
-                .Include(e => e.Task)
-                .Include(e => e.Technology)
-                .SingleOrDefaultAsync(m => m.Id == id);
+            var exams = this.context.ExamTask
+                .Include(t => t.Technology)
+                .Include(t => t.Questions).ThenInclude(q => q.Question).ThenInclude(q => q.Answers);
 
-            if (examAttempt == null)
-            {                
-                examAttempt = new ExamAttempt()
-                {
-                    Task = new ExamTask { Technology = new Technology { Name = "Demo" }, Title = "Exam demonstration", Objective = "Introduction to the Axe skill assessment system" },                    
-                    Questions = new List<AttemptQuestion>
-                    {
-                        new AttemptQuestion
-                        {
-                            TaskQuestion = new TaskQuestion
-                            {
-                                Text = "Do you like Axe application?",
-                                Answers = new List<TaskAnswer>
-                                {
-                                    new TaskAnswer { Text = "YES", Value = "true"},
-                                    new TaskAnswer { Text = "no", Value = "false"},
-                                }
-                            }
-                        },
-                        new AttemptQuestion
-                        {
-                            TaskQuestion = new TaskQuestion
-                            {
-                                Text = "Have you seen any bugs?",
-                                Answers = new List<TaskAnswer>
-                                {
-                                    new TaskAnswer { Text = "yes", Value = "false"},
-                                    new TaskAnswer { Text = "NO", Value = "true"},
-                                }
-                            }
-                        }
-                    }
-                };
+            ExamTask task = null;
+            
+            if (id.HasValue)
+                task = await exams.SingleOrDefaultAsync(t => t.Id == id);
+
+            if (task != null && 
+                false == task.IsDemonstration && 
+                false == this.signInManager.IsSignedIn(HttpContext.User))
+            {
+                // anonymous users can only try demo exams
+                return NotFound();
+            }
+            
+            if (task == null && technologyId.HasValue)
+            {
+                task = exams.Where(t => t.TechnologyId == technologyId && t.IsDemonstration).FirstOrDefault();
             }
 
+            if (task == null)
+            {
+                return NotFound();
+            }
+
+            var examAttempt = new ExamAttempt()
+            {
+                Task = task,
+                Questions = task.Questions
+                                .Select(q => new AttemptQuestion
+                                             {
+                                                 TaskQuestion = q.Question,
+                                                 AttemptAnswers = q.Question.Answers.Select(a => new AttemptAnswer{ TaskAnswer = a }).ToList()
+                                             })
+                                .ToList()
+            };
+            
             return View(examAttempt);
         }
 
         // GET: Exams/Create
         public IActionResult Create()
         {
-            ViewData["StudentId"] = new SelectList(_context.Users, "Id", "Id");
-            ViewData["TaskId"] = new SelectList(_context.ExamTask, "Id", "Id");
-            ViewData["TechnologyId"] = new SelectList(_context.Technology, "Id", "InformationText");
+            ViewData["StudentId"] = new SelectList(context.Users, "Id", "Id");
+            ViewData["TaskId"] = new SelectList(context.ExamTask, "Id", "Id");
+            ViewData["TechnologyId"] = new SelectList(context.Technology, "Id", "InformationText");
             return View();
         }
 
@@ -118,13 +113,13 @@ namespace Axe.Controllers
         {
             if (ModelState.IsValid)
             {
-                _context.Add(examAttempt);
-                await _context.SaveChangesAsync();
+                context.Add(examAttempt);
+                await context.SaveChangesAsync();
                 return RedirectToAction("Index");
             }
-            ViewData["StudentId"] = new SelectList(_context.Users, "Id", "Id", examAttempt.StudentId);
-            ViewData["TaskId"] = new SelectList(_context.ExamTask, "Id", "Id", examAttempt.TaskId);
-            ViewData["TechnologyId"] = new SelectList(_context.Technology, "Id", "InformationText", examAttempt.TechnologyId);
+            ViewData["StudentId"] = new SelectList(context.Users, "Id", "Id", examAttempt.StudentId);
+            ViewData["TaskId"] = new SelectList(context.ExamTask, "Id", "Id", examAttempt.TaskId);
+            ViewData["TechnologyId"] = new SelectList(context.Technology, "Id", "InformationText", examAttempt.TechnologyId);
             return View(examAttempt);
         }
 
@@ -136,14 +131,14 @@ namespace Axe.Controllers
                 return NotFound();
             }
 
-            var examAttempt = await _context.ExamAttempt.SingleOrDefaultAsync(m => m.Id == id);
+            var examAttempt = await context.ExamAttempt.SingleOrDefaultAsync(m => m.Id == id);
             if (examAttempt == null)
             {
                 return NotFound();
             }
-            ViewData["StudentId"] = new SelectList(_context.Users, "Id", "Id", examAttempt.StudentId);
-            ViewData["TaskId"] = new SelectList(_context.ExamTask, "Id", "Id", examAttempt.TaskId);
-            ViewData["TechnologyId"] = new SelectList(_context.Technology, "Id", "InformationText", examAttempt.TechnologyId);
+            ViewData["StudentId"] = new SelectList(context.Users, "Id", "Id", examAttempt.StudentId);
+            ViewData["TaskId"] = new SelectList(context.ExamTask, "Id", "Id", examAttempt.TaskId);
+            ViewData["TechnologyId"] = new SelectList(context.Technology, "Id", "InformationText", examAttempt.TechnologyId);
             return View(examAttempt);
         }
 
@@ -163,8 +158,8 @@ namespace Axe.Controllers
             {
                 try
                 {
-                    _context.Update(examAttempt);
-                    await _context.SaveChangesAsync();
+                    context.Update(examAttempt);
+                    await context.SaveChangesAsync();
                 }
                 catch (DbUpdateConcurrencyException)
                 {
@@ -179,9 +174,9 @@ namespace Axe.Controllers
                 }
                 return RedirectToAction("Index");
             }
-            ViewData["StudentId"] = new SelectList(_context.Users, "Id", "Id", examAttempt.StudentId);
-            ViewData["TaskId"] = new SelectList(_context.ExamTask, "Id", "Id", examAttempt.TaskId);
-            ViewData["TechnologyId"] = new SelectList(_context.Technology, "Id", "InformationText", examAttempt.TechnologyId);
+            ViewData["StudentId"] = new SelectList(context.Users, "Id", "Id", examAttempt.StudentId);
+            ViewData["TaskId"] = new SelectList(context.ExamTask, "Id", "Id", examAttempt.TaskId);
+            ViewData["TechnologyId"] = new SelectList(context.Technology, "Id", "InformationText", examAttempt.TechnologyId);
             return View(examAttempt);
         }
 
@@ -193,7 +188,7 @@ namespace Axe.Controllers
                 return NotFound();
             }
 
-            var examAttempt = await _context.ExamAttempt
+            var examAttempt = await context.ExamAttempt
                 .Include(e => e.Student)
                 .Include(e => e.Task)
                 .Include(e => e.Technology)
@@ -211,15 +206,15 @@ namespace Axe.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            var examAttempt = await _context.ExamAttempt.SingleOrDefaultAsync(m => m.Id == id);
-            _context.ExamAttempt.Remove(examAttempt);
-            await _context.SaveChangesAsync();
+            var examAttempt = await context.ExamAttempt.SingleOrDefaultAsync(m => m.Id == id);
+            context.ExamAttempt.Remove(examAttempt);
+            await context.SaveChangesAsync();
             return RedirectToAction("Index");
         }
 
         private bool ExamAttemptExists(int id)
         {
-            return _context.ExamAttempt.Any(e => e.Id == id);
+            return context.ExamAttempt.Any(e => e.Id == id);
         }
     }
 }
