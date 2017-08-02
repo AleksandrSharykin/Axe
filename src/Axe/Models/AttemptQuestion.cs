@@ -21,6 +21,6 @@ namespace Axe.Models
         
         public TaskQuestion TaskQuestion { get; set; }
 
-        public ICollection<AttemptAnswer> AttemptAnswers { get; set; }
+        public IList<AttemptAnswer> AttemptAnswers { get; set; }
     }
 }

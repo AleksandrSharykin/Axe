@@ -6,49 +6,79 @@
 
 <br />
 
-<div class="jumbotron">
-    <h2><kbd>@Model.Task.Title</kbd></h2>
-    <p>
-        @Model.Task.Objective
-    </p>
-</div>
+<form asp-action="Take" method="post">
+    <div class="jumbotron">
+        <h2><kbd>@Model.Task.Title</kbd></h2>
+        <p>
+            @Model.Task.Objective
+        </p>
+    </div>
 
-<div class="row">
-    <div class="col-sm-11">
-        @*exam navigation*@
-        <ul class="nav nav-tabs">
-            @foreach (var item in Model.Questions.Select((q, i) => new { Question = q, Idx = i }))
+    <input type="hidden" asp-for="@Model.Id" />
+    <input type="hidden" asp-for="@Model.TaskId" />
+
+    <div class="row">
+        <div class="col-sm-11">
+            @*exam navigation*@
+            <ul class="nav nav-tabs">
+                @foreach (var item in Model.Questions.Select((q, i) => new { Question = q, Idx = i }))
             {
                 var active = item.Idx == 0 ? "active" : null;
-                <li class="@active"><a href="#q_@item.Idx" data-toggle="tab"> #@(item.Idx + 1)</a></li>
-            }
-        </ul>
+                    <li class="@active"><a href="#q_@item.Idx" data-toggle="tab"> #@(item.Idx + 1)</a></li>
+                }
+            </ul>
 
-        @*questions content*@
-        <div class="tab-content">
-            <br />
-            @foreach (var item in Model.Questions.Select((q, i) => new { Question = q, Idx = i }))
-            {
-                var isFirstQuestion = item.Idx == 0 ? "in active" : null;
-
-                <div id="q_@item.Idx" class="tab-pane fade @isFirstQuestion">
-                    @item.Question.TaskQuestion.Text
-                    <hr />
-                    <ul>
-                        @foreach (var a in item.Question.TaskQuestion.Answers)
+            @*questions content*@
+            <div class="tab-content">
+                <br />
+                @for (int idx = 0; idx < Model.Questions.Count; idx++)
                 {
-                            <li class="radio"><input type="radio" name="q_@item.Idx" /> @a.Text</li>
-                        }
-                    </ul>
-                </div>
-            }
+                    var isFirstQuestion = idx == 0 ? "in active" : null;
+
+                    <div id="q_@idx" class="tab-pane fade @isFirstQuestion">
+
+                        @Model.Questions[idx].TaskQuestion.Text
+                        <input type="hidden" asp-for="@Model.Questions[idx].TaskQuestionId" />
+                        
+                        <hr />
+
+                        <ul>
+                            @for (int a = 0; a < Model.Questions[idx].AttemptAnswers.Count; a++)
+                            {
+                                <li class="radio">
+                                    <input type="hidden" asp-for="@Model.Questions[idx].AttemptAnswers[a].TaskAnswerId" />
+                                    @Html.CheckBoxFor(m => m.Questions[idx].AttemptAnswers[a].IsCorrect)
+                                    <span>@Model.Questions[idx].AttemptAnswers[a].TaskAnswer.Text</span>
+                                </li>
+                            }
+                        </ul>
+                    </div>
+                }
+            </div>
+            @*@foreach (var item in Model.Questions.Select((q, i) => new { Question = q, Idx = i }))
+                {
+                    var isFirstQuestion = item.Idx == 0 ? "in active" : null;
+
+                        <div id="q_@item.Idx" class="tab-pane fade @isFirstQuestion">
+                            @item.Question.TaskQuestion.Text
+                            <hr />
+                            <ul>
+                                @foreach (var a in item.Question.TaskQuestion.Answers)
+                    {
+                                    <li class="radio"><input type="radio" name="q_@item.Idx" /> @a.Text</li>
+                                }
+                            </ul>
+                        </div>
+                    }
+                </div>*@
         </div>
+
+        <div class="col-sm-1">
+            <button class="btn btn-primary">Submit</button>
+        </div>  
     </div>
 
-    <div class="col-sm-1">
-        <button class="btn btn-primary">Submit</button>
-    </div>
-</div>
-
+  
+</form>
 
 

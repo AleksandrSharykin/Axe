@@ -83,16 +83,24 @@ namespace Axe.Controllers
             var examAttempt = new ExamAttempt()
             {
                 Task = task,
+                TaskId = task.Id,
                 Questions = task.Questions
                                 .Select(q => new AttemptQuestion
                                              {
                                                  TaskQuestion = q.Question,
-                                                 AttemptAnswers = q.Question.Answers.Select(a => new AttemptAnswer{ TaskAnswer = a }).ToList()
+                                                 TaskQuestionId = q.QuestionId,
+                                                 AttemptAnswers = q.Question.Answers.Select(a => new AttemptAnswer{ TaskAnswer = a, TaskAnswerId = a.Id }).ToList()
                                              })
                                 .ToList()
             };
             
             return View(examAttempt);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> Take(int? id, ExamAttempt attempt)
+        {
+            return View(attempt);
         }
 
         // GET: Exams/Create

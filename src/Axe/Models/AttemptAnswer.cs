@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Axe.Models
 {
@@ -15,8 +16,15 @@ namespace Axe.Models
         
         public int? TaskAnswerId { get; set; }
 
-        public TaskAnswer TaskAnswer { get; set; }
+        public TaskAnswer TaskAnswer { get; set; }       
 
         public string Value { get; set; }
+
+        [NotMapped]
+        public bool IsCorrect
+        {
+            get { return bool.Parse(Value ?? Boolean.FalseString); }
+            set { Value = value.ToString(); }
+        }
     }
 }

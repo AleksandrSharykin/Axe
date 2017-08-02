@@ -27,6 +27,6 @@ namespace Axe.Models
 
         public bool? IsPassed { get; set; }
 
-        public ICollection<AttemptQuestion> Questions { get; set; }
+        public IList<AttemptQuestion> Questions { get; set; }
     }
 }
