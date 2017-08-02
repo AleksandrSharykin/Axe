@@ -44,37 +44,18 @@ namespace Axe.Controllers
             return View(examTask);
         }
 
-        //// GET: ExamTasks/Create
-        //public IActionResult Create()
-        //{
-        //    ViewData["TechnologyId"] = new SelectList(_context.Technology, "Id", "InformationText");
-        //    return View(new ExamTask());
-        //}
-
-        //// POST: ExamTasks/Create
-        //// To protect from overposting attacks, please enable the specific properties you want to bind to, for 
-        //// more details see http://go.microsoft.com/fwlink/?LinkId=317598.
-        //[HttpPost]
-        //[ValidateAntiForgeryToken]
-        //public async Task<IActionResult> Create([Bind("Id,Title,Objective,TechnologyId")] ExamTask examTask)
-        //{
-        //    if (ModelState.IsValid)
-        //    {
-        //        _context.Add(examTask);
-        //        await _context.SaveChangesAsync();
-        //        return RedirectToAction("Index");
-        //    }
-        //    ViewData["TechnologyId"] = new SelectList(_context.Technology, "Id", "InformationText", examTask.TechnologyId);
-        //    return View(examTask);
-        //}
-
         // GET: ExamTasks/Edit/5
         public async Task<IActionResult> Input(int? id, int? technologyId = null)
         {
             var examTask = await _context.ExamTask.SingleOrDefaultAsync(m => m.Id == id)
-                ?? new ExamTask();
+                           ?? new ExamTask();
 
-            ViewData["TechnologyId"] = new SelectList(_context.Technology, "Id", "Name");
+            if (technologyId.HasValue)
+            {
+                examTask.TechnologyId = technologyId.Value;
+            }
+
+            ViewData["TechnologyId"] = new SelectList(_context.Technology, "Id", "Name", technologyId);
             return View(examTask);
         }
 
