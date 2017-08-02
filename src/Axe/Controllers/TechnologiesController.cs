@@ -30,9 +30,10 @@ namespace Axe.Controllers
             {
                 Technologies = techs,
                 SelectedTechnology = selectedTech,
-                Questions = this.context.TaskQuestion.Include(q=>q.Author)
+                Questions = this.context.TaskQuestion.Include(q => q.Author)
                                 .Where(q => q.TechnologyId == selectedTech.Id)
                                 .ToList(),
+                Exams = this.context.ExamTask.Where(t => t.TechnologyId == selectedTech.Id).ToList(),
             };
             return View(vm);
         }

@@ -6,9 +6,7 @@
 
 <h2>Details</h2>
 
-<div>
-    <h4>ExamTask</h4>
-    <hr />
+<div>        
     <dl class="dl-horizontal">
         <dt>
             @Html.DisplayNameFor(model => model.Title)
@@ -26,11 +24,10 @@
             @Html.DisplayNameFor(model => model.Technology)
         </dt>
         <dd>
-            @Html.DisplayFor(model => model.Technology.InformationText)
+            @Html.DisplayFor(model => model.Technology.Name)
         </dd>
     </dl>
 </div>
 <div>
-    <a asp-action="Edit" asp-route-id="@Model.Id">Edit</a> |
-    <a asp-action="Index">Back to List</a>
+    @Html.ActionLink("Back to Technologies", "Index", "Technologies", new { technologyId = Model.TechnologyId })
 </div>

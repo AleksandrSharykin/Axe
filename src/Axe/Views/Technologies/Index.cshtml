@@ -75,55 +75,43 @@
                         }
                     </tbody>
                 </table>
-                <hr />
+                <br />
                 @Html.ActionLink("Add", "Input", "Questions", new { technologyId = Model.SelectedTechnology.Id }, new { @class = "btn btn-primary" })
-                @*<table class="table table-striped">
-                        <thead>
-                            <tr>
-                                <th></th>
-                                <th>Date</th>
-                                <th>Technology</th>
-                                <th>Exam</th>
-                                <th>Score</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @foreach (var a in Model.BestAttempts.OrderByDescending(a => a.ExamScore))
-                            {
-                                <tr>
-                                    <td><span class="glyphicon glyphicon-thumbs-up"></span></td>
-                                    <td>@a.ExamDate</td>
-                                    <td>@a.Technology.Name</td>
-                                    <td>@a.Task.Title</td>
-                                    <td>@a.ExamScore</td>
-                                </tr>
-                            }
-                        </tbody>
-                    </table>*@
             </div>
 
             @*exams*@
             <div id="menuExams" class="tab-pane fade">
-                menuExams
-                @*<table class="table table-striped">
-                        <thead>
+                <br />
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>
+                                <span class="glyphicon glyphicon-th"></span>
+                            </th>
+                            <th>Objective</th>
+                            <th>Author</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in Model.Exams.Select((q, i) => new { exam = q, idx = i + 1 }))
+                        {
                             <tr>
-                                <th>Date</th>
-                                <th>Exam</th>
-                                <th>Score</th>
+                                <td>@item.idx</td>
+                                <td>@item.exam.Objective</td>
+                                <td>@*item.exam.Author.UserName*@</td>
+                                <td>
+                                    @Html.ActionLink("edit", "Input", "Tasks", new { id = item.exam.Id })
+                                    |
+                                    @Html.ActionLink("details", "Details", "Tasks", new { id = item.exam.Id })
+                                </td>
                             </tr>
-                        </thead>
-                        <tbody>
-                            @foreach (var a in Model.AllAttempts.OrderByDescending(a => a.ExamDate))
-                            {
-                                <tr>
-                                    <td>@a.ExamDate</td>
-                                    <td>@a.Task.Title</td>
-                                    <td>@a.ExamScore</td>
-                                </tr>
-                            }
-                        </tbody>
-                    </table>*@
+
+                        }
+                    </tbody>
+                </table>
+                <br />
+                @Html.ActionLink("Add", "Input", "Tasks", new { technologyId = Model.SelectedTechnology.Id }, new { @class = "btn btn-primary" })
             </div>
 
             @*Active exams*@

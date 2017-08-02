@@ -46,9 +46,14 @@ namespace Axe.Controllers
                 .SingleOrDefaultAsync(q => q.Id == id);
 
             if (question == null)
+            {
+                // create template for a new question
                 question = new TaskQuestion { Answers = Enumerable.Range(1, 4).Select(i => new TaskAnswer { Value = Boolean.FalseString }).ToList() };
+            }
             else
+            {
                 technologyId = question.TechnologyId;
+            }
 
             var questionVm = new QuestionInputVm()
             {
@@ -63,10 +68,12 @@ namespace Axe.Controllers
 
         [HttpPost]
         public async Task<IActionResult> Input(int id, QuestionInputVm questionVm, string cmd = null)
-        {            
+        {
             // Answers property becomes null if all answers were removed
             if (questionVm.Answers == null)
+            {
                 questionVm.Answers = new List<TaskAnswer>();
+            }
 
             // https://stackoverflow.com/questions/37490192/modelbinding-on-model-collection            
             cmd = cmd?.Trim()?.ToLower();
@@ -123,17 +130,24 @@ namespace Axe.Controllers
                             question.Answers.Remove(d);
                     }
 
-                    question.Text = questionVm.Text;                    
+                    question.Text = questionVm.Text;
 
                     if (question.AuthorId == null)
+                    {
                         question.Author = await GetCurrentUserAsync();
+                    }
 
                     question.TechnologyId = questionVm.TechnologyId.Value;
 
                     if (question.Id > 0)
+                    {
                         this.context.Update(question);
+                    }
                     else
+                    {
                         this.context.Add(question);
+                    }
+                    
                     await this.context.SaveChangesAsync();
 
                     return RedirectToAction("Index", "Technologies", new { technologyId = question.TechnologyId });
@@ -153,7 +167,9 @@ namespace Axe.Controllers
                                     .SingleOrDefaultAsync(q => q.Id == id);
 
             if (question == null)
+            {
                 return NotFound();
+            }
 
             return View(question);
         }
