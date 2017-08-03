@@ -100,26 +100,16 @@ namespace Axe.Controllers
             IList<ExamTask> tasks = null;
             IList<ExamAttempt> attempts = null;
             IList<ExamAttempt> bestAttempts = null;
+
             if (selectedTech != null)
             {
                 tasks = await this.context.ExamTask.Where(t => t.TechnologyId == selectedTech.Id).ToListAsync();
-                if (tasks.Count == 0)
-                    tasks.Add(new ExamTask { Technology = selectedTech, Objective = "test", Title = selectedTech.Name + " #Test" });
 
-                attempts = Enumerable.Range(0, 5)
-                                    .Select(i => new ExamAttempt
-                                    {
-                                        Technology = selectedTech,
-                                        Task = tasks[rnd.Next(tasks.Count)],
-                                        ExamScore = rnd.Next(36) + 64,
-                                        ExamDate = new DateTime(DateTime.Today.Year, rnd.Next(12) + 1, rnd.Next(28) + 1),
-                                    })
-                                    .ToList();
+                attempts = await this.context.ExamAttempt.Where(t => t.TechnologyId == selectedTech.Id).ToListAsync();
 
-                bestAttempts = attempts.Where(a => a.Technology.Id == selectedTech.Id)
-                    .GroupBy(a => a.Task.Id)
-                    .Select(g => g.OrderByDescending(a => a.ExamScore).First())
-                    .ToList();
+                bestAttempts = attempts.GroupBy(a => a.Task.Id)
+                                       .Select(g => g.OrderByDescending(a => a.ExamScore).First())
+                                       .ToList();
             }
 
             bool self = profile.Id == user.Id;
@@ -131,7 +121,7 @@ namespace Axe.Controllers
                 JobPosition = profile.JobPosition,
                 ContactInfo = profile.Email,
 
-                Skills = profile.GetSkills().Concat(profile.AssessmentsAsStudent.Where(a=>a.ExamScore is null)).ToList(),
+                Skills = profile.GetSkills().Concat(profile.AssessmentsAsStudent.Where(a => a.ExamScore is null)).ToList(),
                 Assessments = profile.AssessmentsAsStudent.Where(a=>a.TechnologyId == selectedTech.Id),
 
                 Technologies = techs,

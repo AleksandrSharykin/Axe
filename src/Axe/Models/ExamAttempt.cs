@@ -9,7 +9,7 @@ namespace Axe.Models
     {
         public int Id { get; set;}
 
-        public int TechnologyId { get; set; }
+        public int? TechnologyId { get; set; }
 
         public Technology Technology { get; set; }
 
@@ -28,5 +28,7 @@ namespace Axe.Models
         public bool? IsPassed { get; set; }
 
         public IList<AttemptQuestion> Questions { get; set; }
+
+        public int? MaxScore { get; set; }        
     }
 }

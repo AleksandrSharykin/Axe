@@ -137,7 +137,7 @@
                                         <td>@t.Title</td>
                                         <td>@t.Objective</td>
                                         <td>
-                                            <a href="@Url.Action("Take", "Exams", new { id = t.Id })" class="btn btn-primary">
+                                            <a href="@Url.Action("Take", "Exams", new { taskId = t.Id })" class="btn btn-primary">
                                                 <span class="glyphicon glyphicon-education"></span>
                                                 <span>Lets do it</span>
                                             </a>
@@ -159,6 +159,7 @@
                                 <th>Technology</th>
                                 <th>Exam</th>
                                 <th>Score</th>
+                                <th>Actions</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -169,7 +170,10 @@
                                     <td>@a.ExamDate</td>
                                     <td>@a.Technology.Name</td>
                                     <td>@a.Task.Title</td>
-                                    <td>@a.ExamScore</td>
+                                    <td>@a.ExamScore of @a.MaxScore</td>
+                                    <td>
+                                        @Html.ActionLink("Results", "Result", "Exams", new { id = a.Id })
+                                    </td>
                                 </tr>
                             }
                         </tbody>
@@ -181,18 +185,24 @@
                     <table class="table table-striped">
                         <thead>
                             <tr>
+                                <th><span class="glyphicon glyphicon-th"></span></th>
                                 <th>Date</th>
                                 <th>Exam</th>
                                 <th>Score</th>
+                                <th>Actions</th>
                             </tr>
                         </thead>
                         <tbody>
                             @foreach (var a in Model.AllAttempts.OrderByDescending(a=>a.ExamDate))
                             {
                                 <tr>
+                                    <td><span class="glyphicon glyphicon-thumbs-up"></span></td>
                                     <td>@a.ExamDate</td>
                                     <td>@a.Task.Title</td>
-                                    <td>@a.ExamScore</td>
+                                    <td>@a.ExamScore of @a.MaxScore</td>
+                                    <td>
+                                        @Html.ActionLink("Results", "Result", "Exams", new { id = a.Id })
+                                    </td>
                                 </tr>
                             }
                         </tbody>

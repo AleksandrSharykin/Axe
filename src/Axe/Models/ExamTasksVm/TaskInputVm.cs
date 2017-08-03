@@ -20,5 +20,8 @@ namespace Axe.Models.ExamTasksVm
         public string TechnologyName { get; set; }
 
         public IList<QuestionSelectionVm> Questions { get; set; }
+
+        [Display(Name = "This is a Demo")]
+        public bool IsDemonstration { get; set; }
     }
 }

@@ -18,10 +18,10 @@ namespace Axe.Models
 
         public TaskAnswer TaskAnswer { get; set; }       
 
-        public string Value { get; set; }
+        public string Value { get; set; }        
 
         [NotMapped]
-        public bool IsCorrect
+        public bool IsSelected
         {
             get { return bool.Parse(Value ?? Boolean.FalseString); }
             set { Value = value.ToString(); }

@@ -1,0 +1,72 @@
+@model Axe.Models.ExamAttempt
+
+@{
+    ViewData["Title"] = "Exam Result";
+}
+
+<div>
+    <div class="jumbotron">
+        <h2><kbd>@Model.Task.Title</kbd></h2>
+        <p>
+            @Model.Task.Objective
+        </p>
+    </div>
+
+    <dl class="dl-horizontal">
+        <dt>@Html.DisplayNameFor(model => model.Student)</dt>
+        <dd>@Html.DisplayFor(model => model.Student.UserName)</dd>
+
+        <dt>@Html.DisplayNameFor(model => model.Technology)</dt>
+        <dd>@Html.DisplayFor(model => model.Technology.Name)</dd>
+
+        <dt>@Html.DisplayNameFor(model => model.ExamDate)</dt>
+        <dd>@Html.DisplayFor(model => model.ExamDate)</dd>
+
+        <dt>@Html.DisplayNameFor(model => model.MaxScore)</dt>
+        <dd>@Html.DisplayFor(model => model.MaxScore)</dd>
+
+        <dt>@Html.DisplayNameFor(model => model.ExamScore)</dt>
+        <dd>@Html.DisplayFor(model => model.ExamScore)</dd>
+
+        <dt>@Html.DisplayNameFor(model => model.IsPassed)</dt>
+        <dd>
+            @if (Model.IsPassed == true)
+            {
+                <span class="label label-success">yes</span>
+            }
+            else if (Model.IsPassed == false)
+            {
+                <span class="label label-danger">no</span>
+            }
+        </dd>
+    </dl>
+</div>
+
+<div class="table-responsive">
+    @for (int q = 0; q < Model.Questions.Count; q++)
+    {
+        <div class="form-group ">
+            <div class="col-md-1">
+                <label class="btn btn-default"># @(q + 1)</label>
+            </div>
+
+            <div class="col-md-11">
+                <p>@Model.Questions[q].TaskQuestion.Text</p>
+
+                <ul class="list-group">
+                    @for (int a = 0; a < @Model.Questions[q].AttemptAnswers.Count; a++)
+                    {
+                        var answer = @Model.Questions[q].AttemptAnswers[a];
+                        string succes = (answer.Value != answer.TaskAnswer.Value) ? "list-group-item-danger" :
+                                        (answer.IsSelected ? "list-group-item-success" : null);
+
+                        <li class="list-group-item @succes">
+                            @Html.CheckBoxFor(m => m.Questions[q].AttemptAnswers[a].IsSelected, new { @class = "disabled" })
+                            @answer.TaskAnswer.Text
+                        </li>
+                    }
+                </ul>
+            </div>
+        </div>
+    }
+</div>

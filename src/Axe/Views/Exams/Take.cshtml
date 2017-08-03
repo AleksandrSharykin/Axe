@@ -47,7 +47,7 @@
                             {
                                 <li class="radio">
                                     <input type="hidden" asp-for="@Model.Questions[idx].AttemptAnswers[a].TaskAnswerId" />
-                                    @Html.CheckBoxFor(m => m.Questions[idx].AttemptAnswers[a].IsCorrect)
+                                    @Html.CheckBoxFor(m => m.Questions[idx].AttemptAnswers[a].IsSelected)
                                     <span>@Model.Questions[idx].AttemptAnswers[a].TaskAnswer.Text</span>
                                 </li>
                             }

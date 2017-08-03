@@ -24,15 +24,8 @@ namespace Axe.Controllers
         }
 
         private Task<ApplicationUser> GetCurrentUserAsync()
-        {
+        {            
             return userManager.GetUserAsync(HttpContext.User);
-        }
-
-        // GET: Exams
-        public async Task<IActionResult> Index()
-        {
-            var axeDbContext = context.ExamAttempt.Include(e => e.Student).Include(e => e.Task).Include(e => e.Technology);
-            return View(await axeDbContext.ToListAsync());
         }
 
         // GET: Exams/Details/5
@@ -51,7 +44,7 @@ namespace Axe.Controllers
             return RedirectToAction("Take", "Exams", new { technologyId = id });
         }
 
-        public async Task<IActionResult> Take(int? id, int? technologyId = null)
+        public async Task<IActionResult> Take(int? taskId, int? technologyId = null)
         {
             var exams = this.context.ExamTask
                 .Include(t => t.Technology)
@@ -59,8 +52,8 @@ namespace Axe.Controllers
 
             ExamTask task = null;
             
-            if (id.HasValue)
-                task = await exams.SingleOrDefaultAsync(t => t.Id == id);
+            if (taskId.HasValue)
+                task = await exams.SingleOrDefaultAsync(t => t.Id == taskId);
 
             if (task != null && 
                 false == task.IsDemonstration && 
@@ -81,7 +74,7 @@ namespace Axe.Controllers
             }
 
             var examAttempt = new ExamAttempt()
-            {
+            {                
                 Task = task,
                 TaskId = task.Id,
                 Questions = task.Questions
@@ -93,99 +86,98 @@ namespace Axe.Controllers
                                              })
                                 .ToList()
             };
-            
+
+            // todo create db record for attempted test whcih are not demonstration
+
             return View(examAttempt);
         }
 
         [HttpPost]
-        public async Task<IActionResult> Take(int? id, ExamAttempt attempt)
+        public async Task<IActionResult> Take(ExamAttempt attempt)
         {
+            var user = await GetCurrentUserAsync();
+
+            if (ModelState.IsValid)
+            {
+                if (attempt.StudentId == null)
+                    attempt.Student = user;
+                if (attempt.ExamDate is null)
+                    attempt.ExamDate = DateTime.Now;
+                
+                foreach (var q in attempt.Questions)
+                {
+                    q.Attempt = attempt;
+                    foreach (var a in q.AttemptAnswers)
+                        a.AttemptQuestion = q;
+                }
+
+                var task = await this.context.ExamTask
+                                     .Include(t => t.Technology)
+                                     .Include(t => t.Questions).ThenInclude(q => q.Question).ThenInclude(q => q.Answers)
+                                     .SingleOrDefaultAsync(t => t.Id == attempt.TaskId);
+
+                attempt.Technology = task.Technology;
+
+                var questions = task.Questions.Select(q => q.Question).ToList();
+                attempt.MaxScore = questions.SelectMany(q => q.Answers).Sum(a => a.Score);
+                attempt.ExamScore = 0;                
+
+                var questionPairs = questions.Join(attempt.Questions, qt => qt.Id, qa => qa.TaskQuestionId,
+                    (qt, qa) => new { TaskQuestion = qt, AttemptQuestion = qa });
+
+                // evaluate each question
+                foreach (var qp in questionPairs)
+                {
+                    var answerPairs = qp.TaskQuestion.Answers.Join(qp.AttemptQuestion.AttemptAnswers, ta => ta.Id, aa => aa.TaskAnswerId,
+                        (ta, aa) => new { TaskAnswer = ta, AttemptAnswer = aa });
+
+                    bool isQuestionAccepted = true;
+                    int questionScore = 0;
+                    // compare user answers with correct answers
+                    foreach (var ap in answerPairs)
+                    {
+                        var attemptAnswer = ap.AttemptAnswer.Value?.ToLower() ?? String.Empty;
+                        var taskAnswer = ap.TaskAnswer.Value?.ToLower() ?? String.Empty;
+                        if (attemptAnswer == taskAnswer)
+                        {
+                            questionScore += ap.TaskAnswer.Score;
+                        }
+                        else
+                        {
+                            isQuestionAccepted = false;
+                        }
+                    }
+
+                    if (isQuestionAccepted || 
+                        answerPairs.Where(p => p.AttemptAnswer.IsSelected).All(p => p.TaskAnswer.IsCorrect))
+                        attempt.ExamScore += questionScore;                           
+                }
+
+                attempt.IsPassed = attempt.ExamScore > 0.5 * attempt.MaxScore;
+                this.context.Add(attempt);
+                await this.context.SaveChangesAsync();
+
+                return View("Result", attempt);
+            }
             return View(attempt);
         }
 
-        // GET: Exams/Create
-        public IActionResult Create()
+        public async Task<IActionResult> Result(int id)
         {
-            ViewData["StudentId"] = new SelectList(context.Users, "Id", "Id");
-            ViewData["TaskId"] = new SelectList(context.ExamTask, "Id", "Id");
-            ViewData["TechnologyId"] = new SelectList(context.Technology, "Id", "InformationText");
-            return View();
-        }
-
-        // POST: Exams/Create
-        // To protect from overposting attacks, please enable the specific properties you want to bind to, for 
-        // more details see http://go.microsoft.com/fwlink/?LinkId=317598.
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Id,TechnologyId,TaskId,StudentId,ExamDate,ExamScore,IsPassed")] ExamAttempt examAttempt)
-        {
-            if (ModelState.IsValid)
-            {
-                context.Add(examAttempt);
-                await context.SaveChangesAsync();
-                return RedirectToAction("Index");
-            }
-            ViewData["StudentId"] = new SelectList(context.Users, "Id", "Id", examAttempt.StudentId);
-            ViewData["TaskId"] = new SelectList(context.ExamTask, "Id", "Id", examAttempt.TaskId);
-            ViewData["TechnologyId"] = new SelectList(context.Technology, "Id", "InformationText", examAttempt.TechnologyId);
-            return View(examAttempt);
-        }
-
-        // GET: Exams/Edit/5
-        public async Task<IActionResult> Edit(int? id)
-        {
-            if (id == null)
+            var attempt = await this.context.ExamAttempt
+                .Include(a => a.Task)
+                .Include(a => a.Student)
+                .Include(a => a.Technology)
+                .Include(a => a.Questions).ThenInclude(q => q.TaskQuestion)
+                .Include(a => a.Questions).ThenInclude(q => q.AttemptAnswers).ThenInclude(a => a.TaskAnswer)
+                .SingleOrDefaultAsync(a => a.Id == id);
+                
+            if (attempt == null)
             {
                 return NotFound();
             }
 
-            var examAttempt = await context.ExamAttempt.SingleOrDefaultAsync(m => m.Id == id);
-            if (examAttempt == null)
-            {
-                return NotFound();
-            }
-            ViewData["StudentId"] = new SelectList(context.Users, "Id", "Id", examAttempt.StudentId);
-            ViewData["TaskId"] = new SelectList(context.ExamTask, "Id", "Id", examAttempt.TaskId);
-            ViewData["TechnologyId"] = new SelectList(context.Technology, "Id", "InformationText", examAttempt.TechnologyId);
-            return View(examAttempt);
-        }
-
-        // POST: Exams/Edit/5
-        // To protect from overposting attacks, please enable the specific properties you want to bind to, for 
-        // more details see http://go.microsoft.com/fwlink/?LinkId=317598.
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,TechnologyId,TaskId,StudentId,ExamDate,ExamScore,IsPassed")] ExamAttempt examAttempt)
-        {
-            if (id != examAttempt.Id)
-            {
-                return NotFound();
-            }
-
-            if (ModelState.IsValid)
-            {
-                try
-                {
-                    context.Update(examAttempt);
-                    await context.SaveChangesAsync();
-                }
-                catch (DbUpdateConcurrencyException)
-                {
-                    if (!ExamAttemptExists(examAttempt.Id))
-                    {
-                        return NotFound();
-                    }
-                    else
-                    {
-                        throw;
-                    }
-                }
-                return RedirectToAction("Index");
-            }
-            ViewData["StudentId"] = new SelectList(context.Users, "Id", "Id", examAttempt.StudentId);
-            ViewData["TaskId"] = new SelectList(context.ExamTask, "Id", "Id", examAttempt.TaskId);
-            ViewData["TechnologyId"] = new SelectList(context.Technology, "Id", "InformationText", examAttempt.TechnologyId);
-            return View(examAttempt);
+            return View(attempt);
         }
 
         // GET: Exams/Delete/5

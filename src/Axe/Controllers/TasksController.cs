@@ -94,7 +94,8 @@ namespace Axe.Controllers
                 TechnologyName = examTask.Technology.Name,
                 TechnologyId = examTask.Technology.Id,
                 Title = examTask.Title,
-                Objective = examTask.Objective,                
+                Objective = examTask.Objective,    
+                IsDemonstration = examTask.IsDemonstration,
                 Questions = questions.Select(q => new QuestionSelectionVm
                 {
                     Id = q.Id,
@@ -135,6 +136,7 @@ namespace Axe.Controllers
                         task = await this.context.ExamTask.Include(t=>t.Questions).SingleOrDefaultAsync(t => t.Id == id);
                         task.Title = taskInput.Title;
                         task.Objective = taskInput.Objective;
+                        task.IsDemonstration = taskInput.IsDemonstration;
 
                         // remove unselected questions
                         var deletedQuestion = task.Questions.Where(q => false == ids.Contains(q.QuestionId)).ToList();
@@ -158,7 +160,8 @@ namespace Axe.Controllers
                         {
                             Title = taskInput.Title,
                             Objective = taskInput.Objective,
-                            TechnologyId = taskInput.TechnologyId,                            
+                            TechnologyId = taskInput.TechnologyId,        
+                            IsDemonstration = taskInput.IsDemonstration
                         };
 
                         var taskQuestions = this.context.TaskQuestion.Where(q => ids.Contains(q.Id)).ToList();

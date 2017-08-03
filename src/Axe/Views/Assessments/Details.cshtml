@@ -14,30 +14,16 @@
 <div>
     <form method="post">
         <dl class="dl-horizontal">
-            <dt>
-                @Html.DisplayNameFor(model => model.Technology)
-            </dt>
-            <dd>
-                @Html.DisplayFor(model => model.Technology.Name)
-            </dd>
+            <dt> @Html.DisplayNameFor(model => model.Technology) </dt>
+            <dd> @Html.DisplayFor(model => model.Technology.Name) </dd>
 
-            <dt>
-                @Html.DisplayNameFor(model => model.Examiner)
-            </dt>
-            <dd>
-                @Html.DisplayFor(model => model.Examiner.UserName)
-            </dd>
+            <dt> @Html.DisplayNameFor(model => model.Examiner) </dt>
+            <dd> @Html.DisplayFor(model => model.Examiner.UserName) </dd>
 
-            <dt>
-                @Html.DisplayNameFor(model => model.ExamDate)
-            </dt>            
-            <dd>
-                @Html.DisplayFor(model => model.ExamDate)
-            </dd>
+            <dt> @Html.DisplayNameFor(model => model.ExamDate) </dt>            
+            <dd> @Html.DisplayFor(model => model.ExamDate) </dd>
                         
-            <dt>
-                @Html.DisplayNameFor(model => model.ExamScore)
-            </dt>
+            <dt> @Html.DisplayNameFor(model => model.ExamScore) </dt>
             <dd>
                 @if (Model.CanMark)
                 {
@@ -52,9 +38,7 @@
                 }
             </dd>  
             
-            <dt>
-                @Html.DisplayNameFor(model => model.ExamComment)
-            </dt>
+            <dt> @Html.DisplayNameFor(model => model.ExamComment) </dt>
             <dd>
                 @if (Model.CanMark)
                 {
@@ -69,9 +53,7 @@
                 }
             </dd>                        
 
-            <dt>
-                @Html.DisplayNameFor(model => model.IsPassed)
-            </dt>
+            <dt> @Html.DisplayNameFor(model => model.IsPassed) </dt>
             <dd>
                 @if (Model.CanMark)
                 {
