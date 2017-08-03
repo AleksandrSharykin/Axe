@@ -39,6 +39,10 @@ namespace Axe.Models
             builder.Entity<TaskQuestionLink>().HasOne(pt => pt.Task).WithMany(t => t.Questions);
             builder.Entity<TaskQuestionLink>().HasOne(pt => pt.Question).WithMany(t => t.Tasks);
 
+            builder.Entity<ExpertTechnologyLink>().HasKey(t => new { t.UserId, t.TechnologyId });
+            builder.Entity<ExpertTechnologyLink>().HasOne(t => t.User).WithMany(u => u.Technologies);
+            builder.Entity<ExpertTechnologyLink>().HasOne(t => t.Technology).WithMany(u => u.Experts);
+
             builder.Entity<SkillAssessment>().HasOne(a => a.Student).WithMany(u => u.AssessmentsAsStudent);
             builder.Entity<SkillAssessment>().HasOne(a => a.Examiner).WithMany(u => u.AssessmentsAsExaminer);
 

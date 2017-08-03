@@ -17,5 +17,7 @@ namespace Axe.Models.ProfileViewModels
         public string ContactInfo { get; set; }        
 
         public IList<SkillAssessment> Skills { get; set; } = new List<SkillAssessment>();
+
+        public IList<Technology> ExpertKnowledge { get; set; }
     }
 }

@@ -19,8 +19,7 @@ namespace Axe.Models
                 return;  
             }
             
-            await roleManager.CreateAsync(new IdentityRole(UserRole.Superuser));
-            await roleManager.CreateAsync(new IdentityRole(UserRole.Expert));
+            await roleManager.CreateAsync(new IdentityRole(UserRole.Superuser));            
             await roleManager.CreateAsync(new IdentityRole(UserRole.Member));
 
             var superuser = new ApplicationUser
@@ -46,6 +45,7 @@ namespace Axe.Models
 @"C# is a programming language that is designed for building a variety of applications that run on the .NET Framework.
 C# is simple, powerful, type-safe, and object-oriented",
             };
+            csharp.Experts = new List<ExpertTechnologyLink> { new ExpertTechnologyLink { User = superuser, Technology = csharp } };
 
             var javascript = new Technology
             {
@@ -53,6 +53,7 @@ C# is simple, powerful, type-safe, and object-oriented",
                 InformationText =
 @"JavaScript is a high-level, dynamic, multi-paradigm, object-oriented, prototype-based, weakly-typed language traditionally used for client-side scripting in web browsers.",
             };
+            javascript.Experts = new List<ExpertTechnologyLink> { new ExpertTechnologyLink { User = superuser, Technology = javascript } };
 
             context.AddRange(csharp, javascript);
 

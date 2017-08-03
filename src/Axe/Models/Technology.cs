@@ -23,5 +23,7 @@ namespace Axe.Models
         [MaxLength(1024)]
         [Required]
         public string InformationText { get; set; }
+
+        public ICollection<ExpertTechnologyLink> Experts { get; set; }
     }
 }

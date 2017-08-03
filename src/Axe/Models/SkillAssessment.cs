@@ -25,8 +25,7 @@ namespace Axe.Models
         [Display(Name = "Date")]
         public DateTime? ExamDate { get; set; }
         
-        [Range(0,100)]
-        [Required]
+        [Range(0,100)]        
         public int? ExamScore { get; set; }
 
         [Display(Name = "Comment")]

@@ -42,6 +42,16 @@
                         <p>@item.user.ContactInfo</p>
                     }
 
+                    @if (item.user.ExpertKnowledge.Count > 0)
+                    {
+                        <h4>
+                            @foreach (var t in item.user.ExpertKnowledge)
+                            {
+                                <label class="label label-primary">@t.Name</label>
+                            }
+                        </h4>
+                    }
+
                     @if (item.user.Skills != null)
                     {
                         <p>

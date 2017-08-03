@@ -33,7 +33,7 @@ namespace Axe.Models.ProfileViewModels
         /// <summary>
         /// Gets or sets list of exams which user can take in selected technology
         /// </summary>
-        public IEnumerable <ExamTask> Tasks { get; set; }
+        public IEnumerable<ExamTask> Tasks { get; set; }
 
         /// <summary>
         /// Gets or sets all user exam attemps in a selected technology
@@ -43,6 +43,6 @@ namespace Axe.Models.ProfileViewModels
         /// <summary>
         /// Gets or sets best user exam attemps in a selected technology
         /// </summary>
-        public IEnumerable<ExamAttempt> BestAttempts { get; set; }
+        public IEnumerable<ExamAttempt> BestAttempts { get; set; }        
     }
 }

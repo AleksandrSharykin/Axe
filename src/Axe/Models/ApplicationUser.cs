@@ -44,6 +44,8 @@ namespace Axe.Models
         /// </summary>
         public ICollection<ExamAttempt> Attempts { get; set; }
 
+        public ICollection<ExpertTechnologyLink> Technologies { get; set; }
+
         /// <summary>
         /// Gets or sets user's job description
         /// </summary>

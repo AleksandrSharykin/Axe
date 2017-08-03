@@ -8,7 +8,6 @@ namespace Axe.Models
     public class UserRole
     {
         public static readonly string Superuser = "superuser";
-        public static readonly string Member = "member";
-        public static readonly string Expert = "expert";
+        public static readonly string Member = "member";        
     }
 }

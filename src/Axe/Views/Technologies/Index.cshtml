@@ -40,6 +40,7 @@
         <ul id="techTabs" class="nav nav-tabs nav-justified">
             <li class="active"><a data-toggle="tab" href="#menuQuestions">Questions</a></li>
             <li><a data-toggle="tab" href="#menuExams">Exams</a></li>
+            <li><a data-toggle="tab" href="#menuExperts">Experts</a></li>
             <li><a data-toggle="tab" href="#menuMonitor">Monitor</a></li>
         </ul>
 
@@ -124,6 +125,40 @@
                     <br />
                     @Html.ActionLink("Add", "Input", "Tasks", new { technologyId = Model.SelectedTechnology?.Id }, new { @class = "btn btn-primary" })
                 }
+            </div>
+
+            @*Experts*@
+            <div id="menuExperts" class="tab-pane fade">
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>User</th>
+                            <th>Email</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach(var e in Model.Experts)
+                        {
+                            <tr>
+                                <td>@Html.ActionLink(e.UserName, "Visit", "Profiles")</td>
+                                <td>@e.Email</td>
+                                <td>
+                                    @{
+                                        string category = e.IsExpert ? "default" : "primary";
+                                        string linkName = e.IsExpert ? "Exclude" : "Include";
+                                        <a href="@Url.Action(linkName+"Expert", new { id = e.Id, technologyId = Model.SelectedTechnology?.Id})">
+                                            <label class="btn btn-@category">
+                                                @linkName
+                                            </label>
+                                        </a>
+                                    }
+                                </td>
+                            </tr>
+
+                        }
+                    </tbody>
+                </table>
             </div>
 
             @*Active exams*@

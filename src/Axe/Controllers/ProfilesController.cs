@@ -43,7 +43,10 @@ namespace Axe.Controllers
         /// <returns></returns>
         public async Task<IActionResult> Index(string userFilter = null)
         {
-            IQueryable<ApplicationUser> userList = context.Users.Include(u => u.AssessmentsAsStudent).ThenInclude(a => a.Technology);
+            IQueryable<ApplicationUser> userList = context.Users
+                .Include(u => u.AssessmentsAsStudent).ThenInclude(a => a.Technology)
+                .Include(u => u.Technologies).ThenInclude(t => t.Technology);
+
             if (false == String.IsNullOrWhiteSpace(userFilter))
                 userList = userList.Where(u => u.UserName.Contains(userFilter) || u.Email.Contains(userFilter) || u.JobPosition.Contains(userFilter));                
 
@@ -57,6 +60,7 @@ namespace Axe.Controllers
                     ContactInfo = u.Email,
                     JobPosition = u.JobPosition,
                     Skills = u.GetSkills().ToList(),
+                    ExpertKnowledge = u.Technologies.Select(t => t.Technology).ToList(),
                 }).ToList();
 
             return View(data);
@@ -82,7 +86,9 @@ namespace Axe.Controllers
 
             ApplicationUser user = await GetCurrentUserAsync();
 
-            var users = this.context.Users.Include(u => u.AssessmentsAsStudent).ThenInclude(a => a.Examiner);
+            var users = this.context.Users
+                .Include(u => u.AssessmentsAsStudent).ThenInclude(a => a.Examiner)
+                .Include(u => u.Technologies).ThenInclude(t => t.Technology);
             ApplicationUser profile = await users.SingleOrDefaultAsync(u => u.Id == id) ??
                                       await users.SingleOrDefaultAsync(u => u.Id == user.Id);
 
@@ -121,12 +127,15 @@ namespace Axe.Controllers
                 JobPosition = profile.JobPosition,
                 ContactInfo = profile.Email,
 
+                Technologies = techs,
+                SelectedTechnology = selectedTech,
+
+                ExpertKnowledge = profile.Technologies.Select(t => t.Technology).ToList(),
+
                 Skills = profile.GetSkills().Concat(profile.AssessmentsAsStudent.Where(a => a.ExamScore is null)).ToList(),
                 Assessments = profile.AssessmentsAsStudent.Where(a=>a.TechnologyId == selectedTech.Id),
 
-                Technologies = techs,
-                SelectedTechnology = selectedTech,
-                AllAttempts = attempts ?? new List<ExamAttempt>(),
+                                AllAttempts = attempts ?? new List<ExamAttempt>(),
                 BestAttempts = bestAttempts ?? new List<ExamAttempt>(),
                 Tasks = self ? ( tasks ?? new List<ExamTask>() ) : null,
             };
