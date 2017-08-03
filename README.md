@@ -17,3 +17,5 @@ Tech stack: asp.net core + JavaScript (and JavaScript frameworks) + relational d
 ![](https://github.com/AleksandrSharykin/Axe/blob/master/screenshots/TaskEditor.png)
 
 ![](https://github.com/AleksandrSharykin/Axe/blob/master/screenshots/ExamDemo.png)
+
+![](https://github.com/AleksandrSharykin/Axe/blob/master/screenshots/ExamResult.png)
