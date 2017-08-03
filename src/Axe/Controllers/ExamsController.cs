@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using Axe.Models;
+using Microsoft.AspNetCore.Authorization;
 
 namespace Axe.Controllers
 {
@@ -181,6 +182,7 @@ namespace Axe.Controllers
         }
 
         // GET: Exams/Delete/5
+        [Authorize]
         public async Task<IActionResult> Delete(int? id)
         {
             if (id == null)
@@ -202,6 +204,7 @@ namespace Axe.Controllers
         }
 
         // POST: Exams/Delete/5
+        [Authorize]
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)

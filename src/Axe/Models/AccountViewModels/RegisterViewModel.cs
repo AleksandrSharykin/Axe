@@ -12,14 +12,6 @@ namespace Axe.Models.AccountViewModels
     public class RegisterViewModel
     {
         /// <summary>
-        /// Gets or sets user name
-        /// </summary>
-        [Required]
-        [StringLength(255, ErrorMessage = "The {0} must be at least {2} and at max {1} characters long.", MinimumLength = 3)]        
-        [Display(Name = "User Name")]
-        public string UserName { get; set; }
-
-        /// <summary>
         /// Gets or sets user email
         /// </summary>
         [Required]

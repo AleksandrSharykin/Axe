@@ -7,9 +7,11 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using Axe.Models;
 using Axe.Models.TechnologiesVm;
+using Microsoft.AspNetCore.Authorization;
 
 namespace Axe.Controllers
 {
+    [Authorize]
     public class TechnologiesController : Controller
     {
         private readonly AxeDbContext context;
