@@ -1,85 +1,72 @@
 @model Axe.Models.AssessmentsVm.AssessmentDetailsVm
 
 @{
-    ViewData["Title"] = "Skill Assessment";
+    ViewData["Title"] = "Assessment";
 }
 
 <h4> @Html.ActionLink(@Model.Student.UserName, "Visit", "Profiles", new { id = Model.Student.Id }) skill assessment</h4>
-@if (Model.CanEdit)
-{
-    @Html.ActionLink("Edit", "Edit", "Assessments", new { id = Model.Id }, new { @class = "btn btn-primary" })
-}
+
 <hr />
 
-<div>
-    <form method="post">
-        <dl class="dl-horizontal">
-            <dt> @Html.DisplayNameFor(model => model.Technology) </dt>
-            <dd> @Html.DisplayFor(model => model.Technology.Name) </dd>
+<div class="form-horizontal">
 
-            <dt> @Html.DisplayNameFor(model => model.Examiner) </dt>
-            <dd> @Html.DisplayFor(model => model.Examiner.UserName) </dd>
+    <dl>
+        <dt><label asp-for="Technology" class="control-label"></label></dt>
+        <dd>@Html.DisplayFor(model => model.Technology.Name)</dd>
 
-            <dt> @Html.DisplayNameFor(model => model.ExamDate) </dt>            
-            <dd> @Html.DisplayFor(model => model.ExamDate) </dd>
-                        
-            <dt> @Html.DisplayNameFor(model => model.ExamScore) </dt>
+        <dt><label asp-for="Examiner" class="control-label"></label></dt>
+        <dd>@Html.DisplayFor(model => model.Examiner.UserName)</dd>
+
+        <dt><label asp-for="ExamDate" class="control-label"></label></dt>
+        <dd>@Html.DisplayFor(model => model.ExamDate)</dd>
+
+        @if (Model.ExamScore.HasValue)
+        {
+            <dt> <label asp-for="ExamScore" class="control-label"></label> </dt>
+            <dd> @Html.DisplayFor(model => model.ExamScore) </dd>
+        }
+
+        @if (Model.ExamComment != null)
+        {
+            <dt> <label asp-for="ExamComment" class="control-label"></label> </dt>
+            <dd> @Html.DisplayFor(model => model.ExamComment) </dd>
+        }
+
+        @if (Model.IsPassed.HasValue)
+        {
+            <dt> <label asp-for="IsPassed" class="control-label"></label>  </dt>
             <dd>
-                @if (Model.CanMark)
+                @if (Model.IsPassed == true)
                 {
-                    <div class="form-group">
-                        @Html.EditorFor(model => model.ExamScore)
-                        <span asp-validation-for="ExamScore" class="text-warning"></span>
-                    </div>
-                }
-                else
-                {                    
-                    @Html.DisplayFor(model => model.ExamScore)
-                }
-            </dd>  
-            
-            <dt> @Html.DisplayNameFor(model => model.ExamComment) </dt>
-            <dd>
-                @if (Model.CanMark)
-                {
-                    <div class="form-group">
-                        @Html.EditorFor(model => model.ExamComment)
-                        <span asp-validation-for="ExamComment" class="text-warning"></span>
-                    </div>
+                    <span class="label label-success">yes</span>
                 }
                 else
                 {
-                    @Html.DisplayFor(model => model.ExamComment)
-                }
-            </dd>                        
-
-            <dt> @Html.DisplayNameFor(model => model.IsPassed) </dt>
-            <dd>
-                @if (Model.CanMark)
-                {
-                    <div class="btn-group">
-                        <button class="btn btn-success" value="success" name="cmd">                            
-                                <span class="glyphicon glyphicon-thumbs-up"></span> success
-                        </button>
-                        
-                        <button class="btn btn-danger" value="failure" name="cmd">
-                            <span class="glyphicon glyphicon-thumbs-down"></span> &nbsp; failure
-                        </button>
-                    </div>
-                }
-                else
-                {
-                    @if (Model.IsPassed == true)
-                    {
-                        <span class="label label-success">yes</span>
-                    }
-                    else if (Model.IsPassed == false)
-                    {
-                        <span class="label label-danger">no</span>
-                    }
+                    <span class="label label-danger">no</span>
                 }
             </dd>
-        </dl>
+        }
+    </dl>
 
-    </form>
+    <hr />
+
+    <div class="form-group">
+        <div class="btn-group col-md-3 col-md-offset-1">
+            @if (Model.CanEdit)
+            {
+                @Html.ActionLink("Edit", "Input", "Assessments", new { id = Model.Id }, new { @class = "btn btn-primary" })
+            }
+
+            @if (Model.CanMark)
+            {
+                @Html.ActionLink("Mark", "Mark", "Assessments", new { id = Model.Id }, new { @class = "btn btn-primary" })
+            }
+
+            @if (Model.CanDelete)
+            {
+                @Html.ActionLink("Delete", "Delete", "Assessments", new { id = Model.Id }, new { @class = "btn btn-default" })
+            }
+        </div>
+    </div>
+
 </div>

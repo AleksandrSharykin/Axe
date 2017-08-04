@@ -1,0 +1,62 @@
+﻿@model Axe.Models.AssessmentsVm.AssessmentInputVm
+
+@{
+    ViewData["Title"] = "Assign skill assessment";
+}
+
+<h4> @Html.ActionLink(Model.StudentName, "Visit", "Profiles", new { id = Model.StudentId }) skill assessment</h4>
+
+<hr />
+
+<form asp-action="Input">
+    <div class="form-horizontal">
+        <input type="hidden" asp-for="Id" />
+
+        <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+        
+        <dl>
+            <dt><label asp-for="StudentName" class="control-label"></label></dt>
+            <dd>
+                <input type="hidden" asp-for="StudentId" />
+                @Html.DisplayFor(model => model.StudentName)
+            </dd>
+
+            <dt><label asp-for="TechnologyName" class="control-label"></label></dt>
+            <dd>
+                <input type="hidden" asp-for="TechnologyId"/>
+                @Html.DisplayFor(model => model.TechnologyName)
+            </dd>
+
+            <dt><label asp-for="ExaminerName" class="control-label"></label></dt>
+            <dd>
+                <input type="hidden" asp-for="ExaminerId" />
+                @Html.DisplayFor(model => model.ExaminerName)
+            </dd>
+        </dl>
+
+        <label asp-for="ExamDate" class="control-label"></label>
+        <div class="form-group">
+            
+            <div class="col-md-6">
+                <input asp-for="ExamDate" class="form-control" />
+                <span asp-validation-for="ExamDate" class="text-danger"></span>
+            </div>
+        </div>
+
+        <label asp-for="ExamTime" class="control-label"></label>
+        <div class="form-group">
+            
+            <div class="col-md-6">
+                <input asp-for="ExamTime" class="form-control" />
+                <span asp-validation-for="ExamTime" class="text-danger"></span>
+            </div>
+        </div>
+
+        <hr />
+        <div class="form-group">
+            <div class="col-md-10">
+                <input type="submit" value="Assign" class="btn btn-primary" />
+            </div>
+        </div>
+</div>
+</form>

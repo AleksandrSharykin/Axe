@@ -6,24 +6,29 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 
 namespace Axe.Models.AssessmentsVm
 {
+    /// <summary>
+    /// Class represents input model for assigneing new <see cref="SkillAssessment"/>
+    /// </summary>
     public class AssessmentInputVm
     {
         public int Id { get; set; }
 
-        public SelectList Students { get; set; }
-
         [Required]
         public string StudentId { get; set; }
 
-        public SelectList Examiners { get; set; }
+        public string StudentName { get; set; }
 
         [Required]
         public string ExaminerId { get; set; }
 
-        public SelectList Technologies;
+        public string ExaminerName { get; set; }        
+
 
         [Required]
-        public int? TechnologyId { get; set; }
+        public int TechnologyId { get; set; }
+
+        public string TechnologyName { get; set; }
+
 
         [Required]
         [DataType(DataType.Date)]

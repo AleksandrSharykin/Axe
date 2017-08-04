@@ -84,7 +84,7 @@
                     @if (false == Model.Self)
                     {                        
                         <code title="Assign new skill assessment">
-                            @Html.ActionLink("New Assessment", "Create", "Assessments", new { studentId = Model.Id, technologyId = Model.SelectedTechnology?.Id })
+                            @Html.ActionLink("New Assessment", "Input", "Assessments", new { studentId = Model.Id, technologyId = Model.SelectedTechnology?.Id })
                         </code>
                     }
                 </h4>
@@ -261,7 +261,7 @@
 
                     @if (false == Model.Self)
                     {
-                        @Html.ActionLink("Add", "Create", "Assessments", new { studentId = Model.Id, technologyId = Model.SelectedTechnology?.Id }, new { @class = "btn btn-primary" })
+                        @Html.ActionLink("Add", "Input", "Assessments", new { studentId = Model.Id, technologyId = Model.SelectedTechnology?.Id }, new { @class = "btn btn-primary" })
                     }
                 </div>
             </div>

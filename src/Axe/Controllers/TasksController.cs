@@ -162,7 +162,7 @@ namespace Axe.Controllers
                     }
 
                     if (task.AuthorId == null)
-                        task.AuthorId = (await GetCurrentUserAsync()).Id;
+                        task.AuthorId = (await this.GetCurrentUserAsync()).Id;
 
                     await context.SaveChangesAsync();
                 }

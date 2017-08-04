@@ -20,7 +20,7 @@ namespace Axe.Controllers
         // GET: Technologies
         public async Task<IActionResult> Index(int? technologyId = null)
         {
-            var user = await GetCurrentUserAsync();
+            var user = await this.GetCurrentUserAsync();
             // get currrent user with list of technologies where they are an expert
             user = await this.context.Users.Include(u => u.Technologies).ThenInclude(x => x.Technology)
                              .SingleAsync(u => u.Id == user.Id);
@@ -87,7 +87,7 @@ namespace Axe.Controllers
                 return View(new Technology());
             }
 
-            var user = await GetCurrentUserAsync();
+            var user = await this.GetCurrentUserAsync();
 
             // if User is not an Expert they cannot edit Technology
             if ( false == technology.Experts.Any(t => t.UserId == user.Id))
@@ -109,7 +109,7 @@ namespace Axe.Controllers
 
             if (ModelState.IsValid)
             {
-                var user = await GetCurrentUserAsync();
+                var user = await this.GetCurrentUserAsync();
                     
                 if (id > 0)
                 {          
@@ -179,7 +179,7 @@ namespace Axe.Controllers
                 return;
             }
 
-            var currentUser = await GetCurrentUserAsync();
+            var currentUser = await this.GetCurrentUserAsync();
             if (false == tech.Experts.Any(x => x.UserId == currentUser.Id))
             {
                 // current user is not an expert in selected tech

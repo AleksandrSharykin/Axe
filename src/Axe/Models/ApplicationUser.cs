@@ -22,10 +22,9 @@ namespace Axe.Models
             if (AssessmentsAsStudent == null)
                 return null;
             return AssessmentsAsStudent
-                    .Where(a => a.IsPassed ?? false)
+                    .Where(a => (a.IsPassed ?? false) && a.ExamScore.HasValue)
                     .GroupBy(a => a.Technology.Id)
                     .Select(gr => gr.OrderByDescending(a => a.ExamScore).FirstOrDefault());
-
         }
 
 

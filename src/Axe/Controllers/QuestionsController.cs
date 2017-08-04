@@ -41,7 +41,7 @@ namespace Axe.Controllers
                 technologyId = question.TechnologyId;
             }
 
-            var user = await GetCurrentUserAsync();
+            var user = await this.GetCurrentUserAsync();
             user = await this.context.Users
                              .Include(u => u.Technologies).ThenInclude(t => t.Technology)
                              .SingleOrDefaultAsync(u => u.Id == user.Id);
@@ -89,7 +89,7 @@ namespace Axe.Controllers
                 if (ModelState.IsValid)
                 {
                     var tech = await this.context.Technology.Include(t => t.Experts).SingleOrDefaultAsync(t => t.Id == questionVm.TechnologyId);
-                    user = await GetCurrentUserAsync();
+                    user = await this.GetCurrentUserAsync();
                     if (false == tech.Experts.Any(u => u.UserId == user.Id))
                     {
                         ModelState.AddModelError(String.Empty, "Only " + tech.Name + " experts can write questions");
@@ -173,7 +173,7 @@ namespace Axe.Controllers
                                     .Include(q => q.Answers)
                                     .SingleOrDefaultAsync(q => q.Id == id);
 
-            var user = await GetCurrentUserAsync();
+            var user = await this.GetCurrentUserAsync();
 
             if (question == null || false == question.Technology.Experts.Any(u=>u.UserId == user.Id))
             {

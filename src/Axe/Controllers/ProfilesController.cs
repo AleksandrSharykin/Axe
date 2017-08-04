@@ -83,7 +83,7 @@ namespace Axe.Controllers
             //    : message == ManageMessageId.RemovePhoneSuccess ? "Your phone number was removed."
             //    : "";
 
-            ApplicationUser user = await GetCurrentUserAsync();
+            ApplicationUser user = await this.GetCurrentUserAsync();
 
             var users = this.context.Users
                 .Include(u => u.AssessmentsAsStudent).ThenInclude(a => a.Examiner)
@@ -129,7 +129,7 @@ namespace Axe.Controllers
 
                 ExpertKnowledge = profile.Technologies.Select(t => t.Technology).ToList(),
 
-                Skills = profile.GetSkills().Concat(profile.AssessmentsAsStudent.Where(a => a.ExamScore is null)).ToList(),
+                Skills = profile.GetSkills().Concat(profile.AssessmentsAsStudent.Where(a => a.IsPassed is null)).ToList(),
                 Assessments = profile.AssessmentsAsStudent.Where(a=>a.TechnologyId == selectedTech.Id),
 
                                 AllAttempts = attempts ?? new List<ExamAttempt>(),
@@ -147,7 +147,7 @@ namespace Axe.Controllers
         public async Task<IActionResult> RemoveLogin(RemoveLoginViewModel account)
         {
             ManageMessageId? message = ManageMessageId.Error;
-            var user = await GetCurrentUserAsync();
+            var user = await this.GetCurrentUserAsync();
             if (user != null)
             {
                 var result = await this.userManager.RemoveLoginAsync(user, account.LoginProvider, account.ProviderKey);
@@ -166,7 +166,7 @@ namespace Axe.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> EnableTwoFactorAuthentication()
         {
-            var user = await GetCurrentUserAsync();
+            var user = await this.GetCurrentUserAsync();
             if (user != null)
             {
                 await this.userManager.SetTwoFactorEnabledAsync(user, true);
@@ -182,7 +182,7 @@ namespace Axe.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DisableTwoFactorAuthentication()
         {
-            var user = await GetCurrentUserAsync();
+            var user = await this.GetCurrentUserAsync();
             if (user != null)
             {
                 await this.userManager.SetTwoFactorEnabledAsync(user, false);
@@ -197,7 +197,7 @@ namespace Axe.Controllers
         [HttpGet]
         public async Task<IActionResult> Edit()
         {
-            var user = await GetCurrentUserAsync();
+            var user = await this.GetCurrentUserAsync();
             if (user == null)
                 return RedirectToAction(nameof(Index));
 
@@ -211,7 +211,7 @@ namespace Axe.Controllers
                 return View(model);
             }
 
-            var user = await GetCurrentUserAsync();
+            var user = await this.GetCurrentUserAsync();
             if (user == null)
                 return RedirectToAction(nameof(Index));
 
@@ -241,7 +241,7 @@ namespace Axe.Controllers
             {
                 return View(model);
             }
-            var user = await GetCurrentUserAsync();
+            var user = await this.GetCurrentUserAsync();
             if (user != null)
             {
                 var result = await this.userManager.ChangePasswordAsync(user, model.OldPassword, model.NewPassword);
@@ -276,7 +276,7 @@ namespace Axe.Controllers
                 return View(model);
             }
 
-            var user = await GetCurrentUserAsync();
+            var user = await this.GetCurrentUserAsync();
             if (user != null)
             {
                 var result = await this.userManager.AddPasswordAsync(user, model.NewPassword);
@@ -300,7 +300,7 @@ namespace Axe.Controllers
                 : message == ManageMessageId.AddLoginSuccess ? "The external login was added."
                 : message == ManageMessageId.Error ? "An error has occurred."
                 : "";
-            var user = await GetCurrentUserAsync();
+            var user = await this.GetCurrentUserAsync();
             if (user == null)
             {
                 return View("Error");
@@ -335,7 +335,7 @@ namespace Axe.Controllers
         [HttpGet]
         public async Task<ActionResult> LinkLoginCallback()
         {
-            var user = await GetCurrentUserAsync();
+            var user = await this.GetCurrentUserAsync();
             if (user == null)
             {
                 return View("Error");

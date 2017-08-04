@@ -29,7 +29,7 @@ namespace Axe.Controllers
                 return NotFound();
             }
 
-            var user = await GetCurrentUserAsync();
+            var user = await this.GetCurrentUserAsync();
             // redirect registered users to their profile page where they can select exam
             if (user != null)
                 return RedirectToAction("Visit", "Profiles", new { id = user.Id, technologyId = id });        
@@ -88,7 +88,7 @@ namespace Axe.Controllers
         [HttpPost]
         public async Task<IActionResult> Take(ExamAttempt attempt)
         {
-            var user = await GetCurrentUserAsync();
+            var user = await this.GetCurrentUserAsync();
 
             if (ModelState.IsValid)
             {

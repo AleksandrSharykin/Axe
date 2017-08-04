@@ -1,0 +1,59 @@
+@model Axe.Models.AssessmentsVm.AssessmentDetailsVm
+
+@{
+    ViewData["Title"] = "Assessment";
+}
+
+<h4> @Html.ActionLink(@Model.Student.UserName, "Visit", "Profiles", new { id = Model.Student.Id }) skill assessment</h4>
+<hr />
+
+
+<form method="post">
+    <div class="form-horizontal">
+        <div asp-validation-summaty="All"></div>
+
+        <dl>
+            <dt><label asp-for="Technology" class="control-label"></label></dt>
+            <dd>@Html.DisplayFor(model => model.Technology.Name)</dd>
+
+            <dt><label asp-for="Examiner" class="control-label"></label></dt>
+            <dd>@Html.DisplayFor(model => model.Examiner.UserName)</dd>
+
+            <dt><label asp-for="ExamDate" class="control-label"></label></dt>
+            <dd>@Html.DisplayFor(model => model.ExamDate)</dd>
+        </dl>
+
+        <label asp-for="ExamScore" class="control-label"></label>
+
+        <div class="form-group">
+            <div class="col-md-6">                
+                <input asp-for="ExamScore" class="form-control" />
+                <span asp-validation-for="ExamScore" class="text-warning"></span>
+            </div>
+        </div>
+
+        <label asp-for="ExamComment" class="control-label"></label>
+
+        <div class="form-group">
+            <div class="col-md-6">                
+                <input asp-for="ExamComment" class="form-control" />
+                <span asp-validation-for="ExamComment" class="text-warning"></span>
+            </div>
+        </div>        
+
+        <hr />
+
+        <div class="form-group">
+            <div class="btn-group col-md-3">
+                <button class="btn btn-primary" value="success" name="cmd">
+                    <span class="glyphicon glyphicon-thumbs-up"></span> success
+                </button>
+
+                <button class="btn btn-default" value="failure" name="cmd">
+                    <span class="glyphicon glyphicon-thumbs-down"></span> &nbsp; failure
+                </button>
+            </div>
+        </div>
+    </div>
+</form>
+
