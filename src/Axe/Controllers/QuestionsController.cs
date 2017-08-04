@@ -26,7 +26,7 @@ namespace Axe.Controllers
         [HttpGet]
         public async Task<IActionResult> Input(int? id = null, int? technologyId = null)
         {
-            var question = await this.context.TaskQuestion                                
+            var question = await this.context.TaskQuestion
                 .Include(q => q.Answers)
                 .AsNoTracking()
                 .SingleOrDefaultAsync(q => q.Id == id);
@@ -41,13 +41,23 @@ namespace Axe.Controllers
                 technologyId = question.TechnologyId;
             }
 
+            var user = await GetCurrentUserAsync();
+            user = await this.context.Users
+                             .Include(u => u.Technologies).ThenInclude(t => t.Technology)
+                             .SingleOrDefaultAsync(u => u.Id == user.Id);
+
+            if (false == user.Technologies.Any(t => t.TechnologyId == technologyId))
+            {
+                return RedirectToAction("Index", "Technologies");
+            }
+
             var questionVm = new QuestionInputVm()
             {
                 Id = question.Id,                
                 Text = question.Text,
                 Answers = question.Answers.ToList(),
                 TechnologyId = technologyId,
-                Technologies = new SelectList(this.context.Technology, "Id", "Name", technologyId),
+                Technologies = new SelectList(user.Technologies.Select(t => t.Technology), "Id", "Name", technologyId),
             };
             return View(questionVm);
         }
@@ -75,10 +85,21 @@ namespace Axe.Controllers
             }
             else
             {
+                ApplicationUser user = null;
+                if (ModelState.IsValid)
+                {
+                    var tech = await this.context.Technology.Include(t => t.Experts).SingleOrDefaultAsync(t => t.Id == questionVm.TechnologyId);
+                    user = await GetCurrentUserAsync();
+                    if (false == tech.Experts.Any(u => u.UserId == user.Id))
+                    {
+                        ModelState.AddModelError(String.Empty, "Only " + tech.Name + " experts can write questions");
+                    }
+                }
                 // saving valid question
                 if (ModelState.IsValid)
                 {
-                    var question = await this.context.TaskQuestion.Include(q => q.Answers)
+                    var question = await this.context.TaskQuestion
+                                             .Include(q => q.Answers)
                                              .SingleOrDefaultAsync(t => t.Id == questionVm.Id);
 
                     if (question == null)
@@ -120,7 +141,7 @@ namespace Axe.Controllers
 
                     if (question.AuthorId == null)
                     {
-                        question.Author = await GetCurrentUserAsync();
+                        question.Author = user;
                     }
 
                     question.TechnologyId = questionVm.TechnologyId.Value;
@@ -148,11 +169,13 @@ namespace Axe.Controllers
         {
             var question = await this.context.TaskQuestion
                                     .Include(q => q.Author)
-                                    .Include(q => q.Technology)
+                                    .Include(q => q.Technology).ThenInclude(t => t.Experts)
                                     .Include(q => q.Answers)
                                     .SingleOrDefaultAsync(q => q.Id == id);
 
-            if (question == null)
+            var user = await GetCurrentUserAsync();
+
+            if (question == null || false == question.Technology.Experts.Any(u=>u.UserId == user.Id))
             {
                 return NotFound();
             }
