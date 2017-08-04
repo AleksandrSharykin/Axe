@@ -1,5 +1,9 @@
 @model Axe.Models.TechnologiesVm.TechnologiesIndexVm
 
+@{
+    ViewData["Title"] = "Technologies";
+}
+
 <br/>
 
 @if (Model.SelectedTechnology != null)
@@ -14,8 +18,8 @@
 
 <div class="row">
     <div class="btn-group">
-        @Html.ActionLink("Add", "Create", "Technologies", null, new { @class = "btn btn-primary" })
-        @Html.ActionLink("Edit", "Edit", "Technologies", new { id = Model.SelectedTechnology?.Id }, new { @class = "btn btn-primary" })
+        @Html.ActionLink("Add", "Input", "Technologies", null, new { @class = "btn btn-primary" })
+        @Html.ActionLink("Edit", "Input", "Technologies", new { id = Model.SelectedTechnology?.Id }, new { @class = "btn btn-primary" })
         @Html.ActionLink("Delete", "Delete", "Technologies", new { id = Model.SelectedTechnology?.Id }, new { @class = "btn btn-primary" })
     </div>
     <hr/>

@@ -72,71 +72,35 @@ namespace Axe.Controllers
             return View(vm);
         }
 
-        // GET: Technologies/Create
-        public IActionResult Create()
-        {
-            return View();
-        }
-
-        // POST: Technologies/Create
-        // To protect from overposting attacks, please enable the specific properties you want to bind to, for 
-        // more details see http://go.microsoft.com/fwlink/?LinkId=317598.
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Id,Name,InformationText")] Technology technology)
-        {
-            if (ModelState.IsValid)
-            {
-                if (this.context.Technology.Any(t => t.Name == technology.Name))
-                {
-                    ModelState.AddModelError(String.Empty, technology.Name + " technology is already exists");
-                }
-            }
-
-            if (ModelState.IsValid)
-            {
-                var user = await GetCurrentUserAsync();
-                technology.Experts = new List<ExpertTechnologyLink> { new ExpertTechnologyLink { User = user, Technology = technology } };
-
-                this.context.Add(technology);
-                await this.context.SaveChangesAsync();
-                return RedirectToAction("Index", new { technologyId = technology.Id });
-            }
-            return View(technology);
-        }
-
-        // GET: Technologies/Edit/5
-        public async Task<IActionResult> Edit(int? id)
+        public async Task<IActionResult> Input(int? id)
         {
             if (id == null)
             {
-                return RedirectToAction("Create");
+                return View(new Technology());
             }
 
-            var technology = await this.context.Technology.Include(t => t.Experts)
+            var technology = await this.context.Technology.Include(t => t.Experts)                                       
                                        .SingleOrDefaultAsync(m => m.Id == id);
             
             if (technology == null)
             {
-                return NotFound();
+                return View(new Technology());
             }
 
             var user = await GetCurrentUserAsync();
 
             // if User is not an Expert they cannot edit Technology
-            if ( false == technology.Experts.Any(t=>t.UserId == user.Id))
+            if ( false == technology.Experts.Any(t => t.UserId == user.Id))
             {
                 return NotFound();
             }
+
             return View(technology);
         }
 
-        // POST: Technologies/Edit/5
-        // To protect from overposting attacks, please enable the specific properties you want to bind to, for 
-        // more details see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,Name,InformationText")] Technology technologyInput)
+        public async Task<IActionResult> Input(int? id, [Bind("Id,Name,InformationText")] Technology technologyInput)
         {
             if (id != technologyInput.Id)
             {
@@ -145,35 +109,51 @@ namespace Axe.Controllers
 
             if (ModelState.IsValid)
             {
-                try
-                {
+                var user = await GetCurrentUserAsync();
+                    
+                if (id > 0)
+                {          
+                    // edit
                     var technology = await this.context.Technology.Include(t => t.Experts)
+                                               .AsNoTracking()
                                                .SingleOrDefaultAsync(m => m.Id == id);
 
-                    var user = await GetCurrentUserAsync();
+                    if (technology == null)
+                    {
+                        return NotFound();
+                    }
 
                     // if User is not an Expert they cannot edit Technology
                     if (false == technology.Experts.Any(t => t.UserId == user.Id))
                     {
-                        ModelState.AddModelError(String.Empty, "Only experts cna edit technologies");
+                        ModelState.AddModelError(String.Empty, "Only experts can edit technology");
                         return View(technologyInput);
                     }
 
                     this.context.Update(technologyInput);
-                    await this.context.SaveChangesAsync();
                 }
-                catch (DbUpdateConcurrencyException)
+                else
                 {
-                    if (false == TechnologyExists(technologyInput.Id))
+                    // add
+                    if (ModelState.IsValid)
                     {
-                        return NotFound();
+                        if (this.context.Technology.Any(t => t.Name == technologyInput.Name))
+                        {
+                            ModelState.AddModelError(String.Empty, technologyInput.Name + " technology is already exists");
+                        }
                     }
-                    else
+
+                    if (ModelState.IsValid)
                     {
-                        throw;
+                        this.context.Add(technologyInput);
+                        // technology creator becomes an Expert
+                        this.context.Add(new ExpertTechnologyLink { User = user, Technology = technologyInput });                            
                     }
                 }
-                return RedirectToAction("Index");
+
+                await this.context.SaveChangesAsync();
+                
+                return RedirectToAction("Index", new { technologyId = technologyInput.Id });
             }
             return View(technologyInput);
         }
