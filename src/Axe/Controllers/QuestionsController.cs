@@ -10,26 +10,12 @@ using Axe.Models.QuestionsVm;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Authorization;
 
-// For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
-
 namespace Axe.Controllers
 {
     [Authorize]
-    public class QuestionsController : Controller
+    public class QuestionsController : ControllerExt
     {
-        private readonly UserManager<ApplicationUser> userManager;
-        private AxeDbContext context;
-
-        public QuestionsController(UserManager<ApplicationUser> userManager, AxeDbContext context)
-        {
-            this.userManager = userManager;
-            this.context = context;
-        }
-
-        private Task<ApplicationUser> GetCurrentUserAsync()
-        {
-            return this.userManager.GetUserAsync(HttpContext.User);
-        }
+        public QuestionsController(UserManager<ApplicationUser> userManager, AxeDbContext context) : base(userManager, context) { }
 
         // GET: /<controller>/
         public IActionResult Index()

@@ -13,21 +13,9 @@ using Microsoft.AspNetCore.Authorization;
 namespace Axe.Controllers
 {
     [Authorize]
-    public class TasksController : Controller
+    public class TasksController : ControllerExt
     {
-        private readonly UserManager<ApplicationUser> userManager;
-        private readonly AxeDbContext context;
-
-        public TasksController(UserManager<ApplicationUser> userManager, AxeDbContext context)
-        {
-            this.userManager = userManager;
-            this.context = context;    
-        }
-
-        private Task<ApplicationUser> GetCurrentUserAsync()
-        {
-            return userManager.GetUserAsync(HttpContext.User);
-        }
+        public TasksController(UserManager<ApplicationUser> userManager, AxeDbContext context) : base(userManager, context) { }
 
         // GET: ExamTasks
         public async Task<IActionResult> Index()

@@ -11,22 +11,14 @@ using Microsoft.AspNetCore.Authorization;
 
 namespace Axe.Controllers
 {
-    public class ExamsController : Controller
+    public class ExamsController : ControllerExt
     {
         private readonly SignInManager<ApplicationUser> signInManager;
-        private readonly UserManager<ApplicationUser> userManager;
-        private readonly AxeDbContext context;
 
         public ExamsController(SignInManager<ApplicationUser> signInManager, UserManager<ApplicationUser> userManager, AxeDbContext context)
+             : base(userManager, context)                
         {
             this.signInManager = signInManager;
-            this.context = context;
-            this.userManager = userManager;
-        }
-
-        private Task<ApplicationUser> GetCurrentUserAsync()
-        {            
-            return userManager.GetUserAsync(HttpContext.User);
         }
 
         // GET: Exams/Details/5
@@ -213,11 +205,6 @@ namespace Axe.Controllers
             context.ExamAttempt.Remove(examAttempt);
             await context.SaveChangesAsync();
             return RedirectToAction("Index");
-        }
-
-        private bool ExamAttemptExists(int id)
-        {
-            return context.ExamAttempt.Any(e => e.Id == id);
         }
     }
 }

@@ -46,36 +46,39 @@
 
         <div class="tab-content">
             @*exam question*@
-            <div id="menuQuestions" class="tab-pane fade in active">   
-                <br />
-                <table class="table table-striped">
-                    <thead>
-                        <tr>
-                            <th>
-                                <span class="glyphicon glyphicon-th"></span>
-                            </th>
-                            <th>Question</th>
-                            <th>Author</th>
-                            <th>Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @foreach(var item in Model.Questions.Select((q,i) => new { question = q, idx = i + 1}))
-                        {
-                            <tr>
-                                <td>@item.idx</td>
-                                <td>@item.question.Text</td>
-                                <td>@item.question.Author?.UserName</td>
-                                <td>
-                                    @Html.ActionLink("edit", "Input", "Questions", new { id = item.question.Id })
-                                    |
-                                    @Html.ActionLink("details", "Details", "Questions", new { id = item.question.Id })
-                                </td>
-                            </tr>
 
-                        }
-                    </tbody>
-                </table>
+            <div id="menuQuestions" class="tab-pane fade in active">   
+                <div class="table-responsive">
+                    <br />
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>
+                                    <span class="glyphicon glyphicon-th"></span>
+                                </th>
+                                <th>Question</th>
+                                <th>Author</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var item in Model.Questions.Select((q, i) => new { question = q, idx = i + 1 }))
+                            {
+                                <tr>
+                                    <td>@item.idx</td>
+                                    <td>@item.question.Text</td>
+                                    <td>@item.question.Author?.UserName</td>
+                                    <td>
+                                        @Html.ActionLink("edit", "Input", "Questions", new { id = item.question.Id })
+                                        |
+                                        @Html.ActionLink("details", "Details", "Questions", new { id = item.question.Id })
+                                    </td>
+                                </tr>
+
+                            }
+                        </tbody>
+                    </table>
+                </div>
 
                 @if (Model.SelectedTechnology != null)
                 {

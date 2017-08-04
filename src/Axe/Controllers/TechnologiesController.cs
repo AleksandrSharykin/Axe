@@ -13,21 +13,9 @@ using Microsoft.AspNetCore.Identity;
 namespace Axe.Controllers
 {
     [Authorize]
-    public class TechnologiesController : Controller
+    public class TechnologiesController : ControllerExt
     {
-        private readonly UserManager<ApplicationUser> userManager;
-        private readonly AxeDbContext context;
-
-        public TechnologiesController(UserManager<ApplicationUser> userManager, AxeDbContext context)
-        {
-            this.userManager = userManager;
-            this.context = context;    
-        }
-
-        private Task<ApplicationUser> GetCurrentUserAsync()
-        {
-            return userManager.GetUserAsync(HttpContext.User);
-        }
+        public TechnologiesController(UserManager<ApplicationUser> userManager, AxeDbContext context) : base(userManager, context) { } 
 
         // GET: Technologies
         public async Task<IActionResult> Index(int? technologyId = null)

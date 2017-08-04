@@ -5,17 +5,13 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Axe.Models;
+using Microsoft.AspNetCore.Identity;
 
 namespace Axe.Controllers
 {
-    public class HomeController : Controller
+    public class HomeController : ControllerExt
     {
-        private readonly AxeDbContext context;
-
-        public HomeController(AxeDbContext context)
-        {
-            this.context = context;
-        }
+        public HomeController(UserManager<ApplicationUser> userManager, AxeDbContext context) : base(userManager, context) { }                
 
         public async Task<IActionResult> Index()
         {
