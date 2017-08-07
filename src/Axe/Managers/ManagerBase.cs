@@ -11,6 +11,13 @@ namespace Axe.Managers
     /// </summary>
     public class ManagerBase
     {
+        protected AxeDbContext context;
+
+        public ManagerBase(AxeDbContext context)
+        {
+            this.context = context;
+        }
+
         /// <summary>
         /// Shortcut to return generic response with data
         /// </summary>

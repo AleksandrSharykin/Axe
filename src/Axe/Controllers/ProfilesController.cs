@@ -108,7 +108,7 @@ namespace Axe.Controllers
             {
                 tasks = await this.context.ExamTask.Where(t => t.TechnologyId == selectedTech.Id).ToListAsync();
 
-                attempts = await this.context.ExamAttempt.Where(t => t.TechnologyId == selectedTech.Id).ToListAsync();
+                attempts = await this.context.ExamAttempt.Where(a => a.TechnologyId == selectedTech.Id && a.StudentId == profile.Id).ToListAsync();
 
                 bestAttempts = attempts.GroupBy(a => a.Task.Id)
                                        .Select(g => g.OrderByDescending(a => a.ExamScore).First())

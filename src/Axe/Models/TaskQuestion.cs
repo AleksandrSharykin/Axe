@@ -31,9 +31,8 @@ namespace Axe.Models
 
         /// <summary>
         /// Gets or sets question type
-        /// </summary>
-        // todo enum for types
-        public int Type { get; set; }
+        /// </summary>        
+        public TaskQuestionType Type { get; set; }
 
         /// <summary>
         /// Gets or sets user who created question

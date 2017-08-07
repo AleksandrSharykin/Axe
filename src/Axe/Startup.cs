@@ -45,6 +45,9 @@ namespace Axe
 
             services.AddScoped<ITechnologyManager, TechnologyManager>();
 
+            services.AddScoped<IExamEvaluator, ExamEvaluator>();
+            services.AddScoped<IExamManager, ExamManager>();
+
             // Configure Identity
             services.Configure<IdentityOptions>(options =>
             {

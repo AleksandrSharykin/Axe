@@ -13,12 +13,7 @@ namespace Axe.Managers
     /// </summary>
     public class TechnologyManager : ManagerBase, ITechnologyManager
     {
-        private AxeDbContext context;
-
-        public TechnologyManager(AxeDbContext context)
-        {
-            this.context = context;          
-        }
+        public TechnologyManager(AxeDbContext context) : base(context) { }
 
         /// <summary>
         /// Returns a list of technologies available for current user with details about selected technology
