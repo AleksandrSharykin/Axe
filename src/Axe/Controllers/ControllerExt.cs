@@ -19,10 +19,18 @@ namespace Axe.Controllers
             this.context = context;            
         }
 
-
         protected Task<ApplicationUser> GetCurrentUserAsync()
         {
             return this.userManager.GetUserAsync(HttpContext.User);
+        }
+
+        protected async Task<Request<T>> CreateRequest<T>(T item)
+        {
+            return new Request<T>(item)
+            {
+                CurrentUser = await this.GetCurrentUserAsync(),
+                ModelState = this.ModelState,
+            };
         }
     }
 }

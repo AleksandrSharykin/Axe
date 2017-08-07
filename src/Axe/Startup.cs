@@ -8,9 +8,10 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.EntityFrameworkCore;
-using Axe.Models;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+using Axe.Models;
+using Axe.Managers;
 
 namespace Axe
 {
@@ -41,6 +42,8 @@ namespace Axe
             services.AddIdentity<ApplicationUser, IdentityRole>()                
                     .AddEntityFrameworkStores<AxeDbContext>()                    
                     .AddDefaultTokenProviders();
+
+            services.AddScoped<ITechnologyManager, TechnologyManager>();
 
             // Configure Identity
             services.Configure<IdentityOptions>(options =>
