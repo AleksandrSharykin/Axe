@@ -3,8 +3,11 @@ using System.Collections.Generic;
 using System.Linq;
 using System.ComponentModel.DataAnnotations;
 
-namespace Axe.Models.ProfileViewModels
+namespace Axe.Models.ProfilesVm
 {
+    /// <summary>
+    /// Class provides values to change user account details
+    /// </summary>
     public class EditProfileVm
     {
         [Required]

@@ -55,22 +55,6 @@
                     </div>
                 }
             </div>
-            @*@foreach (var item in Model.Questions.Select((q, i) => new { Question = q, Idx = i }))
-                {
-                    var isFirstQuestion = item.Idx == 0 ? "in active" : null;
-
-                        <div id="q_@item.Idx" class="tab-pane fade @isFirstQuestion">
-                            @item.Question.TaskQuestion.Text
-                            <hr />
-                            <ul>
-                                @foreach (var a in item.Question.TaskQuestion.Answers)
-                    {
-                                    <li class="radio"><input type="radio" name="q_@item.Idx" /> @a.Text</li>
-                                }
-                            </ul>
-                        </div>
-                    }
-                </div>*@
         </div>
 
         <div class="col-sm-1">

@@ -3,12 +3,12 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace Axe.Models.ProfileViewModels
+namespace Axe.Models.ProfilesVm
 {
     /// <summary>
     /// Class contains data which should be displayed in user personal profile
     /// </summary>
-    public class ProfileInfoVm: IndexVm
+    public class ProfileDetailsVm: IndexVm
     {
         /// <summary>
         /// Gets or sets indicator that user is viewing their own profile

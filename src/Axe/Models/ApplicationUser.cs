@@ -1,11 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 
 namespace Axe.Models
 {
+    /// <summary>
+    /// Class contains information about users
+    /// </summary>
     public class ApplicationUser : IdentityUser
     {
         /// <summary>
@@ -43,6 +45,9 @@ namespace Axe.Models
         /// </summary>
         public ICollection<ExamAttempt> Attempts { get; set; }
 
+        /// <summary>
+        /// Gets or sets technologies user is an expert in
+        /// </summary>
         public ICollection<ExpertTechnologyLink> Technologies { get; set; }
 
         /// <summary>

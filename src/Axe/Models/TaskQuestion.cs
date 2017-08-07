@@ -4,24 +4,56 @@ using System.Linq;
 
 namespace Axe.Models
 {
+    /// <summary>
+    /// Class contains question details with a set of answers
+    /// </summary>
     public class TaskQuestion
     {
+        /// <summary>
+        /// Gets or sets identifier
+        /// </summary>
         public int Id { get; set; }
 
+        /// <summary>
+        /// Gets or sets question <see cref="Technology"/>
+        /// </summary>
         public int? TechnologyId { get; set; }
 
+        /// <summary>
+        /// Gets or sets question <see cref="Technology"/>
+        /// </summary>
         public Technology Technology { get; set; }
         
+        /// <summary>
+        /// Gets or sets question text
+        /// </summary>
         public string Text { get; set; }
 
-        public int Type { get; set; }        
+        /// <summary>
+        /// Gets or sets question type
+        /// </summary>
+        // todo enum for types
+        public int Type { get; set; }
 
-        public ICollection<TaskAnswer> Answers { get; set; }
-
-        public ICollection<TaskQuestionLink> Tasks { get; set; }
-
+        /// <summary>
+        /// Gets or sets user who created question
+        /// </summary>
         public string AuthorId { get; set; }
 
+        /// <summary>
+        /// Gets or sets user who created question
+        /// </summary>
         public ApplicationUser Author { get; set; }
+
+
+        /// <summary>
+        /// Gets or sets question answer
+        /// </summary>
+        public ICollection<TaskAnswer> Answers { get; set; }
+
+        /// <summary>
+        /// Gets or sets list of task where question is used
+        /// </summary>
+        public ICollection<TaskQuestionLink> Tasks { get; set; }
     }
 }

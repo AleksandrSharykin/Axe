@@ -9,7 +9,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.EntityFrameworkCore;
 using Axe.Models;
-using Axe.Models.ProfileViewModels;
+using Axe.Models.ProfilesVm;
 
 namespace Axe.Controllers
 {
@@ -116,7 +116,7 @@ namespace Axe.Controllers
             }
 
             bool self = profile.Id == user.Id;
-            var model = new ProfileInfoVm
+            var model = new ProfileDetailsVm
             {
                 Id = profile.Id,
                 Self = self,
@@ -139,60 +139,6 @@ namespace Axe.Controllers
 
             return View(model);
         }
-
-        //
-        // POST: /Manage/RemoveLogin
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> RemoveLogin(RemoveLoginViewModel account)
-        {
-            ManageMessageId? message = ManageMessageId.Error;
-            var user = await this.GetCurrentUserAsync();
-            if (user != null)
-            {
-                var result = await this.userManager.RemoveLoginAsync(user, account.LoginProvider, account.ProviderKey);
-                if (result.Succeeded)
-                {
-                    await _signInManager.SignInAsync(user, isPersistent: false);
-                    message = ManageMessageId.RemoveLoginSuccess;
-                }
-            }
-            return RedirectToAction(nameof(ManageLogins), new { Message = message });
-        }
-
-        //
-        // POST: /Manage/EnableTwoFactorAuthentication
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> EnableTwoFactorAuthentication()
-        {
-            var user = await this.GetCurrentUserAsync();
-            if (user != null)
-            {
-                await this.userManager.SetTwoFactorEnabledAsync(user, true);
-                await _signInManager.SignInAsync(user, isPersistent: false);
-                _logger.LogInformation(1, "User enabled two-factor authentication.");
-            }
-            return RedirectToAction(nameof(Index), "Profiles");
-        }
-
-        //
-        // POST: /Manage/DisableTwoFactorAuthentication
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> DisableTwoFactorAuthentication()
-        {
-            var user = await this.GetCurrentUserAsync();
-            if (user != null)
-            {
-                await this.userManager.SetTwoFactorEnabledAsync(user, false);
-                await _signInManager.SignInAsync(user, isPersistent: false);
-                _logger.LogInformation(2, "User disabled two-factor authentication.");
-            }
-            return RedirectToAction(nameof(Index), "Profiles");
-        }
-
-
 
         [HttpGet]
         public async Task<IActionResult> Edit()
@@ -235,7 +181,7 @@ namespace Axe.Controllers
         // POST: /Manage/ChangePassword
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> ChangePassword(ChangePasswordViewModel model)
+        public async Task<IActionResult> ChangePassword(ChangePasswordVm model)
         {
             if (!ModelState.IsValid)
             {
@@ -269,7 +215,7 @@ namespace Axe.Controllers
         // POST: /Manage/SetPassword
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> SetPassword(SetPasswordViewModel model)
+        public async Task<IActionResult> SetPassword(SetPasswordVm model)
         {
             if (!ModelState.IsValid)
             {
@@ -289,71 +235,6 @@ namespace Axe.Controllers
                 return View(model);
             }
             return RedirectToAction(nameof(Index), new { Message = ManageMessageId.Error });
-        }
-
-        //GET: /Manage/ManageLogins
-        [HttpGet]
-        public async Task<IActionResult> ManageLogins(ManageMessageId? message = null)
-        {
-            ViewData["StatusMessage"] =
-                message == ManageMessageId.RemoveLoginSuccess ? "The external login was removed."
-                : message == ManageMessageId.AddLoginSuccess ? "The external login was added."
-                : message == ManageMessageId.Error ? "An error has occurred."
-                : "";
-            var user = await this.GetCurrentUserAsync();
-            if (user == null)
-            {
-                return View("Error");
-            }
-            var userLogins = await this.userManager.GetLoginsAsync(user);
-            var otherLogins = _signInManager.GetExternalAuthenticationSchemes().Where(auth => userLogins.All(ul => auth.AuthenticationScheme != ul.LoginProvider)).ToList();
-            ViewData["ShowRemoveButton"] = user.PasswordHash != null || userLogins.Count > 1;
-            return View(new ManageLoginsViewModel
-            {
-                CurrentLogins = userLogins,
-                OtherLogins = otherLogins
-            });
-        }
-
-        //
-        // POST: /Manage/LinkLogin
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> LinkLogin(string provider)
-        {
-            // Clear the existing external cookie to ensure a clean login process
-            await HttpContext.Authentication.SignOutAsync(_externalCookieScheme);
-
-            // Request a redirect to the external login provider to link a login for the current user
-            var redirectUrl = Url.Action(nameof(LinkLoginCallback), "Profiles");
-            var properties = _signInManager.ConfigureExternalAuthenticationProperties(provider, redirectUrl, this.userManager.GetUserId(User));
-            return Challenge(properties, provider);
-        }
-
-        //
-        // GET: /Manage/LinkLoginCallback
-        [HttpGet]
-        public async Task<ActionResult> LinkLoginCallback()
-        {
-            var user = await this.GetCurrentUserAsync();
-            if (user == null)
-            {
-                return View("Error");
-            }
-            var info = await _signInManager.GetExternalLoginInfoAsync(await this.userManager.GetUserIdAsync(user));
-            if (info == null)
-            {
-                return RedirectToAction(nameof(ManageLogins), new { Message = ManageMessageId.Error });
-            }
-            var result = await this.userManager.AddLoginAsync(user, info);
-            var message = ManageMessageId.Error;
-            if (result.Succeeded)
-            {
-                message = ManageMessageId.AddLoginSuccess;
-                // Clear the existing external cookie to ensure a clean login process
-                await HttpContext.Authentication.SignOutAsync(_externalCookieScheme);
-            }
-            return RedirectToAction(nameof(ManageLogins), new { Message = message });
         }
 
         #region Helpers

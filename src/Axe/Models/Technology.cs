@@ -11,10 +11,16 @@ namespace Axe.Models
     /// </summary>
     public class Technology
     {
+        /// <summary>
+        /// Gets ort sets identifier
+        /// </summary>
         public int Id { get; set; }
 
-        [MaxLength(1024)]
+        /// <summary>
+        /// Gets or sets 
+        /// </summary>
         [Required]
+        [MaxLength(1024)]        
         public string Name { get; set; }
 
         /// <summary>
@@ -24,6 +30,9 @@ namespace Axe.Models
         [Required]
         public string InformationText { get; set; }
 
+        /// <summary>
+        /// Gets or sets list of experts
+        /// </summary>
         public ICollection<ExpertTechnologyLink> Experts { get; set; }
     }
 }

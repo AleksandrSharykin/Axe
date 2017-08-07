@@ -59,7 +59,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Models\AccountViewModels\" />
+    <Folder Include="ViewModels\" />
   </ItemGroup>
 
 </Project>

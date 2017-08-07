@@ -4,9 +4,12 @@ using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace Axe.Models.ProfileViewModels
+namespace Axe.Models.ProfilesVm
 {
-    public class ChangePasswordViewModel
+    /// <summary>
+    /// Class contains data required to changed user password
+    /// </summary>
+    public class ChangePasswordVm
     {
         [Required]
         [DataType(DataType.Password)]

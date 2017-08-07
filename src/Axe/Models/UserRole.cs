@@ -5,7 +5,10 @@ using System.Threading.Tasks;
 
 namespace Axe.Models
 {
-    public class UserRole
+    /// <summary>
+    /// Class contains information about existing user roles
+    /// </summary>
+    public static class UserRole
     {
         public static readonly string Superuser = "superuser";
         public static readonly string Member = "member";        

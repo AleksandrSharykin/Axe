@@ -5,6 +5,9 @@ using System.Threading.Tasks;
 
 namespace Axe.Models
 {
+    /// <summary>
+    /// Class creates many-to-many relationship between <see cref="ApplicationUser"/> and <see cref="Technology"/> entities
+    /// </summary>
     public class ExpertTechnologyLink
     {
         public string UserId { get; set; }

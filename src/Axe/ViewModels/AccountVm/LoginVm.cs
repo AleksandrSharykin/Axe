@@ -4,14 +4,13 @@ using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace Axe.Models.AccountViewModels
+namespace Axe.Models.AccountVm
 {
-    public class LoginViewModel
+    /// <summary>
+    /// Class provides values required for login
+    /// </summary>
+    public class LoginVm : AccountBaseVm
     {
-        [Required]
-        [EmailAddress]
-        public string Email { get; set; }
-
         [Required]
         [DataType(DataType.Password)]
         public string Password { get; set; }

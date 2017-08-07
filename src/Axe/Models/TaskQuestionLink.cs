@@ -10,7 +10,7 @@ namespace Axe.Models
     /// </summary>
     public class TaskQuestionLink
     {
-        public int? TaskId { get; set; }
+        public int TaskId { get; set; }
         public ExamTask Task { get; set; }
 
         public int QuestionId { get; set; }
