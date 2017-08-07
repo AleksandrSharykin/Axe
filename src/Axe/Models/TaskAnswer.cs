@@ -49,7 +49,11 @@ namespace Axe.Models
         [NotMapped]
         public bool IsCorrect
         {
-            get { return bool.Parse(Value); }
+            get
+            {
+                bool b;
+                return bool.TryParse(Value, out b) && b;
+            }
             set { Value = value.ToString(); }
         }
     }

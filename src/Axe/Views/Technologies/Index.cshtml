@@ -1,3 +1,4 @@
+@using Axe.Models
 @model Axe.Models.TechnologiesVm.TechnologiesIndexVm
 
 @{
@@ -73,7 +74,7 @@
                                     <td>@item.question.Text</td>
                                     <td>@item.question.Author?.UserName</td>
                                     <td>
-                                        @Html.ActionLink("edit", "Input", "Questions", new { id = item.question.Id })
+                                        @Html.ActionLink("edit", "Input", "Questions", new { id = item.question.Id, technologyId = item.question.TechnologyId })
                                         |
                                         @Html.ActionLink("details", "Details", "Questions", new { id = item.question.Id })
                                     </td>
@@ -87,7 +88,21 @@
                 @if (Model.SelectedTechnology != null)
                 {
                     <br />
-                    @Html.ActionLink("Add", "Input", "Questions", new { technologyId = Model.SelectedTechnology?.Id }, new { @class = "btn btn-primary" })
+                    <div class="row">
+                        <div class="col-md-3">
+                            New question with choice
+                        </div>
+                        @Html.ActionLink("Add", "Input", "Questions",
+                        new { technologyId = Model.SelectedTechnology?.Id }, new { @class = "btn btn-primary" })
+                    </div>
+                    <br />
+                    <div class="row">
+                        <div class="col-md-3">
+                            New question with user input
+                        </div>                        
+                        @Html.ActionLink("Add", "Input", "Questions",
+                        new { technologyId = Model.SelectedTechnology?.Id, questionType = (int)TaskQuestionType.MultiLine }, new { @class = "btn btn-primary" })
+                    </div>
                 }
             </div>
 

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Axe.Models
 {
@@ -33,6 +34,15 @@ namespace Axe.Models
         /// Gets or sets question type
         /// </summary>        
         public TaskQuestionType Type { get; set; }
+
+        [NotMapped]
+        public bool WithUserInput
+        {
+            get
+            {
+                return Type == TaskQuestionType.MultiLine || Type == TaskQuestionType.SingleLine;
+            }
+        }
 
         /// <summary>
         /// Gets or sets user who created question

@@ -24,23 +24,8 @@ namespace Axe.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> Input(int? id = null, int? technologyId = null)
+        public async Task<IActionResult> Input(int? id = null, int? technologyId = null, int? questionType = null)
         {
-            var question = await this.context.TaskQuestion
-                .Include(q => q.Answers)
-                .AsNoTracking()
-                .SingleOrDefaultAsync(q => q.Id == id);
-
-            if (question == null)
-            {
-                // create template for a new question
-                question = new TaskQuestion { Answers = Enumerable.Range(1, 4).Select(i => new TaskAnswer { Value = Boolean.FalseString }).ToList() };
-            }
-            else
-            {
-                technologyId = question.TechnologyId;
-            }
-
             var user = await this.GetCurrentUserAsync();
             user = await this.context.Users
                              .Include(u => u.Technologies).ThenInclude(t => t.Technology)
@@ -51,14 +36,40 @@ namespace Axe.Controllers
                 return RedirectToAction("Index", "Technologies");
             }
 
+            var question = await this.context.TaskQuestion
+                                    .Include(q => q.Answers)
+                                    .AsNoTracking()
+                                    .SingleOrDefaultAsync(q => q.Id == id);
+
+            if (question == null)
+            {
+                var editorType = questionType.HasValue && Enum.IsDefined(typeof(TaskQuestionType), questionType.Value) ?
+                                (TaskQuestionType)questionType.Value :
+                                TaskQuestionType.MultiChoice;
+
+                // create template for a new question
+                question = new TaskQuestion { Type = editorType };
+
+                question.Answers = question.WithUserInput ?
+                    question.Answers = new List<TaskAnswer> { new TaskAnswer { Text = "?" } } :
+                    question.Answers = Enumerable.Range(1, 4).Select(i => new TaskAnswer { Value = Boolean.FalseString }).ToList();                                
+            }
+            else
+            {
+                technologyId = question.TechnologyId;
+            }
+
             var questionVm = new QuestionInputVm()
             {
-                Id = question.Id,                
+                Id = question.Id,
                 Text = question.Text,
                 Answers = question.Answers.ToList(),
+                EditorType = question.Type,
+                WithUserInput = question.WithUserInput,
                 TechnologyId = technologyId,
                 Technologies = new SelectList(user.Technologies.Select(t => t.Technology), "Id", "Name", technologyId),
             };
+
             return View(questionVm);
         }
 
@@ -73,12 +84,12 @@ namespace Axe.Controllers
 
             // https://stackoverflow.com/questions/37490192/modelbinding-on-model-collection            
             cmd = cmd?.Trim()?.ToLower();
-            if (cmd == "add")
+            if (false == questionVm.WithUserInput && cmd == "add")
             {                
                 // adding one more answer option
                 questionVm.Answers.Add(new TaskAnswer() { Value = Boolean.FalseString });
             }
-            else if (cmd == "remove")
+            else if (false == questionVm.WithUserInput && cmd == "remove")
             {
                 if (questionVm.Answers.Count > 0)
                     questionVm.Answers.RemoveAt(questionVm.Answers.Count - 1);
@@ -138,6 +149,7 @@ namespace Axe.Controllers
                     }
 
                     question.Text = questionVm.Text;
+                    question.Type = questionVm.EditorType;
 
                     if (question.AuthorId == null)
                     {

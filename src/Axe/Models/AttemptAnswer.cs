@@ -47,7 +47,11 @@ namespace Axe.Models
         [NotMapped]
         public bool IsSelected
         {
-            get { return bool.Parse(Value ?? Boolean.FalseString); }
+            get
+            {
+                bool b;
+                return bool.TryParse(Value, out b) && b;                
+            }
             set { Value = value.ToString(); }
         }
     }

@@ -29,6 +29,10 @@ namespace Axe.Models.QuestionsVm
         /// </summary>
         public SelectList Technologies { get; set; }
 
+        public TaskQuestionType EditorType { get; set; }
+
+        public bool WithUserInput { get; set; }
+
         [Required]
         [Display(Prompt = "Ask me something")]        
         public string Text { get; set; }

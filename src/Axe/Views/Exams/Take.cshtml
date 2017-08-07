@@ -42,16 +42,26 @@
                         
                         <hr />
 
-                        <ul>
-                            @for (int a = 0; a < Model.Questions[idx].AttemptAnswers.Count; a++)
-                            {
-                                <li class="radio">
-                                    <input type="hidden" asp-for="@Model.Questions[idx].AttemptAnswers[a].TaskAnswerId" />
-                                    @Html.CheckBoxFor(m => m.Questions[idx].AttemptAnswers[a].IsSelected)
-                                    <span>@Model.Questions[idx].AttemptAnswers[a].TaskAnswer.Text</span>
-                                </li>
-                            }
-                        </ul>
+                        @if (Model.Questions[idx].TaskQuestion.WithUserInput)
+                        {
+                            <input type="hidden" asp-for="@Model.Questions[idx].AttemptAnswers[0].TaskAnswerId" />                            
+
+                            <textarea asp-for="@Model.Questions[idx].AttemptAnswers[0].Value" class="form-control" rows="4"></textarea>
+                        }
+                        else
+                        {
+                            <ul>
+                                @for (int a = 0; a < Model.Questions[idx].AttemptAnswers.Count; a++)
+                                {
+                                    <li class="radio">
+                                        <input type="hidden" asp-for="@Model.Questions[idx].AttemptAnswers[a].TaskAnswerId" />
+                                        @Html.CheckBoxFor(m => m.Questions[idx].AttemptAnswers[a].IsSelected)
+                                        <span>@Model.Questions[idx].AttemptAnswers[a].TaskAnswer.Text</span>
+                                    </li>
+                                }
+                            </ul>
+                        }
+
                     </div>
                 }
             </div>

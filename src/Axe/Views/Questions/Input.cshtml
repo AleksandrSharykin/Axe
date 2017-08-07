@@ -9,8 +9,11 @@
 <form asp-action="Input" asp-controller="Questions" method="post">
 
     <div class="form-group">        
-        <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+        <div asp-validation-summary="All" class="text-danger"></div>
         <input type="hidden" asp-for="Id" />
+
+        <input type="hidden" asp-for="@Model.EditorType" />
+        <input type="hidden" asp-for="@Model.WithUserInput" />
 
         <div class="form-group">
             <label asp-for="TechnologyId" class="control-label"></label>
@@ -37,58 +40,71 @@
         </div>
     </div>
 
-    <div class="form-group">        
-
-        <div class="row form-group">
-            <div class="col-md-10">
-                <label class="control-label">Answer text</label>
-            </div>
-
-            <div class="col-md-1">
-                <label class="control-label">Value</label>
-            </div>
-
-            <div class="col-md-1">
-                <label class="control-label">Score</label>
+    @if (Model.WithUserInput)
+    {
+        <div class="row">
+            <div class="form-group col-md-6">
+                <input type="hidden" asp-for="@Model.Answers[0].Id" />
+                <input type="hidden" asp-for="@Model.Answers[0].Text" />
+                <textarea asp-for="@Model.Answers[0].Value" class="form-control" rows="4"></textarea>
             </div>
         </div>
-        
-        @for (int i = 0; i < Model.Answers.Count; i++)
-        {
+    }
+    else
+    {
+        <div class="form-group">
+
             <div class="row form-group">
-
                 <div class="col-md-10">
-                    <input type="hidden" asp-for="@Model.Answers[i].Id" />
-                    <input asp-for="@Model.Answers[i].Text" class="form-control" />
-                    <span asp-validation-for="@Model.Answers[i].Text" class="text-danger"></span>
+                    <label class="control-label">Answer text</label>
                 </div>
 
                 <div class="col-md-1">
-                    @Html.CheckBoxFor(m => m.Answers[i].IsCorrect)
+                    <label class="control-label">Value</label>
                 </div>
 
                 <div class="col-md-1">
-                    @Html.EditorFor(m => m.Answers[i].Score)
-                    <span asp-validation-for="@Model.Answers[i].Score" class="text-danger"></span>
+                    <label class="control-label">Score</label>
                 </div>
             </div>
-        }
-        
-    </div>
-    
-    <div class="row">
-        <div class="btn-group col-md-3">
-            <input type="submit" value="&nbsp;Add&nbsp;" name="cmd" class="btn btn-default" title="Add an answer" />
-            <input type="submit" value="Remove" name="cmd" class="btn btn-default" title="Remove last answer" />
+
+            @for (int i = 0; i < Model.Answers.Count; i++)
+            {
+                <div class="row form-group">
+
+                    <div class="col-md-10">
+                        <input type="hidden" asp-for="@Model.Answers[i].Id" />
+                        <input asp-for="@Model.Answers[i].Text" class="form-control" />
+                        <span asp-validation-for="@Model.Answers[i].Text" class="text-danger"></span>
+                    </div>
+
+                    <div class="col-md-1">
+                        @Html.CheckBoxFor(m => m.Answers[i].IsCorrect)
+                    </div>
+
+                    <div class="col-md-1">
+                        @Html.EditorFor(m => m.Answers[i].Score)
+                        <span asp-validation-for="@Model.Answers[i].Score" class="text-danger"></span>
+                    </div>
+                </div>
+            }
         </div>
 
-        <div class="col-md-offset-8  col-md-1">
-            <input type="submit" value="Save" name="cmd" class="btn btn-primary" />
+        <div class="row">
+            <div class="btn-group col-md-3">
+                <input type="submit" value="&nbsp;Add&nbsp;" name="cmd" class="btn btn-default" title="Add an answer" />
+                <input type="submit" value="Remove" name="cmd" class="btn btn-default" title="Remove last answer" />
+            </div>
         </div>
-    </div>
+    }    
 
     <hr/>
-    @Html.ActionLink("Back to Technologies", "Index", "Technologies", new { technologyId = Model.TechnologyId })
+    <div class="row">
+        <div class="col-md-2">
+            @Html.ActionLink("Back to Technologies", "Index", "Technologies", new { technologyId = Model.TechnologyId })
+        </div>
+        <input type="submit" value="Save" name="cmd" class="btn btn-primary" />
+    </div>
 </form>
 
 
