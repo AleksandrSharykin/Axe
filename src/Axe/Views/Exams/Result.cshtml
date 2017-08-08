@@ -45,9 +45,13 @@
 <div class="table-responsive">
     @for (int q = 0; q < Model.Questions.Count; q++)
     {
-        <div class="form-group ">
+        <div class="form-group">
             <div class="col-md-1">
-                <label class="btn btn-default"># @(q + 1)</label>
+                <span class="btn btn-default"># @(q + 1)</span>
+                @if (@Model.Questions[q].Score.HasValue)
+                {
+                    @Html.Raw("+")<span>@Model.Questions[q].Score</span>
+                }
             </div>
 
             <div class="col-md-11">

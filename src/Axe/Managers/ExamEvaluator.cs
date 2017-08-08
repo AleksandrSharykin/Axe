@@ -21,45 +21,79 @@ namespace Axe.Managers
 
             attempt.Technology = task.Technology;
 
-            var questions = task.Questions.Select(q => q.Question).ToList();
-            attempt.MaxScore = questions.SelectMany(q => q.Answers).Sum(a => a.Score);
+            attempt.MaxScore = attempt.Questions.SelectMany(q => q.TaskQuestion.Answers).Sum(a => a.Score);
             attempt.ExamScore = 0;
 
-            var questionPairs = questions.Join(attempt.Questions, qt => qt.Id, qa => qa.TaskQuestionId,
-                (qt, qa) => new { TaskQuestion = qt, AttemptQuestion = qa });
-
             // evaluate each question
-            foreach (var qp in questionPairs)
+            foreach (var question in attempt.Questions)
             {
-                var answerPairs = qp.TaskQuestion.Answers.Join(qp.AttemptQuestion.AttemptAnswers, ta => ta.Id, aa => aa.TaskAnswerId,
-                    (ta, aa) => new { TaskAnswer = ta, AttemptAnswer = aa });
-
                 bool isQuestionAccepted = true;
-                int questionScore = 0;
-                // compare user answers with correct answers
-                foreach (var ap in answerPairs)
+                question.Score = 0;
+
+                if (question.TaskQuestion.Type == TaskQuestionType.MultiLine)
                 {
-                    var attemptAnswer = ap.AttemptAnswer.Value?.ToLower() ?? String.Empty;
-                    var taskAnswer = ap.TaskAnswer.Value?.ToLower() ?? String.Empty;
-                    if (attemptAnswer == taskAnswer)
+                    var answer = question.AttemptAnswers[0];
+                    if (answer.Value == null)
                     {
-                        questionScore += ap.TaskAnswer.Score;
+                        answer.Value = String.Empty;
                     }
-                    else
-                    {
-                        isQuestionAccepted = false;
+                    string[] userInput = answer.Value.Split(new[] { Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries);
+                    string[] correctValues = answer.TaskAnswer.Value.Split(new[] { Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries);
+
+                    var wrongInput = userInput.Except(correctValues).ToList();
+                    var correctInput = userInput.Intersect(correctValues).ToList();
+
+                    question.IsAccepted = wrongInput.Count == 0 && correctInput.Count > 0;
+
+                    if (question.IsAccepted == true)
+                    {                        
+                        if (correctInput.Count == correctValues.Length)
+                        {
+                            // award full points for all correct answers
+                            question.Score = answer.TaskAnswer.Score;
+                        }
+                        else
+                        {
+                            // award part of points 
+                            question.Score = (int)Math.Floor(answer.TaskAnswer.Score * correctInput.Count / (float)correctValues.Length);
+                        }
                     }
+                    
                 }
-                
-                if (isQuestionAccepted ||
-                    answerPairs.Where(p => p.AttemptAnswer.Value == Boolean.TrueString).All(p => p.TaskAnswer.Value == Boolean.TrueString))
+                else
                 {
+                    // compare user answers with correct answers
+                    foreach (var ap in question.AttemptAnswers)
+                    {
+                        var attemptAnswer = ap.Value?.ToLower() ?? String.Empty;
+                        var taskAnswer = ap.TaskAnswer.Value?.ToLower() ?? String.Empty;
+                        if (attemptAnswer == taskAnswer)
+                        {
+                            question.Score += ap.TaskAnswer.Score;
+                        }
+                        else
+                        {
+                            isQuestionAccepted = false;
+                        }
+                    }
+
                     // if incorrect answer is selected, points are not awarded
                     // award points for correct answers (full score for all answers)
-                    attempt.ExamScore += questionScore;
+                    question.IsAccepted = isQuestionAccepted || 
+                        question.AttemptAnswers.Where(a => a.Value == Boolean.TrueString).All(p => p.TaskAnswer.Value == Boolean.TrueString);
+                }
+
+                if (question.IsAccepted == true)
+                {                    
+                    attempt.ExamScore += question.Score;                    
+                }
+                else
+                {
+                    question.Score = 0;
                 }
             }
 
+            // todo : set threshold in Task editor
             // threshold 50%
             attempt.IsPassed = attempt.ExamScore > 0.5 * attempt.MaxScore;
         }

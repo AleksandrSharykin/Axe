@@ -54,5 +54,12 @@ namespace Axe.Models
         /// Gets or setws user answers
         /// </summary>
         public IList<AttemptAnswer> AttemptAnswers { get; set; }
+
+        /// <summary>
+        /// Gets or sets indication that question answers were evaluated
+        /// </summary>
+        public bool? IsAccepted { get; set; }
+
+        public int? Score { get; set; }
     }
 }
