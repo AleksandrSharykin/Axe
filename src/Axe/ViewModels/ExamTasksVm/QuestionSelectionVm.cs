@@ -23,13 +23,7 @@ namespace Axe.Models.ExamTasksVm
         /// <summary>
         /// Gets a shorten question text preview
         /// </summary>
-        public string Preview
-        {
-            get
-            {
-                return Text != null && Text.Length > 128 ? Text.Substring(0, 128) + "..." : Text;
-            }
-        }
+        public string Preview { get; set; }
 
         /// <summary>
         /// Gets or sets selection indicator

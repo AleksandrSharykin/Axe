@@ -31,6 +31,19 @@ namespace Axe.Models
         public string Text { get; set; }
 
         /// <summary>
+        /// Gets a shorten question text preview
+        /// </summary>
+        [NotMapped]
+        public string Preview
+        {
+            get
+            {
+                return Text != null && Text.Length > 128 ? Text.Substring(0, 128) + "..." : Text;
+            }
+        }
+
+
+        /// <summary>
         /// Gets or sets question type
         /// </summary>        
         public TaskQuestionType Type { get; set; }

@@ -51,22 +51,18 @@
             </div>
 
             <div class="col-md-11">
-                <p>@Model.Questions[q].TaskQuestion.Text</p>
+                <p class="codeblock">@Model.Questions[q].TaskQuestion.Text</p>
 
                 @if (Model.Questions[q].TaskQuestion.WithUserInput)
                 {
                     if (Model.Questions[q].AttemptAnswers[0].Value != Model.Questions[q].AttemptAnswers[0].TaskAnswer.Value)
                     {
-                        <p class="bg-success">
-                            @Model.Questions[q].AttemptAnswers[0].TaskAnswer.Value
-                        </p>                        
-                        <p class="bg-danger">
-                            @Model.Questions[q].AttemptAnswers[0].Value
-                        </p>
+                        <p class="codeblock bg-success">@Model.Questions[q].AttemptAnswers[0].TaskAnswer.Value</p>                        
+                        <p class="codeblock bg-danger">@Model.Questions[q].AttemptAnswers[0].Value</p>
                     }
                     else
                     {
-                        @Model.Questions[q].AttemptAnswers[0].Value
+                        <p class="codeblock">@Model.Questions[q].AttemptAnswers[0].Value</p>
                     }
                 }
                 else

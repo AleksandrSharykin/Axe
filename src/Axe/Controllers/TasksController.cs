@@ -90,6 +90,7 @@ namespace Axe.Controllers
                 {
                     Id = q.Id,
                     Text = q.Text,
+                    Preview = q.Preview,
                     IsSelected = examTask.Questions.Any(x => x.QuestionId == q.Id),                    
                 }).ToList()
             };

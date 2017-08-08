@@ -71,7 +71,7 @@
                             {
                                 <tr>
                                     <td>@item.idx</td>
-                                    <td>@item.question.Text</td>
+                                    <td title="@item.question.Text">@item.question.Preview</td>
                                     <td>@item.question.Author?.UserName</td>
                                     <td>
                                         @Html.ActionLink("edit", "Input", "Questions", new { id = item.question.Id, technologyId = item.question.TechnologyId })
@@ -79,7 +79,6 @@
                                         @Html.ActionLink("details", "Details", "Questions", new { id = item.question.Id })
                                     </td>
                                 </tr>
-
                             }
                         </tbody>
                     </table>
