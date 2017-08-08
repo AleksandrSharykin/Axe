@@ -25,8 +25,8 @@
     <div class="col-md-4">
         <a href="@Url.Action("Visit", "Profiles", new { id = item.user.Id })">
             <div class="row userCard">
-                <div class="col-sm-2">
-                    <img src="https://avatars1.githubusercontent.com/u/30412176?v=4&s=460" width="40" height="40" />
+                <div class="col-sm-2">                    
+                    <img src="@Url.Action("GetAvatar", "Profiles", new { id = item.user.Id })" width="40" height="40" />
                 </div>
                 @*user card*@
                 <div class="col-sm-10">                        

@@ -54,5 +54,10 @@ namespace Axe.Models
         /// Gets or sets user's job description
         /// </summary>
         public string JobPosition { get; set; }
+
+        /// <summary>
+        /// Gets or sets profile image
+        /// </summary>
+        public byte[] Avatar { get; set; }
     }
 }

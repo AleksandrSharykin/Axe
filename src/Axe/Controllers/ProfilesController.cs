@@ -140,19 +140,34 @@ namespace Axe.Controllers
             return View(model);
         }
 
+        /// <summary>
+        /// Loads user avatar from db
+        /// </summary>
+        /// <param name="id">User identifier</param>
+        /// <returns></returns>
+        public ActionResult GetAvatar(string id)
+        {
+            byte[] imageData = this.context.Users.Where(u => u.Id == id).Select(u => u.Avatar).FirstOrDefault();
+            if (imageData != null)
+            {
+                return File(imageData, "image/png");
+            }
+            return NotFound();
+        }
+
         [HttpGet]
         public async Task<IActionResult> Edit()
         {
             var user = await this.GetCurrentUserAsync();
             if (user == null)
                 return RedirectToAction(nameof(Index));
-
-            return View(new EditProfileVm { UserName = user.UserName, JobPosition = user.JobPosition });
+            
+            return View(new EditProfileVm { Id = user.Id, UserName = user.UserName, JobPosition = user.JobPosition });
         }
 
         public async Task<IActionResult> Edit(EditProfileVm model)
         {
-            if (!ModelState.IsValid)
+            if (false == ModelState.IsValid)
             {
                 return View(model);
             }
@@ -163,6 +178,14 @@ namespace Axe.Controllers
 
             user.UserName = model.UserName;
             user.JobPosition = model.JobPosition;
+            if (model.AvatarImage != null)
+            {
+                using (var memoryStream = new System.IO.MemoryStream())
+                {
+                    await model.AvatarImage.CopyToAsync(memoryStream);
+                    user.Avatar = memoryStream.ToArray();
+                }
+            }
             this.context.Update(user);
             this.context.SaveChanges();
 

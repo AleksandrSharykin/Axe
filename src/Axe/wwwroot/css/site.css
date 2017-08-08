@@ -58,7 +58,7 @@ input,
 select,
 textarea {
     /*max-width: 810px;*/
-    white-space:pre-wrap;    
+    white-space: pre-wrap;    
 }
 
 .codeblock {

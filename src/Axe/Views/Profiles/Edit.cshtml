@@ -4,20 +4,20 @@
     ViewData["Title"] = "Edit";
 }
 
-<form asp-controller="Profiles" asp-action="edit" asp-method="post" class="form-horizontal" >
+<form asp-controller="Profiles" asp-action="edit" asp-method="post" enctype="multipart/form-data" class="form-horizontal" >
     <br />
     <div asp-valitation-summary="All" class="text-danger"></div>
 
     <div class="row"> 
         <div class="col-md-3">
-            <img src="" width="230" height="230" />
+            <img src="@Url.Action("GetAvatar", "Profiles", new { id = Model.Id })" alt="Profile Image" width="230" height="230" />
         </div>
 
         <div class="col-md-9">
             <div class="form-group">
                 <label asp-for="UserName" class="control-label col-md-2"></label>
                 <div class="col-md-10">
-                    <input asp-for="UserName" class="form-control"/>
+                    <input asp-for="UserName" class="form-control" />
                     <span asp-validation-for="UserName" class="text-danger"></span>
                 </div>
             </div>
@@ -26,14 +26,33 @@
                 <label asp-for="JobPosition" class="col-md-2 control-label"></label>
 
                 <div class="col-md-10">
-                    <input asp-for="JobPosition" class="form-control"/>
+                    <input asp-for="JobPosition" class="form-control" />
                     <span asp-for="JobPosition" class="text-danger"></span>
                 </div>
             </div>
 
             <div class="form-group">
+                <label asp-for="AvatarImage" class="col-md-2 control-label"></label>
+                
+                <div class="form-group col-md-10">
+                    <div class="col-md-2">
+                        <label class="btn btn-default" for="AvatarImage">
+                            <input id="AvatarImage" name="AvatarImage" type="file" style="display:none" accept=".png, .jpg"
+                                   onchange="$('#upload-file-info').html(this.files[0].name)">
+                            Browse
+                        </label>
+                    </div>
+                    <div class="col-md-10">
+                            <p id="upload-file-info"></p>
+                        </div>
+                    </div>
+            </div>
+
+            
+
+            <div class="form-group">
                 <div class="col-md-offset-2 col-md-10">
-                    <button type="submit" class="btn btn-default">Save</button>
+                    <button type="submit" class="btn btn-primary">Save</button>
                 </div>
             </div>
         </div>
