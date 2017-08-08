@@ -91,7 +91,7 @@ namespace Axe.Managers
             foreach (var q in attempt.Questions)
             {
                 q.Attempt = attempt;
-                foreach (var a in q.AttemptAnswers)
+                foreach (var a in q.AttemptAnswers)                
                     a.AttemptQuestion = q;
             }
 
@@ -111,6 +111,10 @@ namespace Axe.Managers
                 foreach(var answer in question.AttemptAnswers)
                 {
                     answer.TaskAnswer = question.TaskQuestion.Answers.FirstOrDefault(a => a.Id == answer.TaskAnswerId);
+                    if (question.TaskQuestion.Type == TaskQuestionType.SingleChoice)
+                    {
+                        answer.Value = (answer.TaskAnswer.Id == question.SelectedAnswer) ? Boolean.TrueString : Boolean.FalseString;
+                    }
                 }
             }
 

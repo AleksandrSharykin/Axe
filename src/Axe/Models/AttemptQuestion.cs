@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Axe.Models
 {
@@ -46,6 +47,8 @@ namespace Axe.Models
         /// </summary>
         public TaskQuestion TaskQuestion { get; set; }
 
+        [NotMapped]
+        public int? SelectedAnswer { get; set; }
 
         /// <summary>
         /// Gets or setws user answers

@@ -47,7 +47,14 @@
                         {
                             <input type="hidden" asp-for="@Model.Questions[idx].AttemptAnswers[0].TaskAnswerId" />                            
 
-                            <textarea asp-for="@Model.Questions[idx].AttemptAnswers[0].Value" class="form-control" rows="4"></textarea>
+                            if (Model.Questions[idx].TaskQuestion.Type == Axe.Models.TaskQuestionType.MultiLine)
+                            {
+                                <textarea asp-for="@Model.Questions[idx].AttemptAnswers[0].Value" class="form-control" rows="4"></textarea>
+                            }
+                            else
+                            {
+                                @Html.EditorFor(m=>m.Questions[idx].AttemptAnswers[0].Value)
+                            }
                         }
                         else
                         {
@@ -56,7 +63,16 @@
                                 {
                                     <li class="radio">
                                         <input type="hidden" asp-for="@Model.Questions[idx].AttemptAnswers[a].TaskAnswerId" />
-                                        @Html.CheckBoxFor(m => m.Questions[idx].AttemptAnswers[a].IsSelected)
+
+                                        @if (Model.Questions[idx].TaskQuestion.Type == Axe.Models.TaskQuestionType.MultiChoice)
+                                        {
+                                            @Html.CheckBoxFor(m => m.Questions[idx].AttemptAnswers[a].IsSelected)
+                                        }
+                                        else
+                                        {
+                                            <input asp-for="@Model.Questions[idx].SelectedAnswer" type="radio" value="@Model.Questions[idx].AttemptAnswers[a].TaskAnswerId" />
+                                        }
+
                                         <span>@Model.Questions[idx].AttemptAnswers[a].TaskAnswer.Text</span>
                                     </li>
                                 }

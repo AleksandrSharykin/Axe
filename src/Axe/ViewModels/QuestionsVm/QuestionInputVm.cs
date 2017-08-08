@@ -37,9 +37,7 @@ namespace Axe.Models.QuestionsVm
         [Display(Prompt = "Ask me something")]        
         public string Text { get; set; }
 
-        public int? SelectedAnswer { get; set; }
-
-        public int[] SelectedAnswers { get; set; }
+        public int? SelectedAnswer { get; set; }        
 
         /// <summary>
         /// Gets or sets alternative answers

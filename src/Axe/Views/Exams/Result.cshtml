@@ -57,8 +57,16 @@
                 {
                     if (Model.Questions[q].AttemptAnswers[0].Value != Model.Questions[q].AttemptAnswers[0].TaskAnswer.Value)
                     {
-                        <p class="codeblock bg-success">@Model.Questions[q].AttemptAnswers[0].TaskAnswer.Value</p>                        
-                        <p class="codeblock bg-danger">@Model.Questions[q].AttemptAnswers[0].Value</p>
+                        <p class="codeblock bg-success">@Model.Questions[q].AttemptAnswers[0].TaskAnswer.Value</p>
+
+                        @if (Model.Questions[q].AttemptAnswers[0].Value != null)
+                        {
+                            <p class="codeblock bg-danger">@Model.Questions[q].AttemptAnswers[0].Value</p>
+                        }
+                        else
+                        {
+                            <p class="bg-danger">no answer</p>
+                        }
                     }
                     else
                     {
