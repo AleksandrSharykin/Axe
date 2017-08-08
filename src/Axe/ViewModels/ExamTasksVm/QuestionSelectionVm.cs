@@ -26,6 +26,11 @@ namespace Axe.Models.ExamTasksVm
         public string Preview { get; set; }
 
         /// <summary>
+        /// Gets or sets question type
+        /// </summary>
+        public TaskQuestionType Type { get; set; }
+
+        /// <summary>
         /// Gets or sets selection indicator
         /// </summary>
         public bool IsSelected { get; set; }

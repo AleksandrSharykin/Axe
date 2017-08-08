@@ -52,7 +52,7 @@ namespace Axe.Managers
                 }
                 
                 if (isQuestionAccepted ||
-                    answerPairs.Where(p => p.AttemptAnswer.IsSelected).All(p => p.TaskAnswer.IsCorrect))
+                    answerPairs.Where(p => p.AttemptAnswer.Value == Boolean.TrueString).All(p => p.TaskAnswer.Value == Boolean.TrueString))
                 {
                     // if incorrect answer is selected, points are not awarded
                     // award points for correct answers (full score for all answers)

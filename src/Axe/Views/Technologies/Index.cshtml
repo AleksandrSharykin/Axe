@@ -87,21 +87,7 @@
                 @if (Model.SelectedTechnology != null)
                 {
                     <br />
-                    <div class="row">
-                        <div class="col-md-3">
-                            New question with choice
-                        </div>
-                        @Html.ActionLink("Add", "Input", "Questions",
-                        new { technologyId = Model.SelectedTechnology?.Id }, new { @class = "btn btn-primary" })
-                    </div>
-                    <br />
-                    <div class="row">
-                        <div class="col-md-3">
-                            New question with user input
-                        </div>                        
-                        @Html.ActionLink("Add", "Input", "Questions",
-                        new { technologyId = Model.SelectedTechnology?.Id, questionType = (int)TaskQuestionType.MultiLine }, new { @class = "btn btn-primary" })
-                    </div>
+                    @Html.ActionLink("Add", "Input", "Questions", new { technologyId = Model.SelectedTechnology?.Id }, new { @class = "btn btn-primary" })
                 }
             </div>
 

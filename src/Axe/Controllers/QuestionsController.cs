@@ -59,6 +59,13 @@ namespace Axe.Controllers
                 technologyId = question.TechnologyId;
             }
 
+            int c = 0;
+            foreach(var q in question.Answers)
+            {
+                q.Code = c;
+                c++;
+            }
+
             var questionVm = new QuestionInputVm()
             {
                 Id = question.Id,
@@ -70,17 +77,36 @@ namespace Axe.Controllers
                 Technologies = new SelectList(user.Technologies.Select(t => t.Technology), "Id", "Name", technologyId),
             };
 
+            if (question.Type == TaskQuestionType.SingleChoice)
+            {
+                questionVm.SelectedAnswer = questionVm.Answers.FirstOrDefault(a => Equals(a.Value, Boolean.TrueString))?.Code;
+            }
+
             return View(questionVm);
         }
 
         [HttpPost]
-        public async Task<IActionResult> Input(int id, QuestionInputVm questionVm, string cmd = null)
+        public async Task<IActionResult> Input(int id, QuestionInputVm questionVm, int? etp = null, string cmd = null)
         {
             // Answers property becomes null if all answers were removed
             if (questionVm.Answers == null)
             {
                 questionVm.Answers = new List<TaskAnswer>();
             }
+
+            int c = 0;
+            foreach(var a in questionVm.Answers)
+            {
+                a.Code = c;
+                c++;
+            }
+
+            if (etp.HasValue)
+            {
+                questionVm.EditorType = (TaskQuestionType)etp.Value;
+            }
+
+            questionVm.WithUserInput = questionVm.EditorType == TaskQuestionType.SingleLine || questionVm.EditorType == TaskQuestionType.MultiLine;
 
             // https://stackoverflow.com/questions/37490192/modelbinding-on-model-collection            
             cmd = cmd?.Trim()?.ToLower();
@@ -94,7 +120,7 @@ namespace Axe.Controllers
                 if (questionVm.Answers.Count > 0)
                     questionVm.Answers.RemoveAt(questionVm.Answers.Count - 1);
             }
-            else
+            else if (cmd == "save")
             {
                 ApplicationUser user = null;
                 if (ModelState.IsValid)
@@ -104,6 +130,36 @@ namespace Axe.Controllers
                     if (false == tech.Experts.Any(u => u.UserId == user.Id))
                     {
                         ModelState.AddModelError(String.Empty, "Only " + tech.Name + " experts can write questions");
+                    }
+
+                    switch(questionVm.EditorType)
+                    {
+                        case TaskQuestionType.SingleChoice:
+                            foreach(var a in questionVm.Answers)
+                            {
+                                a.IsCorrect = a.Code == questionVm.SelectedAnswer;
+                            }                           
+
+                            if (questionVm.Answers.Count < 2)
+                            {
+                                ModelState.AddModelError(String.Empty, "Question should have at least two options");
+                            }
+                            else if (false == questionVm.Answers.Any(a => a.IsCorrect))
+                            {
+                                ModelState.AddModelError(String.Empty, "Question should have an answer");
+                            }
+                            break;
+                        case TaskQuestionType.MultiLine: 
+                        case TaskQuestionType.SingleLine:
+                            if (String.IsNullOrWhiteSpace(questionVm.Answers[0].Text))
+                            {
+                                ModelState.AddModelError(String.Empty, "Question should have an answer");
+                            }
+                            else
+                            {
+                                questionVm.Answers[0].Value = questionVm.Answers[0].Text;
+                            }
+                            break;
                     }
                 }
                 // saving valid question

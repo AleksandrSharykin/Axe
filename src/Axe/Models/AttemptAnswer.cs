@@ -42,7 +42,7 @@ namespace Axe.Models
         /// <summary>
         /// Gets or sets answer value provided by user
         /// </summary>
-        public string Value { get; set; }        
+        public string Value { get; set; }
 
         [NotMapped]
         public bool IsSelected
@@ -50,7 +50,7 @@ namespace Axe.Models
             get
             {
                 bool b;
-                return bool.TryParse(Value, out b) && b;                
+                return bool.TryParse(Value, out b) && b;
             }
             set { Value = value.ToString(); }
         }

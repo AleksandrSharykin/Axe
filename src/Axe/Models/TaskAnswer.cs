@@ -35,8 +35,7 @@ namespace Axe.Models
 
         /// <summary>
         /// Gets or sets correct answer value
-        /// </summary>
-        [Required]
+        /// </summary>        
         public string Value { get; set; }
 
         /// <summary>
@@ -56,5 +55,8 @@ namespace Axe.Models
             }
             set { Value = value.ToString(); }
         }
+
+        [NotMapped]
+        public int Code { get; set; }
     }
 }

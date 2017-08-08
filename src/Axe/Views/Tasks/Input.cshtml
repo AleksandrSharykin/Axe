@@ -64,10 +64,11 @@
                                 <td>
                                     <input type="hidden" asp-for="@Model.Questions[i].Id" />
                                     @Html.CheckBoxFor(m => m.Questions[i].IsSelected)
-                                </td>
+                                </td>                                
                                 <td>
                                     <p>@Model.Questions[i].Preview</p>
                                 </td>
+                                <td>@Model.Questions[i].Type</td>
                             </tr>
 
                         }

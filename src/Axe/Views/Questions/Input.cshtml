@@ -8,12 +8,11 @@
 
 <form asp-action="Input" asp-controller="Questions" method="post">
 
-    <div class="form-group">        
-        <div asp-validation-summary="All" class="text-danger"></div>
+    <div class="form-group">
+        <div asp-validation-summary="ModelOnly" class="text-danger"></div>
         <input type="hidden" asp-for="Id" />
 
-        <input type="hidden" asp-for="@Model.EditorType" />
-        <input type="hidden" asp-for="@Model.WithUserInput" />
+        <input type="hidden" id="EditorType" name="EditorType" value="@Model.EditorType" />
 
         <div class="form-group">
             <label asp-for="TechnologyId" class="control-label"></label>
@@ -25,7 +24,7 @@
             <span asp-validation-for="TechnologyId" class="text-danger"></span>
         </div>
 
-        <label asp-for="Text" class="control-label"></label>        
+        <label asp-for="Text" class="control-label"></label>
 
         <div class="row">
             <div class="col-md-6 form-group">
@@ -40,13 +39,47 @@
         </div>
     </div>
 
+    <div class="row form-group">
+        <div class="btn-group col-md-6">
+            <button class="btn btn-default" type="submit" value="0" name="etp">
+                <span class="glyphicon glyphicon-tags"></span> &nbsp; Multi Choice
+            </button>
+            <button class="btn btn-default" type="submit" value="1" name="etp">
+                <span class="glyphicon glyphicon-tag"></span>  &nbsp; Single Choice
+            </button>
+            <button class="btn btn-default" type="submit" value="2" name="etp">
+                <span class="glyphicon glyphicon-duplicate"></span> &nbsp; Multi Line
+            </button>
+            <button class="btn btn-default" type="submit" value="3" name="etp">
+                <span class="glyphicon glyphicon-file"></span> &nbsp; Single Line
+            </button>
+        </div>
+    </div>
+
+
     @if (Model.WithUserInput)
     {
         <div class="row">
             <div class="form-group col-md-6">
+                <label class="control-label">Answer text</label>
+
                 <input type="hidden" asp-for="@Model.Answers[0].Id" />
-                <input type="hidden" asp-for="@Model.Answers[0].Text" />
-                <textarea asp-for="@Model.Answers[0].Value" class="form-control" rows="4"></textarea>
+                <input type="hidden" asp-for="@Model.Answers[0].Value" />
+                @if (Model.EditorType == Axe.Models.TaskQuestionType.SingleLine)
+                {
+                    <input asp-for="@Model.Answers[0].Text" class="form-control col-md-6" />
+                }
+                else
+                {
+                    <textarea asp-for="@Model.Answers[0].Text" class="form-control col-md-6" rows="4"></textarea>
+                }
+            </div>
+
+            <div class="form-group col-md-6">
+                <label class="control-label">Score</label>
+                <div>
+                    @Html.EditorFor(m => m.Answers[0].Score)
+                </div>
             </div>
         </div>
     }
@@ -79,7 +112,15 @@
                     </div>
 
                     <div class="col-md-1">
-                        @Html.CheckBoxFor(m => m.Answers[i].IsCorrect)
+                        @if (Model.EditorType == Axe.Models.TaskQuestionType.SingleChoice)
+                        {
+                            <input asp-for="SelectedAnswer" type="radio" value="@Model.Answers[i].Code" />
+                        }
+                        else
+                        {
+                            @Html.CheckBoxFor(m => m.Answers[i].IsCorrect)
+                        }
+
                     </div>
 
                     <div class="col-md-1">
@@ -89,16 +130,16 @@
                 </div>
             }
         </div>
-
+        
         <div class="row">
             <div class="btn-group col-md-3">
                 <input type="submit" value="&nbsp;Add&nbsp;" name="cmd" class="btn btn-default" title="Add an answer" />
                 <input type="submit" value="Remove" name="cmd" class="btn btn-default" title="Remove last answer" />
             </div>
-        </div>
-    }    
+        </div>            
+    }
 
-    <hr/>
+    <hr />
     <div class="row">
         <div class="col-md-2">
             @Html.ActionLink("Back to Technologies", "Index", "Technologies", new { technologyId = Model.TechnologyId })
@@ -106,6 +147,7 @@
         <input type="submit" value="Save" name="cmd" class="btn btn-primary" />
     </div>
 </form>
+
 
 
 
