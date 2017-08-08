@@ -2,13 +2,13 @@
 
 <p class="text-success">@ViewData["StatusMessage"]</p>
 
-<input type="hidden"  value="@Model.Id"/>
+<input type="hidden" value="@Model.Id" />
 
 <div>
     @*personal info*@
     <div class="row">
         <div class="col-md-3">
-            <img src="https://avatars1.githubusercontent.com/u/30412176?v=4&s=460" width="230" height="230"/>
+            <img src="https://avatars1.githubusercontent.com/u/30412176?v=4&s=460" width="230" height="230" />
         </div>
         <div class="col-md-9">
             <div class="row bg-info">
@@ -39,56 +39,78 @@
                     </div>
                 </div>
             }
+            <hr />
 
             <div class="row">
-                <h3> <span class="label label-primary"> Contacts </span> </h3>
-
-                <h4><code> @Model.ContactInfo </code></h4>
+                <div class="col-md-2 bg-info">
+                    <h4> <span class=""> Contacts </span> </h4>
+                </div>
+                <div class="col-md-10">
+                    <h4><code> @Model.ContactInfo </code></h4>
+                </div>
             </div>
 
-            <div class="row">
-                <h3> 
-                    <span class="label label-primary"> Skills </span> 
-                </h3>
+            @if (Model.ExpertKnowledge.Count > 0)
+            {
+                <div class="row">
+                    <div class="col-md-2 bg-info">
+                        <h4>
+                            <span class=""> Expert </span>
+                        </h4>
+                    </div>
+                    <div class="col-md-10">
 
-                @if (Model.ExpertKnowledge.Count > 0)
-                {
-                    <h4>
-                        @foreach(var t in Model.ExpertKnowledge)
-                        {
-                            <label class="label label-primary">@t.Name</label>
-                        }
-                    </h4>
-                }
-
-                <h4>
-                    @foreach (var skill in Model.Skills.OrderByDescending(t => t.ExamScore))
-                    {
-                        <a asp-controller="Assessments" asp-action="Details" asp-route-id="@skill.Id">
-                            <kbd value="@skill.Technology.Id" title="@skill.ExamDate">
-                                @skill.Technology.Name
-                            </kbd>
-
-                            @if (skill.ExamScore.HasValue)
+                        <h4>
+                            @foreach (var t in Model.ExpertKnowledge)
                             {
-                                <code>@skill.ExamScore</code>
+                                <label class="label label-primary">@t.Name</label>
                             }
-                            else
-                            {
-                                <code>?</code>
-                            }
-                            @Html.Raw("&nbsp")
-                        </a>
-                    }
+                        </h4>
 
-                    @if (false == Model.Self)
-                    {                        
-                        <code title="Assign new skill assessment">
-                            @Html.ActionLink("New Assessment", "Input", "Assessments", new { studentId = Model.Id, technologyId = Model.SelectedTechnology?.Id })
-                        </code>
-                    }
-                </h4>
-            </div>
+                    </div>
+                </div>
+            }
+
+            @if (Model.Skills.Count > 0)
+            {
+                <div class="row">
+                    <div class="col-md-2 bg-info">
+                        <h4>
+                            <span class=""> Skills </span>
+                        </h4>
+                    </div>
+
+                    <div class="col-md-10">
+                        <h4>
+                            @foreach (var skill in Model.Skills.OrderByDescending(t => t.ExamScore))
+                            {
+                                <a asp-controller="Assessments" asp-action="Details" asp-route-id="@skill.Id">
+                                    <kbd value="@skill.Technology.Id" title="@skill.ExamDate">
+                                        @skill.Technology.Name
+                                    </kbd>
+
+                                    @if (skill.ExamScore.HasValue)
+                                    {
+                                        <code>@skill.ExamScore</code>
+                                    }
+                                    else
+                                    {
+                                        <code>?</code>
+                                    }
+                                    @Html.Raw("&nbsp")
+                                </a>
+                            }
+
+                            @if (false == Model.Self)
+                            {
+                                <code title="Assign new skill assessment">
+                                    @Html.ActionLink("New Assessment", "Input", "Assessments", new { studentId = Model.Id, technologyId = Model.SelectedTechnology?.Id })
+                                </code>
+                            }
+                        </h4>
+                    </div>
+                </div>
+            }
 
         </div>
     </div>
@@ -124,8 +146,8 @@
                 <li><a data-toggle="tab" href="#menuAll">All Attempts</a></li>
                 <li><a data-toggle="tab" href="#menuSkills">Skill assessments</a></li>
             </ul>
-            
-            <br/>
+
+            <br />
 
             <div class="tab-content">
                 @*take exams*@
@@ -163,7 +185,7 @@
                 <div id="menuBest" class="tab-pane fade in @noExams">
                     <table class="table table-striped">
                         <thead>
-                            <tr>                                
+                            <tr>
                                 <th><span class="glyphicon glyphicon-th"></span></th>
                                 <th>Date</th>
                                 <th>Technology</th>
@@ -173,7 +195,7 @@
                             </tr>
                         </thead>
                         <tbody>
-                            @foreach (var a in Model.BestAttempts.OrderByDescending(a=>a.ExamScore))
+                            @foreach (var a in Model.BestAttempts.OrderByDescending(a => a.ExamScore))
                             {
                                 <tr>
                                     <td><span class="glyphicon glyphicon-thumbs-up"></span></td>
@@ -191,7 +213,7 @@
                 </div>
 
                 @*all attempts*@
-                <div id="menuAll" class="tab-pane fade">                    
+                <div id="menuAll" class="tab-pane fade">
                     <table class="table table-striped">
                         <thead>
                             <tr>
@@ -230,7 +252,7 @@
                             <tr>
                                 <th><span class="glyphicon glyphicon-th"></span></th>
                                 <th>Examiner</th>
-                                <th>Date</th>                                
+                                <th>Date</th>
                                 <th>Score</th>
                                 <th></th>
                             </tr>
@@ -240,7 +262,7 @@
                             {
                                 var success = a.IsPassed == true ? "success" : null;
                                 <tr class="@success">
-                                    <td> 
+                                    <td>
                                         @if (a.IsPassed == true)
                                         {
                                             <span class="glyphicon glyphicon-thumbs-up"></span>

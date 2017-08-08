@@ -9,6 +9,24 @@ body {
     padding-bottom: 20px;
 }
 
+/* Wrapping element */
+/* Set some basic padding to keep content from hitting the edges */
+.body-content {
+    padding-left: 15px;
+    padding-right: 15px;
+}
+
+/*https://stackoverflow.com/questions/3443606/make-footer-stick-to-bottom-of-page-correctly*/
+footer {
+    position: absolute;
+    bottom: 10px;
+    left: 5%;
+    right: 5%;
+    height: 64px;    
+    overflow: hidden;
+    text-align: center;
+}
+
 .table-responsive {
     max-height: 360px;
 }
@@ -17,26 +35,22 @@ a:hover {
     text-decoration: none;
 }
 
-/*https://stackoverflow.com/questions/3443606/make-footer-stick-to-bottom-of-page-correctly*/
-footer {
-    position: absolute;
-    bottom: 0;
-    left: 5%;
-    right: 5%;
-    height: 64px;    
-    overflow: hidden;
-    text-align: center;
+/*tabs without corner radius*/
+.nav-tabs.nav-justified > li > a {
+    -webkit-border-radius: 0;
+    -moz-border-radius: 0;
+    border-radius: 0;
 }
 
-/* Wrapping element */
-/* Set some basic padding to keep content from hitting the edges */
-.body-content {
-    padding-left: 15px;
-    padding-right: 15px;
+.nav-pills > li > a {
+    -webkit-border-radius: 0;
+    -moz-border-radius: 0;
+    border-radius: 0;
 }
 
-footer{    
-    bottom: 10px;    
+.label {
+    border-radius: 0;
+    padding: 5px 10px;
 }
 
 /* Set widths on the form inputs since otherwise they're 100% wide */
