@@ -71,7 +71,7 @@ namespace Axe.Models
         /// <summary>
         /// Gets or sets question answer
         /// </summary>
-        public ICollection<TaskAnswer> Answers { get; set; }
+        public IList<TaskAnswer> Answers { get; set; }
 
         /// <summary>
         /// Gets or sets list of task where question is used

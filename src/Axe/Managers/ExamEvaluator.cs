@@ -17,18 +17,13 @@ namespace Axe.Managers
         /// <param name="attempt"></param>
         public void Evaluate(ExamAttempt attempt)
         {
-            ExamTask task = attempt.Task;
-
-            attempt.Technology = task.Technology;
-
             attempt.MaxScore = attempt.Questions.SelectMany(q => q.TaskQuestion.Answers).Sum(a => a.Score);
             attempt.ExamScore = 0;
 
             // evaluate each question
             foreach (var question in attempt.Questions)
             {
-                bool isQuestionAccepted = true;
-                question.Score = 0;
+                int score = 0;
 
                 if (question.TaskQuestion.Type == TaskQuestionType.MultiLine)
                 {
@@ -48,46 +43,29 @@ namespace Axe.Managers
                         if (matchCount == correctValues.Count)
                         {
                             // award full points for all correct answers
-                            question.Score = answer.TaskAnswer.Score;
+                            score = answer.TaskAnswer.Score;
                         }
                         else
                         {
-                            // award part of points 
-                            question.Score = (int)Math.Floor(answer.TaskAnswer.Score * matchCount / (float)correctValues.Count);
+                            // award part of points for some correct answers
+                            score = (int)Math.Floor(answer.TaskAnswer.Score * matchCount / (float)correctValues.Count);
                         }
-                    }                    
+                    }
                 }
                 else
                 {
-                    // compare user answers with correct answers
-                    foreach (var ap in question.AttemptAnswers)
-                    {
-                        var attemptAnswer = ap.Value?.ToLower() ?? String.Empty;
-                        var taskAnswer = ap.TaskAnswer.Value?.ToLower() ?? String.Empty;
-                        if (attemptAnswer == taskAnswer)
-                        {
-                            question.Score += ap.TaskAnswer.Score;
-                        }
-                        else
-                        {
-                            isQuestionAccepted = false;
-                        }
-                    }
+                    // compare user answers with correct answers and award points for correct answers
+                    score = question.AttemptAnswers
+                                    .Select(answer => Normalize(answer.Value) == Normalize(answer.TaskAnswer.Value) ? answer.TaskAnswer.Score : 0)
+                                    .Sum();
 
-                    // if incorrect answer is selected, points are not awarded
-                    // award points for correct answers (full score for all answers)
-                    question.IsAccepted = isQuestionAccepted || 
+                    // if incorrect answer is selected, points for question are not awarded                    
+                    question.IsAccepted = score > 0 &&
                         question.AttemptAnswers.Where(a => a.Value == Boolean.TrueString).All(p => p.TaskAnswer.Value == Boolean.TrueString);
                 }
 
-                if (question.IsAccepted == true)
-                {                    
-                    attempt.ExamScore += question.Score;                    
-                }
-                else
-                {
-                    question.Score = 0;
-                }
+                question.Score = question.IsAccepted == true ? score : 0;
+                attempt.ExamScore += question.Score;
             }
 
             // todo : set threshold in Task editor
@@ -95,10 +73,14 @@ namespace Axe.Managers
             attempt.IsPassed = attempt.ExamScore > 0.5 * attempt.MaxScore;
         }
 
+        private string Normalize(string answer)
+        {
+            return (answer ?? String.Empty).ToLower();
+        }
+
         private IList<string> SplitInput(string answer)
         {
-            return (answer ?? String.Empty)
-                    .ToLower()
+            return Normalize(answer)
                     .Split(new string[] { Environment.NewLine }, StringSplitOptions.None)
                     .Select(s => s.Trim())
                     .ToList();

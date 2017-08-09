@@ -8,6 +8,7 @@
     <PackageId>Axe</PackageId>
     <RuntimeFrameworkVersion>1.0.4</RuntimeFrameworkVersion>
     <PackageTargetFallback>$(PackageTargetFallback);dotnet5.6;portable-net45+win8</PackageTargetFallback>
+    <GenerateProgramFile>false</GenerateProgramFile>
   </PropertyGroup>
 
   <ItemGroup>
@@ -43,8 +44,11 @@
     <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="1.0.2" />
     <PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="1.0.2" />
     <PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="1.0.2" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="15.3.0" />
     <PackageReference Include="Microsoft.VisualStudio.Web.BrowserLink" Version="1.0.1" />
     <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="1.0.1" />
+    <PackageReference Include="NUnit" Version="3.7.1" />
+    <PackageReference Include="NUnit3TestAdapter" Version="3.8.0" />
   </ItemGroup>
   <ItemGroup>
      <DotNetCliToolReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Tools" Version="1.0.1" />
@@ -61,6 +65,10 @@
 
   <ItemGroup>
     <Folder Include="ViewModels\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Service Include="{82a7f48d-3b50-4b1e-b82e-3ada8210c358}" />
   </ItemGroup>
 
 </Project>
