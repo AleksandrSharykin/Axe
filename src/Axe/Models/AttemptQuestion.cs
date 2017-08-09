@@ -32,8 +32,7 @@ namespace Axe.Models
 
         /// <summary>
         /// Gets or sets question position in question set 
-        /// </summary>
-        // todo shuffle task questions for each attempt
+        /// </summary>        
         public int SortNumber { get; set; }
 
 
@@ -47,8 +46,10 @@ namespace Axe.Models
         /// </summary>
         public TaskQuestion TaskQuestion { get; set; }
 
+
         [NotMapped]
         public int? SelectedAnswer { get; set; }
+
 
         /// <summary>
         /// Gets or setws user answers
@@ -60,6 +61,10 @@ namespace Axe.Models
         /// </summary>
         public bool? IsAccepted { get; set; }
 
+
+        /// <summary>
+        /// Gets or sets points awarded for answering question
+        /// </summary>
         public int? Score { get; set; }
     }
 }

@@ -71,10 +71,6 @@ namespace Axe.Managers
                                 .ToList()
             };
 
-            // todo : shuffle questions and answers (for choice-type questions)
-
-            // todo : create db record for attempted test whcih are not demonstration (for monitoring)
-
             return this.Response(examAttempt);
         }
 

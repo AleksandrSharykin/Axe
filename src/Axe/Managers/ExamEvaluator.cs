@@ -68,8 +68,6 @@ namespace Axe.Managers
                 attempt.ExamScore += question.Score;
             }
 
-            // todo : set threshold in Task editor
-            // threshold 50%
             attempt.IsPassed = attempt.ExamScore > 0.5 * attempt.MaxScore;
         }
 
