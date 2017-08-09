@@ -73,11 +73,21 @@ namespace Axe.Managers
             attempt.IsPassed = attempt.ExamScore > 0.5 * attempt.MaxScore;
         }
 
+        /// <summary>
+        /// Formats answer string for evaluation
+        /// </summary>
+        /// <param name="answer"></param>
+        /// <returns></returns>
         private string Normalize(string answer)
         {
-            return (answer ?? String.Empty).ToLower();
+            return (answer ?? String.Empty).Trim().ToLower();
         }
 
+        /// <summary>
+        /// Splits a string with linebreaks into separate lines
+        /// </summary>
+        /// <param name="answer"></param>
+        /// <returns></returns>
         private IList<string> SplitInput(string answer)
         {
             return Normalize(answer)

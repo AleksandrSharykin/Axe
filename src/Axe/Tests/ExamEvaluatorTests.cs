@@ -10,12 +10,17 @@ namespace Axe.Tests
 {
     [TestFixture]
     public class ExamEvaluatorTests
-    {
+    {               
         private readonly string True = Boolean.TrueString;
         private readonly string False = Boolean.FalseString;
 
-        private ExamEvaluator evaluator;
-        private TaskQuestion qMultiChoice, qSingleChoice, qMultiLine, qSingleLine;
+        /// <summary>
+        /// Shortcut for line break sequence
+        /// </summary>
+        private readonly string NL = Environment.NewLine;
+
+        private IExamEvaluator evaluator;
+        private TaskQuestion qMultiChoice, qSingleChoice, qMultiLine, qRepeated, qSingleLine;
 
         [OneTimeSetUp]
         public void InitTestFixture()
@@ -46,14 +51,21 @@ namespace Axe.Tests
                 }
             };
 
-            string multiline = "abc" + Environment.NewLine + "123";
+            string multiline = "abc" + this.NL + "123";
             this.qMultiLine = new TaskQuestion
             {
                 Type = TaskQuestionType.MultiLine,
                 Answers = new List<TaskAnswer> { new TaskAnswer { Text = multiline, Value = multiline, Score = 40 } }
             };
 
-            string singleline = "100500";
+            string repeated = this.False + this.NL + this.False + this.NL + this.False;
+            this.qRepeated = new TaskQuestion
+            {
+                Type = TaskQuestionType.MultiLine,
+                Answers = new List<TaskAnswer> { new TaskAnswer { Text = repeated, Value = repeated, Score = 30 } }
+            };
+
+            string singleline = "100abc";
             this.qSingleLine = new TaskQuestion
             {
                 Type = TaskQuestionType.SingleLine,
@@ -85,6 +97,20 @@ namespace Axe.Tests
                     }
                 }
             };
+        }
+
+        [TestCase]
+        public void EvalEmptyAttempt()
+        {
+            var attempt = new ExamAttempt
+            {
+                Questions = new List<AttemptQuestion>()
+            };
+            this.evaluator.Evaluate(attempt);
+
+            Assert.AreEqual(false, attempt.IsPassed);
+            Assert.AreEqual(0, attempt.MaxScore);
+            Assert.AreEqual(0, attempt.ExamScore);
         }
 
         [TestCase]
@@ -194,6 +220,274 @@ namespace Axe.Tests
             Assert.AreEqual(true, attempt.Questions[0].IsAccepted);
             Assert.AreEqual(false, attempt.IsPassed);
             Assert.AreEqual(30, attempt.MaxScore);
+            Assert.AreEqual(10, attempt.ExamScore);
+        }
+
+        [TestCase]
+        public void EvalSingleChoiceQuestion_CorrectAnswer()
+        {
+            var A = this.qSingleChoice.Answers;
+            var answers = new AttemptAnswer[]
+            {
+                new AttemptAnswer { TaskAnswer = A[0], Value = this.False },
+                new AttemptAnswer { TaskAnswer = A[1], Value = this.True },
+                new AttemptAnswer { TaskAnswer = A[2], Value = this.False },
+                new AttemptAnswer { TaskAnswer = A[3], Value = this.False },
+            };
+
+            var attempt = this.MakeSingleQuestionAttempt(this.qSingleChoice, answers);
+
+            this.evaluator.Evaluate(attempt);
+
+            Assert.AreEqual(true, attempt.Questions[0].IsAccepted);
+            Assert.AreEqual(true, attempt.IsPassed);
+            Assert.AreEqual(10, attempt.MaxScore);
+            Assert.AreEqual(10, attempt.ExamScore);
+        }
+
+        [TestCase]
+        public void EvalSingleChoiceQuestion_NoAnswer()
+        {
+            var A = this.qSingleChoice.Answers;
+            var answers = new AttemptAnswer[]
+            {
+                new AttemptAnswer { TaskAnswer = A[0], Value = this.False },
+                new AttemptAnswer { TaskAnswer = A[1], Value = this.False },
+                new AttemptAnswer { TaskAnswer = A[2], Value = this.False },
+                new AttemptAnswer { TaskAnswer = A[3], Value = this.False },
+            };
+
+            var attempt = this.MakeSingleQuestionAttempt(this.qSingleChoice, answers);
+
+            this.evaluator.Evaluate(attempt);
+
+            Assert.AreEqual(false, attempt.Questions[0].IsAccepted);
+            Assert.AreEqual(false, attempt.IsPassed);
+            Assert.AreEqual(10, attempt.MaxScore);
+            Assert.AreEqual(0, attempt.ExamScore);
+        }
+
+        /// <summary>
+        /// If multiple choices are provides for a single-choice question, evaluator should not accept answers
+        /// </summary>
+        [TestCase]
+        public void EvalSingleChoiceQuestion_MultiChoiceInput()
+        {
+            var A = this.qSingleChoice.Answers;
+            var answers = new AttemptAnswer[]
+            {
+                new AttemptAnswer { TaskAnswer = A[0], Value = this.False },
+                new AttemptAnswer { TaskAnswer = A[1], Value = this.True },
+                new AttemptAnswer { TaskAnswer = A[2], Value = this.True },
+                new AttemptAnswer { TaskAnswer = A[3], Value = this.False },
+            };
+
+            var attempt = this.MakeSingleQuestionAttempt(this.qSingleChoice, answers);
+
+            this.evaluator.Evaluate(attempt);
+
+            Assert.AreEqual(false, attempt.Questions[0].IsAccepted);
+            Assert.AreEqual(false, attempt.IsPassed);
+            Assert.AreEqual(10, attempt.MaxScore);
+            Assert.AreEqual(0, attempt.ExamScore);
+        }
+
+        [TestCase]
+        public void EvalMultiLineQuestion_AllAnswersCorrect()
+        {
+            var answer = new AttemptAnswer { TaskAnswer = this.qMultiLine.Answers[0], Value = "abc" + this.NL + "123" };
+            var attempt = MakeSingleQuestionAttempt(this.qMultiLine, answer);
+
+            this.evaluator.Evaluate(attempt);
+
+            Assert.AreEqual(true, attempt.Questions[0].IsAccepted);
+            Assert.AreEqual(true, attempt.IsPassed);
+            Assert.AreEqual(40, attempt.MaxScore);
+            Assert.AreEqual(40, attempt.ExamScore);
+        }
+
+        [TestCase]
+        public void EvalMultiLineQuestion_NoAnswers()
+        {
+            var answer = new AttemptAnswer { TaskAnswer = this.qMultiLine.Answers[0], Value = null };
+            var attempt = MakeSingleQuestionAttempt(this.qMultiLine, answer);
+
+            this.evaluator.Evaluate(attempt);
+
+            Assert.AreEqual(false, attempt.Questions[0].IsAccepted);
+            Assert.AreEqual(false, attempt.IsPassed);
+            Assert.AreEqual(40, attempt.MaxScore);
+            Assert.AreEqual(0, attempt.ExamScore);
+        }
+
+        /// <summary>
+        /// Evaluator should ignore: casing; whites spaces at the start/end of each line; trailing line breaks
+        /// </summary>
+        [TestCase]
+        public void EvalMultiLineQuestion_AllAnswersFormatInsensitive()
+        {
+            var answer = new AttemptAnswer { TaskAnswer = this.qMultiLine.Answers[0], Value = " ABC " + this.NL + "\t123 " + this.NL + this.NL + this.NL };
+            var attempt = MakeSingleQuestionAttempt(this.qMultiLine, answer);
+
+            this.evaluator.Evaluate(attempt);
+
+            Assert.AreEqual(true, attempt.Questions[0].IsAccepted);
+            Assert.AreEqual(true, attempt.IsPassed);
+            Assert.AreEqual(40, attempt.MaxScore);
+            Assert.AreEqual(40, attempt.ExamScore);
+        }
+
+        [TestCase]
+        public void EvalMultiLineQuestion_AllAnswersUnexpectedLineBreak()
+        {
+            var answer = new AttemptAnswer { TaskAnswer = this.qMultiLine.Answers[0], Value = "abc" + this.NL + this.NL + "123" };
+            var attempt = MakeSingleQuestionAttempt(this.qMultiLine, answer);
+
+            this.evaluator.Evaluate(attempt);
+
+            Assert.AreEqual(true, attempt.Questions[0].IsAccepted);
+            Assert.AreEqual(false, attempt.IsPassed);
+            Assert.AreEqual(40, attempt.MaxScore);
+            Assert.AreEqual(20, attempt.ExamScore);
+        }
+
+        [TestCase]
+        public void EvalMultiLineQuestion_AllAnswersIncorrectOrder()
+        {
+            var answer = new AttemptAnswer { TaskAnswer = this.qMultiLine.Answers[0], Value = "123" + this.NL +  "abc" };
+            var attempt = MakeSingleQuestionAttempt(this.qMultiLine, answer);
+
+            this.evaluator.Evaluate(attempt);
+
+            Assert.AreEqual(false, attempt.Questions[0].IsAccepted);
+            Assert.AreEqual(false, attempt.IsPassed);
+            Assert.AreEqual(40, attempt.MaxScore);
+            Assert.AreEqual(0, attempt.ExamScore);
+        }
+
+        [TestCase]
+        public void EvalMultiLineQuestion_AllAnswersIncorrectInput()
+        {
+            var answer = new AttemptAnswer { TaskAnswer = this.qMultiLine.Answers[0], Value = "abcabc" + this.NL + "123123" };
+            var attempt = MakeSingleQuestionAttempt(this.qMultiLine, answer);
+
+            this.evaluator.Evaluate(attempt);
+
+            Assert.AreEqual(false, attempt.Questions[0].IsAccepted);
+            Assert.AreEqual(false, attempt.IsPassed);
+            Assert.AreEqual(40, attempt.MaxScore);
+            Assert.AreEqual(0, attempt.ExamScore);
+        }
+
+        [TestCase]
+        public void EvalMultiLineQuestion_CorrectAndIncorrectAnswer()
+        {
+            var answer = new AttemptAnswer { TaskAnswer = this.qMultiLine.Answers[0], Value = "abc" + this.NL + "123123" };
+            var attempt = MakeSingleQuestionAttempt(this.qMultiLine, answer);
+
+            this.evaluator.Evaluate(attempt);
+
+            Assert.AreEqual(true, attempt.Questions[0].IsAccepted);
+            Assert.AreEqual(false, attempt.IsPassed);
+            Assert.AreEqual(40, attempt.MaxScore);
+            Assert.AreEqual(20, attempt.ExamScore);
+        }
+
+        [TestCase]
+        public void EvalMultiLineQuestion_AllCorrectAnswersAndNoiseInput()
+        {
+            var answer = new AttemptAnswer { TaskAnswer = this.qMultiLine.Answers[0], Value = "abc" + this.NL + "123" + this.NL + " smth " };
+            var attempt = MakeSingleQuestionAttempt(this.qMultiLine, answer);
+
+            this.evaluator.Evaluate(attempt);
+
+            Assert.AreEqual(true, attempt.Questions[0].IsAccepted);
+            Assert.AreEqual(true, attempt.IsPassed);
+            Assert.AreEqual(40, attempt.MaxScore);
+            Assert.AreEqual(40, attempt.ExamScore);
+        }
+
+        [Test]
+        public void EvalMultiLineQuestion_RepeatedAnswer()
+        {
+            var answer = new AttemptAnswer { TaskAnswer = this.qRepeated.Answers[0], Value = this.False + this.NL };
+            var attempt = MakeSingleQuestionAttempt(qRepeated, answer);
+
+            this.evaluator.Evaluate(attempt);
+
+            Assert.AreEqual(true, attempt.Questions[0].IsAccepted);
+            Assert.AreEqual(false, attempt.IsPassed);
+            Assert.AreEqual(30, attempt.MaxScore);
+            Assert.AreEqual(10, attempt.ExamScore);
+        }
+
+        [TestCase]
+        public void EvalSingleLineQuestion_CorrectAnswer()
+        {
+            var answer = new AttemptAnswer { TaskAnswer = this.qSingleLine.Answers[0], Value = "100abc" };
+            var attempt = this.MakeSingleQuestionAttempt(this.qSingleLine, answer);
+
+            this.evaluator.Evaluate(attempt);
+
+            Assert.AreEqual(true, attempt.Questions[0].IsAccepted);
+            Assert.AreEqual(true, attempt.IsPassed);
+            Assert.AreEqual(10, attempt.MaxScore);
+            Assert.AreEqual(10, attempt.ExamScore);
+        }
+
+        [TestCase]
+        public void EvalSingleLineQuestion_NoAnswer()
+        {
+            var answer = new AttemptAnswer { TaskAnswer = this.qSingleLine.Answers[0], Value = null };
+            var attempt = this.MakeSingleQuestionAttempt(this.qSingleLine, answer);
+
+            this.evaluator.Evaluate(attempt);
+
+            Assert.AreEqual(false, attempt.Questions[0].IsAccepted);
+            Assert.AreEqual(false, attempt.IsPassed);
+            Assert.AreEqual(10, attempt.MaxScore);
+            Assert.AreEqual(0, attempt.ExamScore);
+        }
+
+        [TestCase]
+        public void EvalSingleLineQuestion_IncorrectAnswer()
+        {
+            var answer = new AttemptAnswer { TaskAnswer = this.qSingleLine.Answers[0], Value = "100" };
+            var attempt = this.MakeSingleQuestionAttempt(this.qSingleLine, answer);
+
+            this.evaluator.Evaluate(attempt);
+
+            Assert.AreEqual(false, attempt.Questions[0].IsAccepted);
+            Assert.AreEqual(false, attempt.IsPassed);
+            Assert.AreEqual(10, attempt.MaxScore);
+            Assert.AreEqual(0, attempt.ExamScore);
+        }
+
+        [TestCase]
+        public void EvalSingleLineQuestion_CorrectAnswerFormatInsensitive()
+        {
+            var answer = new AttemptAnswer { TaskAnswer = this.qSingleLine.Answers[0], Value = " \t100ABC " };
+            var attempt = this.MakeSingleQuestionAttempt(this.qSingleLine, answer);
+
+            this.evaluator.Evaluate(attempt);
+
+            Assert.AreEqual(true, attempt.Questions[0].IsAccepted);
+            Assert.AreEqual(true, attempt.IsPassed);
+            Assert.AreEqual(10, attempt.MaxScore);
+            Assert.AreEqual(10, attempt.ExamScore);
+        }
+
+        [TestCase]
+        public void EvalSingleLineQuestion_CorrectAnswerUnexpectedLineBreak()
+        {
+            var answer = new AttemptAnswer { TaskAnswer = this.qSingleLine.Answers[0], Value = "100abc" + this.NL + this.NL};
+            var attempt = this.MakeSingleQuestionAttempt(this.qSingleLine, answer);
+
+            this.evaluator.Evaluate(attempt);
+
+            Assert.AreEqual(true, attempt.Questions[0].IsAccepted);
+            Assert.AreEqual(true, attempt.IsPassed);
+            Assert.AreEqual(10, attempt.MaxScore);
             Assert.AreEqual(10, attempt.ExamScore);
         }
     }

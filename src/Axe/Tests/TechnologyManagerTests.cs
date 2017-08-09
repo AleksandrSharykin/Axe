@@ -20,5 +20,11 @@ namespace Axe.Tests
         {
 
         }
+
+        [TestCase]
+        public void Smth()
+        {
+
+        }
     }
 }
