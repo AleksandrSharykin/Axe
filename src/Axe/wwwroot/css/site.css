@@ -65,6 +65,11 @@ textarea {
     white-space: pre-wrap;
 }
 
+th {
+    background: #d9edf7;        
+    font-weight: normal;
+}
+
 /* Carousel */
 .carousel-caption p {
     font-size: 20px;
