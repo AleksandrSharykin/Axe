@@ -45,12 +45,12 @@
 <div>
     @for (int q = 0; q < Model.Questions.Count; q++)
     {
-        <div class="form-group">
+        <div class="form-group row">
             <div class="col-md-1">
                 <span class="btn btn-default"># @(q + 1)</span>
-                @if (@Model.Questions[q].Score.HasValue)
+                @if (@Model.Questions[q].IsAccepted == true)
                 {
-                    @Html.Raw("+")<span>@Model.Questions[q].Score</span>
+                    <h4><span class="label label-success">+@Model.Questions[q].Score</span></h4>                    
                 }
             </div>
 

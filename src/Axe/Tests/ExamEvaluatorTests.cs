@@ -490,5 +490,136 @@ namespace Axe.Tests
             Assert.AreEqual(10, attempt.MaxScore);
             Assert.AreEqual(10, attempt.ExamScore);
         }
+
+        private ExamAttempt MakeAttemptTemplate()
+        {
+            return new ExamAttempt
+            {
+                Questions = new List<AttemptQuestion>
+                {
+                    new AttemptQuestion
+                    {
+                        TaskQuestion = new TaskQuestion { Type = TaskQuestionType.MultiChoice, },
+                        AttemptAnswers = new List<AttemptAnswer>
+                        {
+                            new AttemptAnswer { TaskAnswer = new TaskAnswer { Value = this.False, Score = 0 }, Value = this.False },
+                            new AttemptAnswer { TaskAnswer = new TaskAnswer { Value = this.True,  Score = 1 }, Value = this.False },
+                            new AttemptAnswer { TaskAnswer = new TaskAnswer { Value = this.False, Score = 0 }, Value = this.False },
+                            new AttemptAnswer { TaskAnswer = new TaskAnswer { Value = this.True,  Score = 1 }, Value = this.False },
+                        }
+                    },
+
+                    new AttemptQuestion
+                    {
+                        TaskQuestion = new TaskQuestion { Type = TaskQuestionType.SingleChoice, },
+                        AttemptAnswers = new List<AttemptAnswer>
+                        {
+                            new AttemptAnswer { TaskAnswer = new TaskAnswer { Value = this.True,  Score = 1 }, Value = this.False },
+                            new AttemptAnswer { TaskAnswer = new TaskAnswer { Value = this.False, Score = 0 }, Value = this.False },
+                            new AttemptAnswer { TaskAnswer = new TaskAnswer { Value = this.False, Score = 0 }, Value = this.False },
+                            new AttemptAnswer { TaskAnswer = new TaskAnswer { Value = this.False, Score = 0 }, Value = this.False },
+                        }
+                    },
+
+                    new AttemptQuestion
+                    {
+                        TaskQuestion = new TaskQuestion { Type = TaskQuestionType.MultiLine, },
+                        AttemptAnswers = new List<AttemptAnswer>
+                        {
+                            new AttemptAnswer { TaskAnswer = new TaskAnswer { Value = "1" + this.NL+ "2" + this.NL + "3", Score = 3 }, Value = null },
+                        }
+                    },
+
+                    new AttemptQuestion
+                    {
+                        TaskQuestion = new TaskQuestion { Type = TaskQuestionType.SingleLine, },
+                        AttemptAnswers = new List<AttemptAnswer>
+                        {
+                            new AttemptAnswer { TaskAnswer = new TaskAnswer { Value = "z", Score = 2 }, Value = null },
+                        }
+                    },
+                }
+            };
+        }
+
+        [TestCase]
+        public void EvalAttempt_NoAnswers()
+        {
+            var attempt = MakeAttemptTemplate();
+
+            this.evaluator.Evaluate(attempt);
+
+            Assert.AreEqual(false, attempt.IsPassed);
+            Assert.AreEqual(false, attempt.Questions.Any(q => q.IsAccepted == true));
+            Assert.AreEqual(8, attempt.MaxScore);
+            Assert.AreEqual(0, attempt.ExamScore);
+        }
+
+        [TestCase]
+        public void EvalAttempt_AllAnswersCorrect()
+        {
+            var attempt = MakeAttemptTemplate();
+
+            foreach(var question in attempt.Questions)
+            {
+                foreach (var a in question.AttemptAnswers)
+                {
+                    a.Value = a.TaskAnswer.Value;
+                }
+            }
+
+            this.evaluator.Evaluate(attempt);
+
+            Assert.AreEqual(true, attempt.IsPassed);
+            Assert.AreEqual(true, attempt.Questions.All(q => q.IsAccepted == true));
+            Assert.AreEqual(8, attempt.MaxScore);
+            Assert.AreEqual(8, attempt.ExamScore);
+        }
+
+        [TestCase]
+        public void EvalAttempt_PartiallyCorrectPassed()
+        {
+            var attempt = MakeAttemptTemplate();
+
+            Func<AttemptQuestion, bool> questionFilter = q => q.TaskQuestion.Type == TaskQuestionType.MultiLine || q.TaskQuestion.Type == TaskQuestionType.SingleLine;
+
+            foreach (var question in attempt.Questions.Where(questionFilter))
+            {
+                foreach (var a in question.AttemptAnswers)
+                {
+                    a.Value = a.TaskAnswer.Value;
+                }
+            }
+
+            this.evaluator.Evaluate(attempt);
+
+            Assert.AreEqual(true, attempt.IsPassed);
+            Assert.AreEqual(true, attempt.Questions.All(q => q.IsAccepted == questionFilter(q)));
+            Assert.AreEqual(8, attempt.MaxScore);
+            Assert.AreEqual(5, attempt.ExamScore);
+        }
+
+        [TestCase]
+        public void EvalAttempt_PartiallyCorrectFailed()
+        {
+            var attempt = MakeAttemptTemplate();
+
+            Func<AttemptQuestion, bool> questionFilter = q => q.TaskQuestion.Type == TaskQuestionType.MultiChoice || q.TaskQuestion.Type == TaskQuestionType.SingleChoice;
+
+            foreach (var question in attempt.Questions.Where(questionFilter))
+            {
+                foreach (var a in question.AttemptAnswers)
+                {
+                    a.Value = a.TaskAnswer.Value;
+                }
+            }
+
+            this.evaluator.Evaluate(attempt);
+
+            Assert.AreEqual(false, attempt.IsPassed);
+            Assert.AreEqual(true, attempt.Questions.All(q => q.IsAccepted == questionFilter(q)));
+            Assert.AreEqual(8, attempt.MaxScore);
+            Assert.AreEqual(3, attempt.ExamScore);
+        }
     }
 }

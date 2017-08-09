@@ -17,7 +17,7 @@ namespace Axe.Managers
         /// <param name="attempt"></param>
         public void Evaluate(ExamAttempt attempt)
         {
-            attempt.MaxScore = attempt.Questions.SelectMany(q => q.TaskQuestion.Answers).Sum(a => a.Score);
+            attempt.MaxScore = attempt.Questions.SelectMany(q => q.AttemptAnswers.Select(a => a.TaskAnswer)).Sum(a => a.Score);
             attempt.ExamScore = 0;
 
             // evaluate each question
