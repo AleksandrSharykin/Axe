@@ -33,21 +33,19 @@ namespace Axe.Managers
                 if (question.TaskQuestion.Type == TaskQuestionType.MultiLine)
                 {
                     var answer = question.AttemptAnswers[0];
-                    if (answer.Value == null)
-                    {
-                        answer.Value = String.Empty;
-                    }
-                    string[] userInput = answer.Value.Split(new[] { Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries);
-                    string[] correctValues = answer.TaskAnswer.Value.Split(new[] { Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries);
 
-                    var wrongInput = userInput.Except(correctValues).ToList();
-                    var correctInput = userInput.Intersect(correctValues).ToList();
+                    var userValues = SplitInput(answer.Value);
+                    var correctValues = SplitInput(answer.TaskAnswer.Value);
 
-                    question.IsAccepted = wrongInput.Count == 0 && correctInput.Count > 0;
+                    // compare provided answers line-by-line with correct answers
+                    // answers order is important
+                    var matchCount = userValues.Zip(correctValues, (userValue, correctValue) => userValue == correctValue ? 1 : 0).Sum();                    
+
+                    question.IsAccepted = matchCount > 0;
 
                     if (question.IsAccepted == true)
                     {                        
-                        if (correctInput.Count == correctValues.Length)
+                        if (matchCount == correctValues.Count)
                         {
                             // award full points for all correct answers
                             question.Score = answer.TaskAnswer.Score;
@@ -55,10 +53,9 @@ namespace Axe.Managers
                         else
                         {
                             // award part of points 
-                            question.Score = (int)Math.Floor(answer.TaskAnswer.Score * correctInput.Count / (float)correctValues.Length);
+                            question.Score = (int)Math.Floor(answer.TaskAnswer.Score * matchCount / (float)correctValues.Count);
                         }
-                    }
-                    
+                    }                    
                 }
                 else
                 {
@@ -96,6 +93,15 @@ namespace Axe.Managers
             // todo : set threshold in Task editor
             // threshold 50%
             attempt.IsPassed = attempt.ExamScore > 0.5 * attempt.MaxScore;
+        }
+
+        private IList<string> SplitInput(string answer)
+        {
+            return (answer ?? String.Empty)
+                    .ToLower()
+                    .Split(new string[] { Environment.NewLine }, StringSplitOptions.None)
+                    .Select(s => s.Trim())
+                    .ToList();
         }
     }
 }

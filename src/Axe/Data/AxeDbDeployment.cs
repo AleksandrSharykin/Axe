@@ -32,6 +32,7 @@ namespace Axe.Models
             await userManager.CreateAsync(superuser, "T0pSecret");
             await userManager.AddToRolesAsync(superuser, new string[] { UserRole.Superuser, UserRole.Member });
 
+            #region Technologies
             if (context.Technology.Any())
             {
                 // data has been added already
@@ -56,6 +57,146 @@ C# is simple, powerful, type-safe, and object-oriented",
             javascript.Experts = new List<ExpertTechnologyLink> { new ExpertTechnologyLink { User = superuser, Technology = javascript } };
 
             context.AddRange(csharp, javascript);
+
+            #endregion
+            
+            var task = new ExamTask
+            {
+                Title = "C# demo",
+                Objective = "Axe system demonstration",
+                Author = superuser,
+                IsDemonstration = true,
+                Technology = csharp,
+            };
+
+            #region C# questions
+
+            var questionMultiChoice = new TaskQuestion
+            {
+                Author = superuser,
+                Technology = csharp,
+                Type = TaskQuestionType.MultiChoice,
+                Text = "Possible access modifiers for classes are ...",
+            };
+            questionMultiChoice.Answers = new List<TaskAnswer>
+            {
+                new TaskAnswer
+                {
+                    Question = questionMultiChoice,
+                    Text = "public",
+                    Value = Boolean.TrueString,
+                    Score = 1,
+                },
+                new TaskAnswer
+                {
+                    Question = questionMultiChoice,
+                    Text = "protected",
+                    Value = Boolean.FalseString,
+                    Score = 0,
+                },
+                new TaskAnswer
+                {
+                    Question = questionMultiChoice,
+                    Text = "private",
+                    Value = Boolean.TrueString,
+                    Score = 1,
+                },
+                new TaskAnswer
+                {
+                    Question = questionMultiChoice,
+                    Text = "internal",
+                    Value = Boolean.TrueString,
+                    Score = 1,
+                },
+            };
+
+
+            var questionSingleChoice = new TaskQuestion
+            {
+                Author = superuser,
+                Technology = csharp,
+                Type = TaskQuestionType.SingleChoice,
+                Text = "System name of float type is ...",
+            };
+
+            questionSingleChoice.Answers = new List<TaskAnswer>
+            {
+                new TaskAnswer
+                {
+                    Question = questionSingleChoice,
+                    Text = "float",
+                    Value = Boolean.FalseString,
+                    Score = 0,
+                },
+                new TaskAnswer
+                {
+                    Question = questionSingleChoice,
+                    Text = "System.Float",
+                    Value = Boolean.FalseString,
+                    Score = 0,
+                },
+                new TaskAnswer
+                {
+                    Question = questionSingleChoice,
+                    Text = "System.Single",
+                    Value = Boolean.TrueString,
+                    Score = 1,
+                },
+                new TaskAnswer
+                {
+                    Question = questionSingleChoice,
+                    Text = "System.Short",
+                    Value = Boolean.FalseString,
+                    Score = 0,
+                },
+            };
+
+
+            var questionMultiInput = new TaskQuestion
+            {
+                Author = superuser,
+                Technology = csharp,
+                Type = TaskQuestionType.MultiLine,
+                Text = "Write results of the following operations:" + Environment.NewLine + "10/4" + Environment.NewLine + "\"1\"+\"1\"",
+            };
+            var answerMultiInput = new TaskAnswer
+            {
+                Question = questionMultiInput,
+                Text = "2" + Environment.NewLine + "\"11\"",
+                Score = 2,
+            };
+            answerMultiInput.Value = answerMultiInput.Text;
+            questionMultiInput.Answers = new List<TaskAnswer> { answerMultiInput };
+
+
+            var questionSingleInput = new TaskQuestion
+            {
+                Author = superuser,
+                Technology = csharp,
+                Type = TaskQuestionType.SingleLine,
+                Text = "Max value of Byte type is",
+            };
+            var answerSingleInput = new TaskAnswer
+            {
+                Question = questionSingleInput,
+                Text = "255",
+                Score = 1,
+            };
+            answerSingleInput.Value = answerSingleInput.Text;
+
+            questionSingleInput.Answers = new List<TaskAnswer> { answerSingleInput };
+
+            #endregion
+
+            task.Questions = new List<TaskQuestionLink>
+            {
+                new TaskQuestionLink { Task = task, Question = questionMultiChoice, },
+                new TaskQuestionLink { Task = task, Question = questionSingleChoice, },
+                new TaskQuestionLink { Task = task, Question = questionMultiInput, },
+                new TaskQuestionLink { Task = task, Question = questionSingleInput, },
+            };
+
+            context.Add(task);
 
             await context.SaveChangesAsync();
         }
