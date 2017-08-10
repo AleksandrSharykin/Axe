@@ -43,6 +43,8 @@ namespace Axe
                     .AddEntityFrameworkStores<AxeDbContext>()                    
                     .AddDefaultTokenProviders();
 
+            services.AddScoped<IHomeManager, HomeManager>();
+
             services.AddScoped<ITechnologyManager, TechnologyManager>();
 
             services.AddScoped<IExamEvaluator, ExamEvaluator>();

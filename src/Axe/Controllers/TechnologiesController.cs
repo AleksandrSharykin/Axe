@@ -16,7 +16,7 @@ namespace Axe.Controllers
     {
         private ITechnologyManager manager;
 
-        public TechnologiesController(UserManager<ApplicationUser> userManager, AxeDbContext context, ITechnologyManager manager) : base(userManager, context)
+        public TechnologiesController(UserManager<ApplicationUser> userManager, ITechnologyManager manager) : base(userManager, null)
         {
             this.manager = manager;
         } 

@@ -3,19 +3,25 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using Axe.Models;
 using Microsoft.AspNetCore.Identity;
+using Axe.Models;
+using Axe.Managers;
 
 namespace Axe.Controllers
 {
     public class HomeController : ControllerExt
     {
-        public HomeController(UserManager<ApplicationUser> userManager, AxeDbContext context) : base(userManager, context) { }                
+        private IHomeManager manager;
+
+        public HomeController(UserManager<ApplicationUser> userManager, IHomeManager manager) : base(userManager, null)
+        {
+            this.manager = manager;
+        }                
 
         public async Task<IActionResult> Index()
         {
-            return View(await this.context.Technology.ToListAsync());
+            var response = await this.manager.Index();
+            return View(response.Item);
         }
 
         public IActionResult About()
