@@ -4,74 +4,22 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
 using Axe.Models;
 using Axe.Models.AssessmentsVm;
-using Microsoft.AspNetCore.Authorization;
+using Axe.Managers;
 
 namespace Axe.Controllers
 {
     [Authorize]
     public class AssessmentsController : ControllerExt
     {
-        public AssessmentsController(UserManager<ApplicationUser> userManager, AxeDbContext context) : base(userManager, context) { }
+        private IAssessmentManager manager;
 
-        // GET: Assessments
-        public async Task<IActionResult> Index()
+        public AssessmentsController(UserManager<ApplicationUser> userManager, IAssessmentManager manager) : base(userManager, null)
         {
-            var axeDbContext = context.SkillAssessment.Include(s => s.Examiner).Include(s => s.Student).Include(s => s.Technology);
-            return View(await axeDbContext.ToListAsync());
-        }
-
-        /// <summary>
-        /// Loads <see cref="SkillAssessment"/> item with all properties
-        /// </summary>
-        /// <param name="id"></param>
-        /// <returns></returns>
-        private async Task<SkillAssessment> GetAssessment(int? id)
-        {
-            return await context.SkillAssessment
-                                .Include(s => s.Examiner)
-                                .Include(s => s.Student)
-                                .Include(s => s.Technology)
-                                .SingleOrDefaultAsync(m => m.Id == id);
-        }
-
-        /// <summary>
-        /// Creates view model for <see cref="SkillAssessment"/> item
-        /// </summary>
-        /// <param name="id"></param>
-        /// <returns></returns>
-        private async Task<AssessmentDetailsVm> GetAssessmentDetails(int? id)
-        {
-            if (id == null)
-            {
-                return null;
-            }
-
-            var a = await this.GetAssessment(id);
-            if (a == null)
-            {
-                return null;
-            }
-
-            var user = await this.GetCurrentUserAsync();
-
-            return new AssessmentDetailsVm
-            {
-                Id = a.Id,
-                Student = a.Student,
-                Examiner = a.Examiner,
-                Technology = a.Technology,
-                ExamScore = a.ExamScore,
-                ExamComment = a.ExamComment,
-                ExamDate = a.ExamDate,
-                IsPassed = a.IsPassed,
-                CanMark = a.IsPassed == null && user.Id == a.ExaminerId,
-                CanEdit = a.IsPassed == null,
-                CanDelete = a.IsPassed == null,
-            };
+            this.manager = manager;
         }
 
         /// <summary>
@@ -84,70 +32,18 @@ namespace Axe.Controllers
         [HttpGet]
         public async Task<IActionResult> Input(int? id, int? technologyId = null, string studentId = null)
         {
-            SkillAssessment data = null;
-            if (id.HasValue)
+            var args = new SkillAssessment { Id = id ?? 0, TechnologyId = technologyId ?? 0, StudentId = studentId };
+
+            var request = await this.CreateRequest(args);
+
+            var response = await this.manager.InputGet(request);
+
+            if (response.Code == ResponseCode.NotFound)
             {
-                data = await context.SkillAssessment.SingleOrDefaultAsync(m => m.Id == id);
+                return RedirectToAction("Visit", "Profiles", new { id = studentId, technologyId = technologyId });
             }
 
-            ApplicationUser currentUser = await GetCurrentUserAsync();
-
-            Technology technology = null;
-            ApplicationUser student = null;
-            ApplicationUser examiner = null;
-
-            if (data != null)
-            {
-                // loading properties for an existing assessment
-                examiner = await this.context.Users.SingleAsync(u => u.Id == data.ExaminerId);
-                student = await this.context.Users.SingleAsync(u => u.Id == data.StudentId);
-                technology = await this.context.Technology.Include(t => t.Experts).SingleAsync(t => t.Id == data.TechnologyId);
-                if (examiner.Id != currentUser.Id)
-                {
-                    examiner = null;
-                }
-            }
-            else
-            {
-                // creating properties for a new assessment
-                examiner = currentUser;
-                if (studentId != null)
-                {
-                    student = await this.context.Users.SingleAsync(u => u.Id == studentId);
-                }
-                if (technologyId.HasValue)
-                {
-                    technology = await this.context.Technology.Include(t => t.Experts).SingleAsync(t => t.Id == technologyId);
-                }
-            }
-
-            if (examiner == null || student == null || technology == null ||
-                false == technology.Experts.Any(u => u.UserId == examiner.Id))
-            {
-                return RedirectToAction("Visit", "Profiles", new { id = student?.Id, technologyId = technology?.Id });
-            }
-
-            // creating view model to display
-            var vm = new AssessmentInputVm
-            {
-                TechnologyId = technology.Id,
-                TechnologyName = technology.Name,
-
-                ExaminerId = examiner.Id,
-                ExaminerName = examiner.UserName,
-
-                StudentId = student.Id,
-                StudentName = student.UserName,
-            };
-
-            if (data != null)
-            {
-                vm.Id = data.Id;
-                vm.ExamDate = data.ExamDate;
-                vm.ExamTime = data.ExamDate;
-            }
-
-            return View(vm);
+            return View(response.Item);
         }
 
         /// <summary>
@@ -160,88 +56,16 @@ namespace Axe.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Input(int id, [Bind("Id,StudentId,ExaminerId,TechnologyId,ExamDate,ExamTime")] AssessmentInputVm assessmentInput)
         {
-            var technology = await this.context.Technology
-                                       .Include(t => t.Experts)
-                                       .SingleAsync(t => t.Id == assessmentInput.TechnologyId);
+            var request = await this.CreateRequest(assessmentInput);
 
-            if (technology == null)
+            var response = await this.manager.InputPost(request);
+
+            if (response.Code == ResponseCode.Success)
             {
-                ModelState.AddModelError(String.Empty, "Unknown technology");
+                return RedirectToAction("Details", new { id = response.Item.Id });
             }
 
-            if (ModelState.IsValid)
-            {
-                var currentUser = await GetCurrentUserAsync();                
-
-                var a = await context.SkillAssessment.SingleOrDefaultAsync(e => e.Id == assessmentInput.Id);
-
-                if (a == null)
-                {
-                    // validation for create
-                    if (false == technology.Experts.Any(u => u.UserId == currentUser.Id))
-                    {
-                        ModelState.AddModelError(String.Empty, "Only " + technology.Name + "expert can assign skill assessment");
-                    }
-                    else if (assessmentInput.StudentId == currentUser.Id)
-                    {
-                        ModelState.AddModelError(String.Empty, "Cannot assign skill assessment to self");
-                    }
-                    else
-                    {
-                        a = new SkillAssessment
-                        {
-                            ExaminerId = currentUser.Id,
-                            StudentId = assessmentInput.StudentId,
-                            TechnologyId = assessmentInput.TechnologyId,
-                        };
-                    }
-                }
-                else
-                {
-                    // validation for update
-                    if (a.IsPassed.HasValue)
-                    {
-                        ModelState.AddModelError(String.Empty, "Event has already happened");
-                    }
-
-                    if (a.ExaminerId   != assessmentInput.ExaminerId ||
-                        a.StudentId    != assessmentInput.StudentId  ||
-                        a.TechnologyId != assessmentInput.TechnologyId)
-                    {
-                        ModelState.AddModelError(String.Empty, "Invalid assessment details");
-                    }
-                }
-
-                // commit changes
-                if (ModelState.IsValid)
-                {
-                    a.ExamDate = assessmentInput.ExamDate.Value.Date.Add(assessmentInput.ExamTime.Value.TimeOfDay);
-
-                    if (a.Id > 0)
-                    {
-                        this.context.Update(a);
-                    }
-                    else
-                    {
-                        this.context.Add(a);
-                    }
-                    await context.SaveChangesAsync();
-
-                    return RedirectToAction("Details", new { id = a.Id });
-                }
-            }
-
-            // restoring view model displayed properties
-            
-            assessmentInput.TechnologyName = technology?.Name;
-
-            var student = await this.context.Users.SingleOrDefaultAsync(u => u.Id == assessmentInput.StudentId);
-            assessmentInput.StudentName = student?.UserName;
-
-            var examiner = await this.context.Users.SingleOrDefaultAsync(u => u.Id == assessmentInput.ExaminerId);
-            assessmentInput.ExaminerName = examiner?.UserName;
-
-            return View(assessmentInput);
+            return View(response.Item);
         }
 
         /// <summary>
@@ -252,35 +76,40 @@ namespace Axe.Controllers
         [HttpGet]
         public async Task<IActionResult> Details(int? id)
         {
-            var details = await GetAssessmentDetails(id);
-            if (details == null)
+            var request = await this.CreateRequest(id ?? 0);
+
+            var response = await this.manager.DetailsGet(request);
+
+            if (response.Code == ResponseCode.NotFound)
             {
                 return NotFound();
             }
 
-            return View(details);
+            return View(response.Item);
         }
 
         /// <summary>
-        /// Displays information for Exminer to mark assessment
+        /// Displays information for Examiner to mark assessment
         /// </summary>
         /// <param name="id"></param>
         /// <returns></returns>
         [HttpGet]
         public async Task<IActionResult> Mark(int? id)
         {
-            var details = await GetAssessmentDetails(id);
+            var request = await this.CreateRequest(id ?? 0);
 
-            if (details == null || false == details.CanMark)
+            var response = await this.manager.MarkGet(request);
+
+            if (response.Code == ResponseCode.NotFound)
             {
                 return NotFound();
             }
 
-            return View(details);
+            return View(response.Item);
         }
 
         /// <summary>
-        /// Applies exminer mark to asessment
+        /// Applies examiner mark to asessment
         /// </summary>
         /// <param name="id"></param>
         /// <param name="vm"></param>
@@ -289,41 +118,27 @@ namespace Axe.Controllers
         [HttpPost]
         public async Task<IActionResult> Mark(int id, AssessmentDetailsVm vm, string cmd = null)
         {
-            var assessment = await this.GetAssessment(id);
-            if (assessment == null)
+            var request = await this.CreateRequest(vm);
+            
+            switch (cmd)
+            {
+                case "success": vm.IsPassed = true; break;
+                case "failure": vm.IsPassed = false; break;
+            }
+
+            var response = await this.manager.MarkPost(request);
+
+            if (response.Code == ResponseCode.Success)
+            {
+                return RedirectToAction("Details", new { id = response.Item.Id });
+            }
+
+            if (response.Code == ResponseCode.NotFound)
             {
                 return NotFound();
             }
 
-            var user = await this.GetCurrentUserAsync();
-            if (assessment.ExaminerId != user.Id)
-            {
-                ModelState.AddModelError(String.Empty, "Only examiner can mark assessment");
-            }
-
-            if (ModelState.IsValid)
-            {
-                assessment.ExamScore = vm.ExamScore;
-                assessment.ExamComment = vm.ExamComment;
-                switch (cmd)
-                {
-                    case "success": assessment.IsPassed = true; break;
-                    case "failure": assessment.IsPassed = false; break;                    
-                }
-                if (assessment.IsPassed.HasValue)
-                {
-                    this.context.Update(assessment);
-                    await this.context.SaveChangesAsync();
-                    return RedirectToAction("Details", new { id = assessment.Id });
-                }
-            }
-            
-            var a = await GetAssessment(assessment.Id);
-            vm.Student = a.Student;
-            vm.Examiner = a.Examiner;
-            vm.Technology = a.Technology;                        
-            vm.ExamDate = a.ExamDate;
-            return View(vm);
+            return View(response.Item);
         }
 
         // GET: Assessments/Delete/5

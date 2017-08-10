@@ -10,25 +10,15 @@ using NUnit.Framework;
 namespace Axe.Tests
 {
     [TestFixture]
-    public class HomeManagerTests
-    {
-        private DbContextOptions<AxeDbContext> dbOptions;
-
-        private AxeDbContext db;
+    public class HomeManagerTests : DbDependentTests
+    {                
         private AxeDbContext dbManager;
         private IHomeManager manager;
 
         [OneTimeSetUp]
         public void InitTestFixture()
         {
-            this.dbOptions = new DbContextOptionsBuilder<AxeDbContext>()
-                .UseInMemoryDatabase("HomeManagerDb")
-                .Options;
-        }
-
-        private AxeDbContext NewDbContext()
-        {
-            return new AxeDbContext(dbOptions);
+            this.InitStorage("HomeManagerDb");
         }
 
         [SetUp]

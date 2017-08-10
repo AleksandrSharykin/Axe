@@ -11,50 +11,18 @@ using Axe.Managers;
 namespace Axe.Tests
 {
     [TestFixture]
-    public class TechnologyManagerTests
+    public class TechnologyManagerTests : DbDependentTests
     {
-        private DbContextOptions<AxeDbContext> dbOptions;
         private AxeDbContext dbManager;
-        private AxeDbContext db;
-
-        private Technology techA, techB, techC;
-        private ApplicationUser expertA, expertB, expertC;
-
         private ITechnologyManager manager;
 
+        #region Setup
         [OneTimeSetUp]        
         public void InitTestFixture()
         {
-            dbOptions = new DbContextOptionsBuilder<AxeDbContext>()
-                .UseInMemoryDatabase("TechManagerDb")
-                .Options;                      
-
-            this.expertA = new ApplicationUser { UserName = "A" };
-            this.expertB = new ApplicationUser { UserName = "B" };
-            this.expertC = new ApplicationUser { UserName = "C" };
-
-            this.techA = new Technology { Name = "A", InformationText = "A" };
-            this.techB = new Technology { Name = "B", InformationText = "B" };
-            this.techC = new Technology { Name = "C", InformationText = "C" };
-
-            using (var db = NewDbContext())
-            {
-                db.AddRange
-                    (
-                        this.expertA, this.expertB, this.expertC,
-                        this.techA, this.techB, this.techC,
-                        new ExpertTechnologyLink { Technology = techA, User = expertA, },
-                        new ExpertTechnologyLink { Technology = techB, User = expertB, },
-                        new ExpertTechnologyLink { Technology = techC, User = expertC, }
-                    );
-                db.SaveChanges();
-            }            
+            this.InitStorage("TechManagerDb");
+            this.InitTechnologies();
         }        
-
-        private AxeDbContext NewDbContext()
-        {
-            return new AxeDbContext(dbOptions);
-        }
 
         [SetUp]        
         public void InitTestCase()
@@ -72,10 +40,7 @@ namespace Axe.Tests
             this.db.Dispose();
         }
 
-        private Request<T> Request<T>(T item, ApplicationUser user = null)
-        {
-            return new Request<T> { Item = item, CurrentUser = user, ModelState = new Microsoft.AspNetCore.Mvc.ModelBinding.ModelStateDictionary() };
-        }
+        #endregion
 
         [TestCase]
         public async Task TechnologyCreate_Success()

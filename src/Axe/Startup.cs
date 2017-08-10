@@ -47,6 +47,8 @@ namespace Axe
 
             services.AddScoped<ITechnologyManager, TechnologyManager>();
 
+            services.AddScoped<IAssessmentManager, AssessmentManager>();
+
             services.AddScoped<IExamEvaluator, ExamEvaluator>();
             services.AddScoped<IExamManager, ExamManager>();
 
