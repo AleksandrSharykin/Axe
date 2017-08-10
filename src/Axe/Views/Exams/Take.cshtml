@@ -70,7 +70,7 @@
                                         }
                                         else
                                         {
-                                            <input asp-for="@Model.Questions[idx].SelectedAnswer" type="radio" value="@Model.Questions[idx].AttemptAnswers[a].TaskAnswerId" />
+                                            <input asp-for="@Model.Questions[idx].SelectedAnswerId" type="radio" value="@Model.Questions[idx].AttemptAnswers[a].TaskAnswerId" />
                                         }
 
                                         <span>@Model.Questions[idx].AttemptAnswers[a].TaskAnswer.Text</span>

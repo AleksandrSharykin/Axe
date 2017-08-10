@@ -27,6 +27,7 @@ namespace Axe.Models.ExamTasksVm
         [Required]
         public string Objective { get; set; }
 
+
         /// <summary>
         /// Gets or sets <see cref="Technology"/>
         /// </summary>
@@ -37,6 +38,7 @@ namespace Axe.Models.ExamTasksVm
         /// Gets or sets <see cref="Technology"/>
         /// </summary>
         public string TechnologyName { get; set; }
+
 
         /// <summary>
         /// Gets or sets list of question in the test

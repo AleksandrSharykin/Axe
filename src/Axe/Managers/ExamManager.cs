@@ -109,7 +109,7 @@ namespace Axe.Managers
                     answer.TaskAnswer = question.TaskQuestion.Answers.FirstOrDefault(a => a.Id == answer.TaskAnswerId);
                     if (question.TaskQuestion.Type == TaskQuestionType.SingleChoice)
                     {
-                        answer.Value = (answer.TaskAnswer.Id == question.SelectedAnswer) ? Boolean.TrueString : Boolean.FalseString;
+                        answer.Value = (answer.TaskAnswer.Id == question.SelectedAnswerId) ? Boolean.TrueString : Boolean.FalseString;
                     }
                 }
             }

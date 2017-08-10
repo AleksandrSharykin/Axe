@@ -44,14 +44,14 @@ namespace Axe.Managers
                 var expertsIds = selectedTech.Experts.Select(u => u.UserId).ToList();
                 experts = this.context.Users
                               .Where(u => u.Id != user.Id)
-                               .Select(u => new ExpertSelectionVm
+                              .Select(u => new ExpertSelectionVm
                                {
                                    Id = u.Id,
                                    UserName = u.UserName,
                                    Email = u.Email,
                                    IsExpert = expertsIds.Contains(u.Id),
                                })
-                               .ToList();
+                              .ToList();
             }
 
             var vm = new TechnologiesIndexVm

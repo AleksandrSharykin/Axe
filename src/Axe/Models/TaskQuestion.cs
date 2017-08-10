@@ -42,12 +42,14 @@ namespace Axe.Models
             }
         }
 
-
         /// <summary>
         /// Gets or sets question type
         /// </summary>        
         public TaskQuestionType Type { get; set; }
 
+        /// <summary>
+        /// Gets indication that user can input values for answers
+        /// </summary>
         [NotMapped]
         public bool WithUserInput
         {

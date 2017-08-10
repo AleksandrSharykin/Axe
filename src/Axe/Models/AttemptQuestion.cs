@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
-using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Axe.Models
@@ -46,21 +45,22 @@ namespace Axe.Models
         /// </summary>
         public TaskQuestion TaskQuestion { get; set; }
 
-
+        /// <summary>
+        /// Gets or sets selected answer Id for single choice question
+        /// </summary>
         [NotMapped]
-        public int? SelectedAnswer { get; set; }
-
+        public int? SelectedAnswerId { get; set; }
 
         /// <summary>
         /// Gets or setws user answers
         /// </summary>
         public IList<AttemptAnswer> AttemptAnswers { get; set; }
 
+
         /// <summary>
         /// Gets or sets indication that question answers were evaluated
         /// </summary>
         public bool? IsAccepted { get; set; }
-
 
         /// <summary>
         /// Gets or sets points awarded for answering question

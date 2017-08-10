@@ -17,7 +17,7 @@ namespace Axe.Models
         public int Id { get; set; }
 
         /// <summary>
-        /// Gets or sets 
+        /// Gets or sets technology name
         /// </summary>
         [Required]
         [MaxLength(1024)]        

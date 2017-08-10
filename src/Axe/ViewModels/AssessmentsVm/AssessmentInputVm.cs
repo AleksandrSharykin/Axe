@@ -51,6 +51,7 @@ namespace Axe.Models.AssessmentsVm
         /// </summary>
         public string TechnologyName { get; set; }
 
+
         /// <summary>
         /// Get or sets assessment date
         /// </summary>

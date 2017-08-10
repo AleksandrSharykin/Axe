@@ -44,6 +44,9 @@ namespace Axe.Models
         /// </summary>
         public string Value { get; set; }
 
+        /// <summary>
+        /// Gets or sets Value in cases when it should have two states (true/false)
+        /// </summary>
         [NotMapped]
         public bool IsSelected
         {

@@ -29,6 +29,7 @@ namespace Axe.Models
         /// </summary>
         public bool IsDemonstration { get; set; }
 
+
         /// <summary>
         /// Gets or sets <see cref="Technology"/>
         /// </summary>
@@ -39,6 +40,7 @@ namespace Axe.Models
         /// </summary>
         public Technology Technology { get; set; }
 
+
         /// <summary>
         /// Gets or sets user who created task
         /// </summary>
@@ -48,6 +50,7 @@ namespace Axe.Models
         /// Gets or sets user who created task
         /// </summary>
         public ApplicationUser Author { get; set; }
+
 
         /// <summary>
         /// Gets or sets questions included in task

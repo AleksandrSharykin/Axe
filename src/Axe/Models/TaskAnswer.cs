@@ -16,6 +16,7 @@ namespace Axe.Models
         /// </summary>
         public int Id { get; set; }
         
+
         /// <summary>
         /// Gets or sets associated question
         /// </summary>
@@ -25,6 +26,7 @@ namespace Axe.Models
         /// Gets or sets associated question
         /// </summary>
         public TaskQuestion Question { get; set; }
+
 
         /// <summary>
         /// Gets or sets answer text
@@ -45,6 +47,9 @@ namespace Axe.Models
         [Range(0,100)]
         public int Score { get; set; }
 
+        /// <summary>
+        /// Gets or sets Value in cases when it should have two states (true/false)
+        /// </summary>
         [NotMapped]
         public bool IsCorrect
         {
@@ -56,6 +61,9 @@ namespace Axe.Models
             set { Value = value.ToString(); }
         }
 
+        /// <summary>
+        /// Gets or sets answer number in a question answers list
+        /// </summary>
         [NotMapped]
         public int Code { get; set; }
     }

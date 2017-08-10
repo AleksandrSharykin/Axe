@@ -18,6 +18,14 @@ namespace Axe.Models.QuestionsVm
         public int Id { get; set; }
 
         /// <summary>
+        /// Gets or sets question text
+        /// </summary>
+        [Required]
+        [Display(Prompt = "Ask me something")]
+        public string Text { get; set; }
+
+
+        /// <summary>
         /// Gets or sets <see cref="Technology"/> a question belongs to
         /// </summary>
         [Required]
@@ -29,14 +37,20 @@ namespace Axe.Models.QuestionsVm
         /// </summary>
         public SelectList Technologies { get; set; }
 
+
+        /// <summary>
+        /// Gets or sets question type
+        /// </summary>
         public TaskQuestionType EditorType { get; set; }
 
+        /// <summary>
+        /// Gets or sets indiction that user input in asnwers is allowed
+        /// </summary>
         public bool WithUserInput { get; set; }
 
-        [Required]
-        [Display(Prompt = "Ask me something")]        
-        public string Text { get; set; }
-
+        /// <summary>
+        /// Gets or sets correct answer number  for question with single choice
+        /// </summary>
         public int? SelectedAnswer { get; set; }        
 
         /// <summary>

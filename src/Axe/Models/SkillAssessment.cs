@@ -37,6 +37,7 @@ namespace Axe.Models
         /// </summary>
         public ApplicationUser Examiner { get; set; }
 
+
         /// <summary>
         /// Gets or sets <see cref="Technology"/> for assessment
         /// </summary>
@@ -46,6 +47,7 @@ namespace Axe.Models
         /// Gets or sets <see cref="Technology"/> for assessment
         /// </summary>
         public Technology Technology { get; set; }
+
 
         /// <summary>
         /// Gets or sets assessment date

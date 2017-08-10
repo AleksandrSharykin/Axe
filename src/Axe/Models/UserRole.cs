@@ -10,7 +10,14 @@ namespace Axe.Models
     /// </summary>
     public static class UserRole
     {
+        /// <summary>
+        /// Gets administrator role name
+        /// </summary>
         public static readonly string Superuser = "superuser";
+
+        /// <summary>
+        /// Gets registered user role name
+        /// </summary>
         public static readonly string Member = "member";        
     }
 }
