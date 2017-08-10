@@ -62,7 +62,7 @@ namespace Axe.Tests
             this.db = NewDbContext();
 
             this.dbManager = NewDbContext();
-            this.manager = new TechnologyManager(this.dbManager);            
+            this.manager = new TechnologyManager(this.dbManager);
         }
 
         [TearDown]
