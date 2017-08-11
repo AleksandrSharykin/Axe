@@ -159,6 +159,7 @@
                                 <tr>
                                     <th>Title</th>
                                     <th>Objective</th>
+                                    <th>Demo</th>
                                     <th>Take a test</th>
                                 </tr>
                             </thead>
@@ -168,6 +169,12 @@
                                     <tr>
                                         <td>@t.Title</td>
                                         <td>@t.Objective</td>
+                                        <td>
+                                            @if (t.IsDemonstration)
+                                            {
+                                                <span class="glyphicon glyphicon-flag"></span>
+                                            }
+                                        </td>
                                         <td>
                                             <a href="@Url.Action("Take", "Exams", new { taskId = t.Id })" class="btn btn-primary">
                                                 <span class="glyphicon glyphicon-education"></span>

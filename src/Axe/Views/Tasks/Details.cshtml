@@ -20,6 +20,9 @@
         <dt><label asp-for="Technology" class="control-label"></label></dt>
         <dd>@Html.DisplayFor(model => model.Technology.Name)</dd>
 
+        <dt><label asp-for="PassingThreshold" class="control-label"></label></dt>
+        <dd>@Html.DisplayFor(model => model.PassingThreshold)</dd>
+
         <dt><label asp-for="Questions" class="control-label"></label></dt>
         <dd>
             <table class="table table-striped">
@@ -27,7 +30,7 @@
                     @foreach(var q in Model.Questions)
                     {
                         <tr>
-                            <td>@q.Question.Preview</td>
+                            <td class="codeblock">@q.Question.Preview</td>
                             <td>@q.Question.Type</td>
                         </tr>
                     }

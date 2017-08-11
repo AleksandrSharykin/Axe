@@ -10,7 +10,7 @@ namespace Axe.Tests
 {
     [TestFixture]
     public class ExamEvaluatorTests
-    {               
+    {
         private readonly string True = Boolean.TrueString;
         private readonly string False = Boolean.FalseString;
 
@@ -75,7 +75,7 @@ namespace Axe.Tests
 
         [SetUp]
         public void InitTestCase()
-        {            
+        {
         }
 
         /// <summary>
@@ -88,6 +88,7 @@ namespace Axe.Tests
         {
             return new ExamAttempt
             {
+                Task = new ExamTask { PassingThreshold = 50, },
                 Questions = new List<AttemptQuestion>
                 {
                     new AttemptQuestion
@@ -104,6 +105,7 @@ namespace Axe.Tests
         {
             var attempt = new ExamAttempt
             {
+                Task = new ExamTask { PassingThreshold = 50, },
                 Questions = new List<AttemptQuestion>()
             };
             this.evaluator.Evaluate(attempt);
@@ -354,7 +356,7 @@ namespace Axe.Tests
         [TestCase]
         public void EvalMultiLineQuestion_AllAnswersIncorrectOrder()
         {
-            var answer = new AttemptAnswer { TaskAnswer = this.qMultiLine.Answers[0], Value = "123" + this.NL +  "abc" };
+            var answer = new AttemptAnswer { TaskAnswer = this.qMultiLine.Answers[0], Value = "123" + this.NL + "abc" };
             var attempt = MakeSingleQuestionAttempt(this.qMultiLine, answer);
 
             this.evaluator.Evaluate(attempt);
@@ -480,7 +482,7 @@ namespace Axe.Tests
         [TestCase]
         public void EvalSingleLineQuestion_CorrectAnswerUnexpectedLineBreak()
         {
-            var answer = new AttemptAnswer { TaskAnswer = this.qSingleLine.Answers[0], Value = "100abc" + this.NL + this.NL};
+            var answer = new AttemptAnswer { TaskAnswer = this.qSingleLine.Answers[0], Value = "100abc" + this.NL + this.NL };
             var attempt = this.MakeSingleQuestionAttempt(this.qSingleLine, answer);
 
             this.evaluator.Evaluate(attempt);
@@ -495,6 +497,7 @@ namespace Axe.Tests
         {
             return new ExamAttempt
             {
+                Task = new ExamTask { PassingThreshold = 50, },
                 Questions = new List<AttemptQuestion>
                 {
                     new AttemptQuestion
@@ -560,7 +563,7 @@ namespace Axe.Tests
         {
             var attempt = MakeAttemptTemplate();
 
-            foreach(var question in attempt.Questions)
+            foreach (var question in attempt.Questions)
             {
                 foreach (var a in question.AttemptAnswers)
                 {

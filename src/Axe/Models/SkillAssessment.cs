@@ -52,14 +52,14 @@ namespace Axe.Models
         /// <summary>
         /// Gets or sets assessment date
         /// </summary>
-        [DisplayFormat(DataFormatString ="{0:dd.MM.yyy HH:mm}")]
+        [DisplayFormat(DataFormatString = "{0:dd.MM.yyy HH:mm}")]
         [Display(Name = "Date")]
         public DateTime? ExamDate { get; set; }
-        
+
         /// <summary>
         /// Gets or sets achieved exam score
         /// </summary>
-        [Range(0,100)]        
+        [Range(0, 100)]
         public int? ExamScore { get; set; }
 
         /// <summary>

@@ -16,8 +16,8 @@ namespace Axe.Controllers
     {
         private IExamManager manager;
 
-        public ExamsController(UserManager<ApplicationUser> userManager, AxeDbContext context, IExamManager manager)
-             : base(userManager, context)                
+        public ExamsController(UserManager<ApplicationUser> userManager, IExamManager manager)
+             : base(userManager, null)
         {
             this.manager = manager;
         }
@@ -34,7 +34,9 @@ namespace Axe.Controllers
 
             // redirect registered users to their profile page where they can select exam
             if (user != null)
-                return RedirectToAction("Visit", "Profiles", new { id = user.Id, technologyId = id });        
+            {
+                return RedirectToAction("Visit", "Profiles", new { id = user.Id, technologyId = id });
+            }
 
             return RedirectToAction("Take", "Exams", new { technologyId = id });
         }
@@ -45,7 +47,7 @@ namespace Axe.Controllers
             var request = await this.CreateRequest(new ExamTask { Id = taskId ?? 0, TechnologyId = technologyId });
 
             var response = await this.manager.AttemptGet(request);
-            
+
             if (response.Code == ResponseCode.NotFound)
             {
                 return NotFound();
@@ -56,7 +58,7 @@ namespace Axe.Controllers
 
         [HttpPost]
         public async Task<IActionResult> Take(ExamAttempt attempt)
-        {            
+        {
             if (ModelState.IsValid)
             {
                 var request = await CreateRequest(attempt);
@@ -80,7 +82,7 @@ namespace Axe.Controllers
                 return this.NotFound();
             }
 
-            return this.View(response.Item);            
+            return this.View(response.Item);
         }
 
         /// <summary>
@@ -99,7 +101,7 @@ namespace Axe.Controllers
             var request = await CreateRequest(id.Value);
 
             var details = await this.manager.DeletePreview(request);
-            
+
             if (details.Code == ResponseCode.NotFound)
             {
                 return NotFound();
@@ -121,7 +123,7 @@ namespace Axe.Controllers
             var request = await CreateRequest(id);
 
             var response = await this.manager.Delete(request);
-            
+
             return RedirectToAction("Visit", "Profiles");
         }
     }

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.ComponentModel.DataAnnotations;
 
 namespace Axe.Models
 {
@@ -13,12 +14,12 @@ namespace Axe.Models
         /// Gets or sets task identifier
         /// </summary>
         public int Id { get; set; }
-        
+
         /// <summary>
         /// Gets or sets task title
         /// </summary>
         public string Title { get; set; }
-        
+
         /// <summary>
         /// Gets or sets task objectives
         /// </summary>
@@ -28,6 +29,11 @@ namespace Axe.Models
         /// Gets or sets indiction of a demonstration task accessible for anonymous users
         /// </summary>
         public bool IsDemonstration { get; set; }
+
+        /// <summary>
+        /// Gets or sets percantage of points required to pass <see cref="ExamTask"/>
+        /// </summary>
+        public int PassingThreshold { get; set; } = 50;
 
 
         /// <summary>

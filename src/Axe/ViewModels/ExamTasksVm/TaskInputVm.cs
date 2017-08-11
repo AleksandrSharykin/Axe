@@ -50,5 +50,10 @@ namespace Axe.Models.ExamTasksVm
         /// </summary>
         [Display(Name = "This is a Demo")]
         public bool IsDemonstration { get; set; }
+
+        [Range(0, 100)]
+        [Required]
+        [Display(Name = "Threshold, %")]
+        public int PassingThreshold { get; set; } = 50;
     }
 }

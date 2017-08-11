@@ -115,8 +115,10 @@
                                 </th>
                                 <th>Title</th>
                                 <th>Objective</th>
+                                <th>Demo</th>
                                 <th>Author</th>
                                 <th>Questions</th>
+                                <th>Threshold</th>
                                 <th>Actions</th>
                             </tr>
                         </thead>
@@ -127,8 +129,15 @@
                                     <td>@item.idx</td>
                                     <td>@item.exam.Title</td>
                                     <td>@item.exam.Objective</td>
+                                    <td>
+                                        @if (item.exam.IsDemonstration)
+                                        {
+                                            <span class="glyphicon glyphicon-flag"></span>
+                                        }
+                                    </td>
                                     <td>@item.exam.Author?.UserName</td>
                                     <td>@item.exam.Questions?.Count</td>
+                                    <td>@item.exam.PassingThreshold %</td>
                                     <td>
                                         @Html.ActionLink("details", "Details", "Tasks", new { id = item.exam.Id })
                                     </td>

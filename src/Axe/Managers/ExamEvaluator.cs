@@ -10,7 +10,7 @@ namespace Axe.Managers
     /// Class evaluates exam results
     /// </summary>
     public class ExamEvaluator : IExamEvaluator
-    {        
+    {
         /// <summary>
         /// Checks answers correctness and calculates score
         /// </summary>
@@ -34,12 +34,12 @@ namespace Axe.Managers
 
                     // compare provided answers line-by-line with correct answers
                     // answers order is important
-                    var matchCount = userValues.Zip(correctValues, (userValue, correctValue) => userValue == correctValue ? 1 : 0).Sum();                    
+                    var matchCount = userValues.Zip(correctValues, (userValue, correctValue) => userValue == correctValue ? 1 : 0).Sum();
 
                     question.IsAccepted = matchCount > 0;
 
                     if (question.IsAccepted == true)
-                    {                        
+                    {
                         if (matchCount == correctValues.Count)
                         {
                             // award full points for all correct answers
@@ -68,7 +68,9 @@ namespace Axe.Managers
                 attempt.ExamScore += question.Score;
             }
 
-            attempt.IsPassed = attempt.ExamScore > 0.5 * attempt.MaxScore;
+            var threshold = attempt.Task.PassingThreshold * 0.01;
+
+            attempt.IsPassed = attempt.ExamScore > threshold * attempt.MaxScore;
         }
 
         /// <summary>

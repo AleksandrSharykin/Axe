@@ -85,6 +85,7 @@ namespace Axe.Managers
                 Title = examTask.Title,
                 Objective = examTask.Objective,
                 IsDemonstration = examTask.IsDemonstration,
+                PassingThreshold = examTask.PassingThreshold,
                 Questions = questions.Select(q => new QuestionSelectionVm
                 {
                     Id = q.Id,
@@ -133,6 +134,7 @@ namespace Axe.Managers
                     task.Title = taskInput.Title;
                     task.Objective = taskInput.Objective;
                     task.IsDemonstration = taskInput.IsDemonstration;
+                    task.PassingThreshold = taskInput.PassingThreshold;
 
                     // remove unselected questions
                     var deletedQuestion = task.Questions.Where(q => false == ids.Contains(q.QuestionId)).ToList();
@@ -157,7 +159,8 @@ namespace Axe.Managers
                         Title = taskInput.Title,
                         Objective = taskInput.Objective,
                         TechnologyId = taskInput.TechnologyId,
-                        IsDemonstration = taskInput.IsDemonstration
+                        IsDemonstration = taskInput.IsDemonstration,
+                        PassingThreshold = taskInput.PassingThreshold,
                     };
 
                     var taskQuestions = this.context.TaskQuestion
