@@ -26,6 +26,7 @@ namespace Axe.Managers
 
             var examTask = await context.ExamTask
                 .Include(e => e.Technology)
+                .Include(e => e.Questions).ThenInclude(q => q.Question)
                 .SingleOrDefaultAsync(m => m.Id == id);
 
             if (examTask == null)
@@ -195,6 +196,49 @@ namespace Axe.Managers
             }
 
             return this.ValidationError(taskInput);
+        }
+
+        /// <summary>
+        /// Gets <see cref="ExamTask"/> object for preview before deletion
+        /// </summary>
+        public async Task<Response<ExamTask>> DeleteGet(Request<int> request)
+        {
+            var exam = await this.context.ExamTask
+                         .Include(t => t.Technology).ThenInclude(t => t.Experts)
+                         .SingleOrDefaultAsync(t => t.Id == request.Item);
+
+            if (exam == null || false == exam.Technology.Experts.Any(u => u.UserId == request.CurrentUser.Id))
+            {
+                return this.NotFound<ExamTask>();
+            }
+
+            return this.Response(exam);
+        }
+
+        /// <summary>
+        /// Deletes <see cref="ExamTask"/>
+        /// </summary>
+        public async Task<Response<ExamTask>> DeletePost(Request<int> request)
+        {
+            var exam = await this.context.ExamTask
+                         .Include(t => t.Technology).ThenInclude(t => t.Experts)
+                         .SingleOrDefaultAsync(t => t.Id == request.Item);
+
+            if (exam == null)
+            {
+                return this.NotFound<ExamTask>();
+            }
+
+            if (false == exam.Technology.Experts.Any(u => u.UserId == request.CurrentUser.Id))
+            {
+                request.ModelState.AddModelError(String.Empty, "Only expert can delete " + exam.Technology.Name + " tasks");
+                return this.ValidationError(exam);
+            }
+
+            this.context.Remove(exam);
+            await this.context.SaveChangesAsync();
+
+            return this.Response(new ExamTask());
         }
     }
 }

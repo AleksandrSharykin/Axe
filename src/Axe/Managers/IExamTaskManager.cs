@@ -26,5 +26,19 @@ namespace Axe.Managers
         /// Applies <see cref="ExamTask"/> edit results
         /// </summary>
         Task<Response<TaskInputVm>> InputPost(Request<TaskInputVm> request);
+
+        /// <summary>
+        /// Gets <see cref="ExamTask"/> object for preview before deletion
+        /// </summary>
+        /// <param name="request"></param>
+        /// <returns></returns>
+        Task<Response<ExamTask>> DeleteGet(Request<int> request);
+
+        /// <summary>
+        /// Deletes <see cref="ExamTask"/>
+        /// </summary>
+        /// <param name="request"></param>
+        /// <returns></returns>
+        Task<Response<ExamTask>> DeletePost(Request<int> request);
     }
 }

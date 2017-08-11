@@ -71,7 +71,6 @@ namespace Axe.Controllers
             return View(response.Item);
         }
 
-        // GET: ExamTasks/Delete/5
         public async Task<IActionResult> Delete(int? id)
         {
             if (id == null)
@@ -79,31 +78,37 @@ namespace Axe.Controllers
                 return NotFound();
             }
 
-            var examTask = await context.ExamTask
-                .Include(e => e.Technology)
-                .SingleOrDefaultAsync(m => m.Id == id);
-            if (examTask == null)
+            var request = await this.CreateRequest(id.Value);
+
+            var response = await this.manager.DeleteGet(request);
+
+            if (response.Code == ResponseCode.NotFound)
             {
                 return NotFound();
             }
 
-            return View(examTask);
+            return View(response.Item);
         }
 
-        // POST: ExamTasks/Delete/5
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            var examTask = await context.ExamTask.SingleOrDefaultAsync(m => m.Id == id);
-            context.ExamTask.Remove(examTask);
-            await context.SaveChangesAsync();
-            return RedirectToAction("Index");
-        }
+            var request = await this.CreateRequest(id);
 
-        private bool ExamTaskExists(int id)
-        {
-            return context.ExamTask.Any(e => e.Id == id);
+            var response = await this.manager.DeletePost(request);
+
+            if (response.Code == ResponseCode.Success)
+            {
+                return RedirectToAction(nameof(TechnologiesController.Index), "Technologies");
+            }
+
+            if (response.Code == ResponseCode.ValidationError)
+            {
+                return View(nameof(Delete), response.Item);
+            }
+
+            return this.NotFound();
         }
     }
 }

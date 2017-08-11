@@ -53,8 +53,8 @@
             @*exam question*@
 
             <div id="menuQuestions" class="tab-pane fade in active">
-                <div class="table-responsive">
-                    <br />
+                <br />
+                <div class="table-responsive">                    
                     <table class="table table-striped">
                         <thead>
                             <tr>
@@ -106,39 +106,38 @@
             @*exams*@
             <div id="menuExams" class="tab-pane fade">
                 <br />
-                <table class="table table-striped">
-                    <thead>
-                        <tr>
-                            <th>
-                                <span class="glyphicon glyphicon-th"></span>
-                            </th>
-                            <th>Title</th>
-                            <th>Objective</th>
-                            <th>Author</th>
-                            <th>Questions</th>
-                            <th>Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @foreach (var item in Model.Exams.Select((q, i) => new { exam = q, idx = i + 1 }))
-                        {
+                <div class="table-responsive">
+                    <table class="table table-striped">
+                        <thead>
                             <tr>
-                                <td>@item.idx</td>
-                                <td>@item.exam.Title</td>
-                                <td>@item.exam.Objective</td>
-                                <td>@item.exam.Author?.UserName</td>
-                                <td>@item.exam.Questions?.Count</td>
-                                <td>
-                                    @Html.ActionLink("edit", "Input", "Tasks", new { id = item.exam.Id })
-                                    |
-                                    @Html.ActionLink("details", "Details", "Tasks", new { id = item.exam.Id })
-                                </td>
+                                <th>
+                                    <span class="glyphicon glyphicon-th"></span>
+                                </th>
+                                <th>Title</th>
+                                <th>Objective</th>
+                                <th>Author</th>
+                                <th>Questions</th>
+                                <th>Actions</th>
                             </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var item in Model.Exams.Select((q, i) => new { exam = q, idx = i + 1 }))
+                            {
+                                <tr>
+                                    <td>@item.idx</td>
+                                    <td>@item.exam.Title</td>
+                                    <td>@item.exam.Objective</td>
+                                    <td>@item.exam.Author?.UserName</td>
+                                    <td>@item.exam.Questions?.Count</td>
+                                    <td>
+                                        @Html.ActionLink("details", "Details", "Tasks", new { id = item.exam.Id })
+                                    </td>
+                                </tr>
 
-                        }
-                    </tbody>
-                </table>
-
+                            }
+                        </tbody>
+                    </table>
+                </div>
 
                 @if (Model.SelectedTechnology != null)
                 {
@@ -149,36 +148,38 @@
 
             @*Experts*@
             <div id="menuExperts" class="tab-pane fade">
-                <table class="table table-striped">
-                    <thead>
-                        <tr>
-                            <th>User</th>
-                            <th>Email</th>
-                            <th>Action</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @foreach (var e in Model.Experts)
-                        {
+                <br />
+                <div class="table-responsive">
+                    <table class="table table-striped">
+                        <thead>
                             <tr>
-                                <td>@Html.ActionLink(e.UserName, "Visit", "Profiles")</td>
-                                <td>@e.Email</td>
-                                <td>
-                                    @{
-                                        string category = e.IsExpert ? "default" : "primary";
-                                        string linkName = e.IsExpert ? "Exclude" : "Include";
-                                        <a href="@Url.Action(linkName+"Expert", new { id = e.Id, technologyId = Model.SelectedTechnology?.Id})">
-                                            <label class="btn btn-@category">
-                                                @linkName
-                                            </label>
-                                        </a>
-                                    }
-                                </td>
+                                <th>User</th>
+                                <th>Email</th>
+                                <th>Action</th>
                             </tr>
-
+                        </thead>
+                        <tbody>
+                            @foreach (var e in Model.Experts)
+                            {
+                                <tr>
+                                    <td>@Html.ActionLink(e.UserName, "Visit", "Profiles")</td>
+                                    <td>@e.Email</td>
+                                    <td>
+                                        @{
+                                            string category = e.IsExpert ? "default" : "primary";
+                                            string linkName = e.IsExpert ? "Exclude" : "Include";
+                                            <a href="@Url.Action(linkName+"Expert", new { id = e.Id, technologyId = Model.SelectedTechnology?.Id})">
+                                                <label class="btn btn-@category">
+                                                    @linkName
+                                                </label>
+                                            </a>
                                         }
-                    </tbody>
-                </table>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
             </div>
 
             @*Active exams*@
