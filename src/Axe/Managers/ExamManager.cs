@@ -14,7 +14,7 @@ namespace Axe.Managers
     {
         IExamEvaluator examEvaluator;
 
-        public ExamManager(AxeDbContext context, IExamEvaluator examEvaluator) : base (context)
+        public ExamManager(AxeDbContext context, IExamEvaluator examEvaluator) : base(context)
         {
             this.examEvaluator = examEvaluator;
         }
@@ -66,9 +66,11 @@ namespace Axe.Managers
                                 {
                                     TaskQuestion = q.Question,
                                     TaskQuestionId = q.QuestionId,
-                                    AttemptAnswers = q.Question.Answers.Select(a => new AttemptAnswer { TaskAnswer = a, TaskAnswerId = a.Id }).ToList()
+                                    AttemptAnswers = q.Question.Answers
+                                                        .Select((a, i) => new AttemptAnswer { TaskAnswer = a, TaskAnswerId = a.Id, })
+                                                        .ToList().Shuffle()
                                 })
-                                .ToList()
+                                .ToList().Shuffle()
             };
 
             return this.Response(examAttempt);
@@ -79,7 +81,7 @@ namespace Axe.Managers
             var attempt = request.Item;
 
             if (attempt.StudentId == null)
-                attempt.Student = request.CurrentUser ?? new ApplicationUser { UserName = "Guest"};
+                attempt.Student = request.CurrentUser ?? new ApplicationUser { UserName = "Guest" };
 
             if (attempt.ExamDate is null)
                 attempt.ExamDate = DateTime.Now;
@@ -87,7 +89,7 @@ namespace Axe.Managers
             foreach (var q in attempt.Questions)
             {
                 q.Attempt = attempt;
-                foreach (var a in q.AttemptAnswers)                
+                foreach (var a in q.AttemptAnswers)
                     a.AttemptQuestion = q;
             }
 
@@ -101,10 +103,10 @@ namespace Axe.Managers
             attempt.Task = task;
 
             // restore Questions ans Answers navigation properties 
-            foreach(var question in attempt.Questions)
+            foreach (var question in attempt.Questions)
             {
                 question.TaskQuestion = task.Questions.FirstOrDefault(q => q.QuestionId == question.TaskQuestionId).Question;
-                foreach(var answer in question.AttemptAnswers)
+                foreach (var answer in question.AttemptAnswers)
                 {
                     answer.TaskAnswer = question.TaskQuestion.Answers.FirstOrDefault(a => a.Id == answer.TaskAnswerId);
                     if (question.TaskQuestion.Type == TaskQuestionType.SingleChoice)
@@ -119,7 +121,7 @@ namespace Axe.Managers
 
             // not saving results of demo tests
             if (false == task.IsDemonstration)
-            {                
+            {
                 this.context.Add(attempt);
                 await this.context.SaveChangesAsync();
             }

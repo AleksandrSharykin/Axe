@@ -30,12 +30,6 @@ namespace Axe.Models
 
 
         /// <summary>
-        /// Gets or sets question position in question set 
-        /// </summary>        
-        public int SortNumber { get; set; }
-
-
-        /// <summary>
         /// Gets or sets base <see cref="TaskQuestion"/>
         /// </summary>
         public int? TaskQuestionId { get; set; }
