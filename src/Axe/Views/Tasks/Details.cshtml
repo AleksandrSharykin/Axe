@@ -1,33 +1,51 @@
 @model Axe.Models.ExamTask
 
 @{
-    ViewData["Title"] = "Details";
+    ViewData["Title"] = "Task Details";
 }
 
-<h2>Details</h2>
+<h4>@Model.Title</h4>
+<h4>@Model.Objective</h4>
 
-<div>        
-    <dl class="dl-horizontal">
-        <dt>
-            @Html.DisplayNameFor(model => model.Title)
-        </dt>
+<hr />
+
+<div class="form-horizontal row">
+    <dl class="col-md-6">
+        <dt><label asp-for="Title" class="control-label"></label></dt>
+        <dd>@Html.DisplayFor(model => model.Title)</dd>
+
+        <dt><label asp-for="Objective" class="control-label"></label></dt>
+        <dd>@Html.DisplayFor(model => model.Objective)</dd>
+
+        <dt><label asp-for="Technology" class="control-label"></label></dt>
+        <dd>@Html.DisplayFor(model => model.Technology.Name)</dd>
+
+        <dt><label asp-for="Questions" class="control-label"></label></dt>
         <dd>
-            @Html.DisplayFor(model => model.Title)
-        </dd>
-        <dt>
-            @Html.DisplayNameFor(model => model.Objective)
-        </dt>
-        <dd>
-            @Html.DisplayFor(model => model.Objective)
-        </dd>
-        <dt>
-            @Html.DisplayNameFor(model => model.Technology)
-        </dt>
-        <dd>
-            @Html.DisplayFor(model => model.Technology.Name)
+            <table class="table table-striped">
+                <tbody>
+                    @foreach(var q in Model.Questions)
+                    {
+                        <tr>
+                            <td>@q.Question.Preview</td>
+                            <td>@q.Question.Type</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
         </dd>
     </dl>
 </div>
-<div>
-    @Html.ActionLink("Back to Technologies", "Index", "Technologies", new { technologyId = Model.TechnologyId })
+
+<hr />
+<div class="form-group row">
+    <div class="col-md-2">
+        @Html.ActionLink("Back to Technologies", "Index", "Technologies", new { technologyId = Model.TechnologyId })
+    </div>
+    <div>
+        <div class="btn-group">
+            @Html.ActionLink("Edit", "Input", "Tasks", new { id = Model.Id, technologyId = Model.TechnologyId }, new { @class = "btn btn-primary" })
+            @Html.ActionLink("Delete", "Delete", "Tasks", new { id = Model.Id }, new { @class="btn btn-default" })
+        </div>
+    </div>
 </div>
