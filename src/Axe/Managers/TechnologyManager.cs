@@ -45,12 +45,12 @@ namespace Axe.Managers
                 experts = this.context.Users
                               .Where(u => u.Id != user.Id)
                               .Select(u => new ExpertSelectionVm
-                               {
-                                   Id = u.Id,
-                                   UserName = u.UserName,
-                                   Email = u.Email,
-                                   IsExpert = expertsIds.Contains(u.Id),
-                               })
+                              {
+                                  Id = u.Id,
+                                  UserName = u.UserName,
+                                  Email = u.Email,
+                                  IsExpert = expertsIds.Contains(u.Id),
+                              })
                               .ToList();
             }
 
@@ -90,12 +90,12 @@ namespace Axe.Managers
 
             var technology = await this.context.Technology.Include(t => t.Experts)
                                                .SingleOrDefaultAsync(m => m.Id == id);
-            
+
             // creating a new Technology if requested identifier was not found
             if (technology == null)
             {
                 return this.New<Technology>();
-            }            
+            }
 
             // if User is not an Expert they cannot edit Technology
             if (false == technology.Experts.Any(t => t.UserId == request.CurrentUser.Id))
@@ -234,6 +234,47 @@ namespace Axe.Managers
                     await this.context.SaveChangesAsync();
                 }
             }
+        }
+
+        /// <summary>
+        /// Gets <see cref="Technology"/> for preview before deletion
+        /// </summary>
+        public async Task<Response<Technology>> DeleteGet(Request<int> request)
+        {
+            var tech = await this.context.Technology.Include(t => t.Experts)
+                                 .SingleOrDefaultAsync(t => t.Id == request.Item);
+
+            if (tech == null || false == tech.Experts.Any(u => u.UserId == request.CurrentUser.Id))
+            {
+                return this.NotFound<Technology>();
+            }
+
+            return this.Response(tech);
+        }
+
+        /// <summary>
+        /// Deletes <see cref="Technology"/>
+        /// </summary>
+        public async Task<Response<Technology>> DeletePost(Request<int> request)
+        {
+            var tech = await this.context.Technology.Include(t => t.Experts)
+                                 .SingleOrDefaultAsync(t => t.Id == request.Item);
+
+            if (tech == null)
+            {
+                return this.NotFound<Technology>();
+            }
+
+            if (false == tech.Experts.Any(u => u.UserId == request.CurrentUser.Id))
+            {
+                request.ModelState.AddModelError(String.Empty, "Only expert can delete " + tech.Name);
+                return this.ValidationError(tech);
+            }
+
+            this.context.Remove(tech);
+            await this.context.SaveChangesAsync();
+
+            return this.Response(new Technology());
         }
     }
 }

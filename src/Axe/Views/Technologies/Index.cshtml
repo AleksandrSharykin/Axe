@@ -5,7 +5,7 @@
     ViewData["Title"] = "Technologies";
 }
 
-<br/>
+<br />
 
 @if (Model.SelectedTechnology != null)
 {
@@ -14,16 +14,16 @@
             <h2><kbd>@Model.SelectedTechnology.Name</kbd></h2>
             <p>@Model.SelectedTechnology.InformationText</p>
         </div>
-    </div>    
+    </div>
 }
 
 <div class="row">
     <div class="btn-group">
         @Html.ActionLink("Add", "Input", "Technologies", null, new { @class = "btn btn-primary" })
         @Html.ActionLink("Edit", "Input", "Technologies", new { id = Model.SelectedTechnology?.Id }, new { @class = "btn btn-primary" })
-        @Html.ActionLink("Delete", "Delete", "Technologies", new { id = Model.SelectedTechnology?.Id }, new { @class = "btn btn-primary" })
+        @Html.ActionLink("Delete", "Delete", "Technologies", new { id = Model.SelectedTechnology?.Id }, new { @class = "btn btn-default" })
     </div>
-    <hr/>
+    <hr />
 </div>
 
 <div class="row">
@@ -52,7 +52,7 @@
         <div class="tab-content">
             @*exam question*@
 
-            <div id="menuQuestions" class="tab-pane fade in active">   
+            <div id="menuQuestions" class="tab-pane fade in active">
                 <div class="table-responsive">
                     <br />
                     <table class="table table-striped">
@@ -143,7 +143,7 @@
 
 
                 @if (Model.SelectedTechnology != null)
-                                        {
+                {
                     <br />
                     @Html.ActionLink("Add", "Input", "Tasks", new { technologyId = Model.SelectedTechnology?.Id }, new { @class = "btn btn-primary" })
                 }
@@ -160,15 +160,15 @@
                         </tr>
                     </thead>
                     <tbody>
-                        @foreach(var e in Model.Experts)
-                                        {
+                        @foreach (var e in Model.Experts)
+                        {
                             <tr>
                                 <td>@Html.ActionLink(e.UserName, "Visit", "Profiles")</td>
                                 <td>@e.Email</td>
                                 <td>
                                     @{
-                                                string category = e.IsExpert ? "default" : "primary";
-                                                string linkName = e.IsExpert ? "Exclude" : "Include";
+                                        string category = e.IsExpert ? "default" : "primary";
+                                        string linkName = e.IsExpert ? "Exclude" : "Include";
                                         <a href="@Url.Action(linkName+"Expert", new { id = e.Id, technologyId = Model.SelectedTechnology?.Id})">
                                             <label class="btn btn-@category">
                                                 @linkName
@@ -178,7 +178,7 @@
                                 </td>
                             </tr>
 
-                        }
+                                        }
                     </tbody>
                 </table>
             </div>

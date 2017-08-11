@@ -19,7 +19,7 @@ namespace Axe.Controllers
         public TechnologiesController(UserManager<ApplicationUser> userManager, ITechnologyManager manager) : base(userManager, null)
         {
             this.manager = manager;
-        } 
+        }
 
         /// <summary>
         /// Returns a list of technologies available for current user with details about selected technology
@@ -113,7 +113,6 @@ namespace Axe.Controllers
             return RedirectToAction("Index", new { technologyId });
         }
 
-        // GET: Technologies/Delete/5
         public async Task<IActionResult> Delete(int? id)
         {
             if (id == null)
@@ -121,25 +120,37 @@ namespace Axe.Controllers
                 return NotFound();
             }
 
-            var technology = await this.context.Technology
-                .SingleOrDefaultAsync(m => m.Id == id);
-            if (technology == null)
+            var request = await this.CreateRequest(id.Value);
+
+            var response = await this.manager.DeleteGet(request);
+
+            if (response.Code == ResponseCode.NotFound)
             {
                 return NotFound();
             }
 
-            return View(technology);
+            return View(response.Item);
         }
 
-        // POST: Technologies/Delete/5
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            var technology = await this.context.Technology.SingleOrDefaultAsync(m => m.Id == id);
-            this.context.Technology.Remove(technology);
-            await this.context.SaveChangesAsync();
-            return RedirectToAction("Index");
+            var request = await this.CreateRequest(id);
+
+            var response = await this.manager.DeletePost(request);
+
+            if (response.Code == ResponseCode.Success)
+            {
+                return RedirectToAction(nameof(Index));
+            }
+
+            if (response.Code == ResponseCode.ValidationError)
+            {
+                return View(nameof(Delete), response.Item);
+            }
+
+            return this.NotFound();
         }
     }
 }

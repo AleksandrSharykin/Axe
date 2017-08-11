@@ -10,7 +10,7 @@ namespace Axe.Managers
     /// <summary>
     /// Interface declares operations which can be performed with <see cref="Technology"/> entities
     /// </summary>
-    public interface ITechnologyManager 
+    public interface ITechnologyManager
     {
         /// <summary>
         /// Returns a list of technologies available for current user with details about selected technology
@@ -44,5 +44,19 @@ namespace Axe.Managers
         /// Removes a user from technology experts list
         /// </summary>
         Task ExcludeExpert(Request<ExpertTechnologyLink> request);
+
+        /// <summary>
+        /// Gets <see cref="Technology"/> for preview before deletion
+        /// </summary>
+        /// <param name="request"></param>
+        /// <returns></returns>
+        Task<Response<Technology>> DeleteGet(Request<int> request);
+
+        /// <summary>
+        /// Deletes <see cref="Technology"/>
+        /// </summary>
+        /// <param name="request"></param>
+        /// <returns></returns>
+        Task<Response<Technology>> DeletePost(Request<int> request);
     }
 }
