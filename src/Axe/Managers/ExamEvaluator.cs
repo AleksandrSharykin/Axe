@@ -70,7 +70,7 @@ namespace Axe.Managers
 
             var threshold = attempt.Task.PassingThreshold * 0.01;
 
-            attempt.IsPassed = attempt.ExamScore > threshold * attempt.MaxScore;
+            attempt.IsPassed = attempt.ExamScore >= threshold * attempt.MaxScore;
         }
 
         /// <summary>

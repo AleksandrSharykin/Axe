@@ -624,5 +624,150 @@ namespace Axe.Tests
             Assert.AreEqual(8, attempt.MaxScore);
             Assert.AreEqual(3, attempt.ExamScore);
         }
+
+        [TestCase]
+        public void EvalAttempt_NonDefaultThreshold_100PercentThresholdPassed()
+        {
+            var attempt = new ExamAttempt
+            {
+                Task = new ExamTask { PassingThreshold = 100 },
+                Questions = new List<AttemptQuestion>
+                {
+                    new AttemptQuestion
+                    {
+                        TaskQuestion = new TaskQuestion { Type = TaskQuestionType.MultiChoice, },
+                        AttemptAnswers =
+                            Enumerable.Range(1,4)
+                            .Select(i => new AttemptAnswer { TaskAnswer = new TaskAnswer { Value = this.True, Score = 1 }, Value = this.True })
+                            .ToList(),
+                    }
+                }
+            };
+
+            this.evaluator.Evaluate(attempt);
+
+            Assert.AreEqual(4, attempt.MaxScore);
+            Assert.AreEqual(4, attempt.ExamScore);
+            Assert.True(attempt.IsPassed);
+        }
+
+        [TestCase]
+        public void EvalAttempt_NonDefaultThreshold_HighThresholdFailed()
+        {
+            var attempt = new ExamAttempt
+            {
+                Task = new ExamTask { PassingThreshold = 80 },
+                Questions = new List<AttemptQuestion>
+                {
+                    new AttemptQuestion
+                    {
+                        TaskQuestion = new TaskQuestion { Type = TaskQuestionType.MultiChoice, },
+                        AttemptAnswers = new List<AttemptAnswer>
+                        {
+                            new AttemptAnswer { TaskAnswer = new TaskAnswer { Value = this.True, Score = 1 }, Value = this.True },
+                            new AttemptAnswer { TaskAnswer = new TaskAnswer { Value = this.True, Score = 1 }, Value = this.True },
+                            new AttemptAnswer { TaskAnswer = new TaskAnswer { Value = this.True, Score = 1 }, Value = this.True },
+                            new AttemptAnswer { TaskAnswer = new TaskAnswer { Value = this.True, Score = 1 }, Value = this.False },
+                        }
+                    }
+                }
+            };
+
+            this.evaluator.Evaluate(attempt);
+
+            Assert.AreEqual(4, attempt.MaxScore);
+            Assert.AreEqual(3, attempt.ExamScore);
+            Assert.False(attempt.IsPassed);
+        }
+
+        [TestCase]
+        public void EvalAttempt_NonDefaultThreshold_HighThresholdPassed()
+        {
+            var attempt = new ExamAttempt
+            {
+                Task = new ExamTask { PassingThreshold = 75 },
+                Questions = new List<AttemptQuestion>
+                {
+                    new AttemptQuestion
+                    {
+                        TaskQuestion = new TaskQuestion { Type = TaskQuestionType.MultiChoice, },
+                        AttemptAnswers = new List<AttemptAnswer>
+                        {
+                            new AttemptAnswer { TaskAnswer = new TaskAnswer { Value = this.True, Score = 1 }, Value = this.True },
+                            new AttemptAnswer { TaskAnswer = new TaskAnswer { Value = this.True, Score = 1 }, Value = this.True },
+                            new AttemptAnswer { TaskAnswer = new TaskAnswer { Value = this.True, Score = 1 }, Value = this.True },
+                            new AttemptAnswer { TaskAnswer = new TaskAnswer { Value = this.True, Score = 1 }, Value = this.True },
+                            new AttemptAnswer { TaskAnswer = new TaskAnswer { Value = this.True, Score = 1 }, Value = this.False },
+                        }
+                    }
+                }
+            };
+
+            this.evaluator.Evaluate(attempt);
+
+            Assert.AreEqual(5, attempt.MaxScore);
+            Assert.AreEqual(4, attempt.ExamScore);
+            Assert.True(attempt.IsPassed);
+        }
+
+        [TestCase]
+        public void EvalAttempt_NonDefaultThreshold_LowThresholdPassed()
+        {
+            var attempt = new ExamAttempt
+            {
+                Task = new ExamTask { PassingThreshold = 33 },
+                Questions = new List<AttemptQuestion>
+                {
+                    new AttemptQuestion
+                    {
+                        TaskQuestion = new TaskQuestion { Type = TaskQuestionType.MultiChoice, },
+                        AttemptAnswers = new List<AttemptAnswer>
+                        {
+                            new AttemptAnswer { TaskAnswer = new TaskAnswer { Value = this.True, Score = 1 }, Value = this.True },
+                            new AttemptAnswer { TaskAnswer = new TaskAnswer { Value = this.True, Score = 1 }, Value = this.True },
+                            new AttemptAnswer { TaskAnswer = new TaskAnswer { Value = this.True, Score = 1 }, Value = this.False },
+                            new AttemptAnswer { TaskAnswer = new TaskAnswer { Value = this.True, Score = 1 }, Value = this.False },
+                            new AttemptAnswer { TaskAnswer = new TaskAnswer { Value = this.True, Score = 1 }, Value = this.False },
+                        }
+                    }
+                }
+            };
+
+            this.evaluator.Evaluate(attempt);
+
+            Assert.AreEqual(5, attempt.MaxScore);
+            Assert.AreEqual(2, attempt.ExamScore);
+            Assert.True(attempt.IsPassed);
+        }
+
+        [TestCase]
+        public void EvalAttempt_NonDefaultThreshold_LowThresholdFailed()
+        {
+            var attempt = new ExamAttempt
+            {
+                Task = new ExamTask { PassingThreshold = 25 },
+                Questions = new List<AttemptQuestion>
+                {
+                    new AttemptQuestion
+                    {
+                        TaskQuestion = new TaskQuestion { Type = TaskQuestionType.MultiChoice, },
+                        AttemptAnswers = new List<AttemptAnswer>
+                        {
+                            new AttemptAnswer { TaskAnswer = new TaskAnswer { Value = this.True, Score = 1 }, Value = this.True },
+                            new AttemptAnswer { TaskAnswer = new TaskAnswer { Value = this.True, Score = 1 }, Value = this.False },
+                            new AttemptAnswer { TaskAnswer = new TaskAnswer { Value = this.True, Score = 1 }, Value = this.False },
+                            new AttemptAnswer { TaskAnswer = new TaskAnswer { Value = this.True, Score = 1 }, Value = this.False },
+                            new AttemptAnswer { TaskAnswer = new TaskAnswer { Value = this.True, Score = 1 }, Value = this.False },
+                        }
+                    }
+                }
+            };
+
+            this.evaluator.Evaluate(attempt);
+
+            Assert.AreEqual(5, attempt.MaxScore);
+            Assert.AreEqual(1, attempt.ExamScore);
+            Assert.False(attempt.IsPassed);
+        }
     }
 }
