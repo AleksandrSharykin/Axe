@@ -38,9 +38,11 @@ namespace Axe.Managers
 
                     question.IsAccepted = matchCount > 0;
 
+                    question.IsPerfect = question.IsAccepted.Value && matchCount == correctValues.Count;
+
                     if (question.IsAccepted == true)
                     {
-                        if (matchCount == correctValues.Count)
+                        if (true == question.IsPerfect)
                         {
                             // award full points for all correct answers
                             score = answer.TaskAnswer.Score;
@@ -62,6 +64,9 @@ namespace Axe.Managers
                     // if incorrect answer is selected, points for question are not awarded                    
                     question.IsAccepted = score > 0 &&
                         question.AttemptAnswers.Where(a => a.Value == Boolean.TrueString).All(p => p.TaskAnswer.Value == Boolean.TrueString);
+
+                    question.IsPerfect = question.AttemptAnswers
+                                    .All(answer => Normalize(answer.Value) == Normalize(answer.TaskAnswer.Value));
                 }
 
                 question.Score = question.IsAccepted == true ? score : 0;

@@ -50,11 +50,15 @@ namespace Axe.Models
         /// </summary>
         public IList<AttemptAnswer> AttemptAnswers { get; set; }
 
-
         /// <summary>
         /// Gets or sets indication that question answers were evaluated
         /// </summary>
         public bool? IsAccepted { get; set; }
+
+        /// <summary>
+        /// Gets or sets indication that all correct answers were provided
+        /// </summary>
+        public bool? IsPerfect { get; set; }
 
         /// <summary>
         /// Gets or sets points awarded for answering question

@@ -110,7 +110,7 @@ namespace Axe.Tests
             };
             this.evaluator.Evaluate(attempt);
 
-            Assert.AreEqual(false, attempt.IsPassed);
+            Assert.AreEqual(true, attempt.IsPassed);
             Assert.AreEqual(0, attempt.MaxScore);
             Assert.AreEqual(0, attempt.ExamScore);
         }
@@ -132,6 +132,7 @@ namespace Axe.Tests
             this.evaluator.Evaluate(attempt);
 
             Assert.AreEqual(true, attempt.Questions[0].IsAccepted);
+            Assert.AreEqual(true, attempt.Questions[0].IsPerfect);
             Assert.AreEqual(true, attempt.IsPassed);
             Assert.AreEqual(30, attempt.MaxScore);
             Assert.AreEqual(30, attempt.ExamScore);
@@ -154,6 +155,7 @@ namespace Axe.Tests
             this.evaluator.Evaluate(attempt);
 
             Assert.AreEqual(false, attempt.Questions[0].IsAccepted);
+            Assert.AreEqual(false, attempt.Questions[0].IsPerfect);
             Assert.AreEqual(false, attempt.IsPassed);
             Assert.AreEqual(30, attempt.MaxScore);
             Assert.AreEqual(0, attempt.ExamScore);
@@ -176,6 +178,7 @@ namespace Axe.Tests
             this.evaluator.Evaluate(attempt);
 
             Assert.AreEqual(false, attempt.Questions[0].IsAccepted);
+            Assert.AreEqual(false, attempt.Questions[0].IsPerfect);
             Assert.AreEqual(false, attempt.IsPassed);
             Assert.AreEqual(30, attempt.MaxScore);
             Assert.AreEqual(0, attempt.ExamScore);
@@ -198,6 +201,7 @@ namespace Axe.Tests
             this.evaluator.Evaluate(attempt);
 
             Assert.AreEqual(true, attempt.Questions[0].IsAccepted);
+            Assert.AreEqual(false, attempt.Questions[0].IsPerfect);
             Assert.AreEqual(true, attempt.IsPassed);
             Assert.AreEqual(30, attempt.MaxScore);
             Assert.AreEqual(20, attempt.ExamScore);
@@ -220,6 +224,7 @@ namespace Axe.Tests
             this.evaluator.Evaluate(attempt);
 
             Assert.AreEqual(true, attempt.Questions[0].IsAccepted);
+            Assert.AreEqual(false, attempt.Questions[0].IsPerfect);
             Assert.AreEqual(false, attempt.IsPassed);
             Assert.AreEqual(30, attempt.MaxScore);
             Assert.AreEqual(10, attempt.ExamScore);
@@ -242,6 +247,7 @@ namespace Axe.Tests
             this.evaluator.Evaluate(attempt);
 
             Assert.AreEqual(true, attempt.Questions[0].IsAccepted);
+            Assert.AreEqual(true, attempt.Questions[0].IsPerfect);
             Assert.AreEqual(true, attempt.IsPassed);
             Assert.AreEqual(10, attempt.MaxScore);
             Assert.AreEqual(10, attempt.ExamScore);
@@ -264,6 +270,7 @@ namespace Axe.Tests
             this.evaluator.Evaluate(attempt);
 
             Assert.AreEqual(false, attempt.Questions[0].IsAccepted);
+            Assert.AreEqual(false, attempt.Questions[0].IsPerfect);
             Assert.AreEqual(false, attempt.IsPassed);
             Assert.AreEqual(10, attempt.MaxScore);
             Assert.AreEqual(0, attempt.ExamScore);
@@ -289,6 +296,7 @@ namespace Axe.Tests
             this.evaluator.Evaluate(attempt);
 
             Assert.AreEqual(false, attempt.Questions[0].IsAccepted);
+            Assert.AreEqual(false, attempt.Questions[0].IsPerfect);
             Assert.AreEqual(false, attempt.IsPassed);
             Assert.AreEqual(10, attempt.MaxScore);
             Assert.AreEqual(0, attempt.ExamScore);
@@ -303,6 +311,7 @@ namespace Axe.Tests
             this.evaluator.Evaluate(attempt);
 
             Assert.AreEqual(true, attempt.Questions[0].IsAccepted);
+            Assert.AreEqual(true, attempt.Questions[0].IsPerfect);
             Assert.AreEqual(true, attempt.IsPassed);
             Assert.AreEqual(40, attempt.MaxScore);
             Assert.AreEqual(40, attempt.ExamScore);
@@ -317,6 +326,7 @@ namespace Axe.Tests
             this.evaluator.Evaluate(attempt);
 
             Assert.AreEqual(false, attempt.Questions[0].IsAccepted);
+            Assert.AreEqual(false, attempt.Questions[0].IsPerfect);
             Assert.AreEqual(false, attempt.IsPassed);
             Assert.AreEqual(40, attempt.MaxScore);
             Assert.AreEqual(0, attempt.ExamScore);
@@ -334,6 +344,7 @@ namespace Axe.Tests
             this.evaluator.Evaluate(attempt);
 
             Assert.AreEqual(true, attempt.Questions[0].IsAccepted);
+            Assert.AreEqual(true, attempt.Questions[0].IsPerfect);
             Assert.AreEqual(true, attempt.IsPassed);
             Assert.AreEqual(40, attempt.MaxScore);
             Assert.AreEqual(40, attempt.ExamScore);
@@ -348,7 +359,8 @@ namespace Axe.Tests
             this.evaluator.Evaluate(attempt);
 
             Assert.AreEqual(true, attempt.Questions[0].IsAccepted);
-            Assert.AreEqual(false, attempt.IsPassed);
+            Assert.AreEqual(false, attempt.Questions[0].IsPerfect);
+            Assert.AreEqual(true, attempt.IsPassed);
             Assert.AreEqual(40, attempt.MaxScore);
             Assert.AreEqual(20, attempt.ExamScore);
         }
@@ -362,6 +374,7 @@ namespace Axe.Tests
             this.evaluator.Evaluate(attempt);
 
             Assert.AreEqual(false, attempt.Questions[0].IsAccepted);
+            Assert.AreEqual(false, attempt.Questions[0].IsPerfect);
             Assert.AreEqual(false, attempt.IsPassed);
             Assert.AreEqual(40, attempt.MaxScore);
             Assert.AreEqual(0, attempt.ExamScore);
@@ -376,6 +389,7 @@ namespace Axe.Tests
             this.evaluator.Evaluate(attempt);
 
             Assert.AreEqual(false, attempt.Questions[0].IsAccepted);
+            Assert.AreEqual(false, attempt.Questions[0].IsPerfect);
             Assert.AreEqual(false, attempt.IsPassed);
             Assert.AreEqual(40, attempt.MaxScore);
             Assert.AreEqual(0, attempt.ExamScore);
@@ -390,7 +404,8 @@ namespace Axe.Tests
             this.evaluator.Evaluate(attempt);
 
             Assert.AreEqual(true, attempt.Questions[0].IsAccepted);
-            Assert.AreEqual(false, attempt.IsPassed);
+            Assert.AreEqual(false, attempt.Questions[0].IsPerfect);
+            Assert.AreEqual(true, attempt.IsPassed);
             Assert.AreEqual(40, attempt.MaxScore);
             Assert.AreEqual(20, attempt.ExamScore);
         }
@@ -404,6 +419,7 @@ namespace Axe.Tests
             this.evaluator.Evaluate(attempt);
 
             Assert.AreEqual(true, attempt.Questions[0].IsAccepted);
+            Assert.AreEqual(true, attempt.Questions[0].IsPerfect);
             Assert.AreEqual(true, attempt.IsPassed);
             Assert.AreEqual(40, attempt.MaxScore);
             Assert.AreEqual(40, attempt.ExamScore);
@@ -418,6 +434,7 @@ namespace Axe.Tests
             this.evaluator.Evaluate(attempt);
 
             Assert.AreEqual(true, attempt.Questions[0].IsAccepted);
+            Assert.AreEqual(false, attempt.Questions[0].IsPerfect);
             Assert.AreEqual(false, attempt.IsPassed);
             Assert.AreEqual(30, attempt.MaxScore);
             Assert.AreEqual(10, attempt.ExamScore);
@@ -432,6 +449,7 @@ namespace Axe.Tests
             this.evaluator.Evaluate(attempt);
 
             Assert.AreEqual(true, attempt.Questions[0].IsAccepted);
+            Assert.AreEqual(true, attempt.Questions[0].IsPerfect);
             Assert.AreEqual(true, attempt.IsPassed);
             Assert.AreEqual(10, attempt.MaxScore);
             Assert.AreEqual(10, attempt.ExamScore);
@@ -446,6 +464,7 @@ namespace Axe.Tests
             this.evaluator.Evaluate(attempt);
 
             Assert.AreEqual(false, attempt.Questions[0].IsAccepted);
+            Assert.AreEqual(false, attempt.Questions[0].IsPerfect);
             Assert.AreEqual(false, attempt.IsPassed);
             Assert.AreEqual(10, attempt.MaxScore);
             Assert.AreEqual(0, attempt.ExamScore);
@@ -460,6 +479,7 @@ namespace Axe.Tests
             this.evaluator.Evaluate(attempt);
 
             Assert.AreEqual(false, attempt.Questions[0].IsAccepted);
+            Assert.AreEqual(false, attempt.Questions[0].IsPerfect);
             Assert.AreEqual(false, attempt.IsPassed);
             Assert.AreEqual(10, attempt.MaxScore);
             Assert.AreEqual(0, attempt.ExamScore);
@@ -474,6 +494,7 @@ namespace Axe.Tests
             this.evaluator.Evaluate(attempt);
 
             Assert.AreEqual(true, attempt.Questions[0].IsAccepted);
+            Assert.AreEqual(true, attempt.Questions[0].IsPerfect);
             Assert.AreEqual(true, attempt.IsPassed);
             Assert.AreEqual(10, attempt.MaxScore);
             Assert.AreEqual(10, attempt.ExamScore);
@@ -488,6 +509,7 @@ namespace Axe.Tests
             this.evaluator.Evaluate(attempt);
 
             Assert.AreEqual(true, attempt.Questions[0].IsAccepted);
+            Assert.AreEqual(true, attempt.Questions[0].IsPerfect);
             Assert.AreEqual(true, attempt.IsPassed);
             Assert.AreEqual(10, attempt.MaxScore);
             Assert.AreEqual(10, attempt.ExamScore);
