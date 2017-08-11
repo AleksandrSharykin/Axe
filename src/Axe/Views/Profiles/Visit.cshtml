@@ -7,7 +7,7 @@
 <div>
     @*personal info*@
     <div class="row">
-        <div class="col-md-3">            
+        <div class="col-md-3">
             <img src="@Url.Action("GetAvatar", "Profiles", new { id = Model.Id })" alt="Profile Image" width="230" height="230" />
         </div>
         <div class="col-md-9">
@@ -273,13 +273,6 @@
                                     <td>@a.ExamScore</td>
                                     <td>
                                         @Html.ActionLink("details", "Details", "Assessments", new { id = a.Id })
-                                        @if (a.ExamScore.HasValue == false)
-                                        {
-                                            <span>|</span>
-                                            @Html.ActionLink("edit", "Edit", "Assessments", new { id = a.Id });
-                                            <span>|</span>
-                                            @Html.ActionLink("delete", "Delete", "Assessments", new { id = a.Id });
-                                        }
                                     </td>
                                 </tr>
                             }

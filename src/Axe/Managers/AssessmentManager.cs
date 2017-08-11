@@ -47,7 +47,7 @@ namespace Axe.Managers
             if (a == null)
             {
                 return null;
-            }            
+            }
 
             return new AssessmentDetailsVm
             {
@@ -75,7 +75,7 @@ namespace Axe.Managers
             string studentId = request.Item.StudentId;
 
             SkillAssessment data = null;
-            
+
             if (id > 0)
             {
                 data = await context.SkillAssessment.SingleOrDefaultAsync(m => m.Id == id);
@@ -293,7 +293,7 @@ namespace Axe.Managers
                     this.context.Update(assessment);
                     await this.context.SaveChangesAsync();
 
-                    return this.Response(new AssessmentDetailsVm { Id = assessment.Id });                    
+                    return this.Response(new AssessmentDetailsVm { Id = assessment.Id });
                 }
             }
 
@@ -304,6 +304,46 @@ namespace Axe.Managers
             vm.ExamDate = a.ExamDate;
 
             return this.ValidationError(vm);
+        }
+
+        /// <summary>
+        /// Gets <see cref="SkillAssessment"/> for preview before deletion
+        /// </summary>
+        public async Task<Response<AssessmentDetailsVm>> DeleteGet(Request<int> request)
+        {
+            var data = await GetAssessmentDetails(request.CurrentUser.Id, request.Item);
+
+            if (data == null || false == data.CanDelete)
+            {
+                return this.NotFound<AssessmentDetailsVm>();
+            }
+
+            return this.Response(data);
+        }
+
+        /// <summary>
+        /// Deletes <see cref="SkillAssessment"/>
+        /// </summary>
+        public async Task<Response<AssessmentDetailsVm>> DeletePost(Request<int> request)
+        {
+            var data = await GetAssessmentDetails(request.CurrentUser.Id, request.Item);
+
+            if (data == null)
+            {
+                return this.NotFound<AssessmentDetailsVm>();
+            }
+
+            if (false == data.CanDelete)
+            {
+                request.ModelState.AddModelError(String.Empty, "You cannot delete this record");
+                return this.ValidationError(data);
+            }
+
+            var assessment = await context.SkillAssessment.SingleOrDefaultAsync(m => m.Id == request.Item);
+            context.Remove(assessment);
+            await context.SaveChangesAsync();
+
+            return this.Response(data);
         }
     }
 }

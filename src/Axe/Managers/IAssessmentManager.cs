@@ -46,5 +46,15 @@ namespace Axe.Managers
         /// <param name="request"></param>
         /// <returns></returns>
         Task<Response<AssessmentDetailsVm>> MarkPost(Request<AssessmentDetailsVm> request);
+
+        /// <summary>
+        /// Gets <see cref="SkillAssessment"/> for preview before deletion
+        /// </summary>
+        Task<Response<AssessmentDetailsVm>> DeleteGet(Request<int> request);
+
+        /// <summary>
+        /// Deletes <see cref="SkillAssessment"/>
+        /// </summary>
+        Task<Response<AssessmentDetailsVm>> DeletePost(Request<int> request);
     }
 }

@@ -119,11 +119,15 @@ namespace Axe.Controllers
         public async Task<IActionResult> Mark(int id, AssessmentDetailsVm vm, string cmd = null)
         {
             var request = await this.CreateRequest(vm);
-            
+
             switch (cmd)
             {
-                case "success": vm.IsPassed = true; break;
-                case "failure": vm.IsPassed = false; break;
+                case "success":
+                vm.IsPassed = true;
+                break;
+                case "failure":
+                vm.IsPassed = false;
+                break;
             }
 
             var response = await this.manager.MarkPost(request);
@@ -141,7 +145,11 @@ namespace Axe.Controllers
             return View(response.Item);
         }
 
-        // GET: Assessments/Delete/5
+        /// <summary>
+        /// Gets <see cref="SkillAssessment"/> for preview before deletion
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
         public async Task<IActionResult> Delete(int? id)
         {
             if (id == null)
@@ -149,28 +157,40 @@ namespace Axe.Controllers
                 return NotFound();
             }
 
-            var skillAssessment = await context.SkillAssessment
-                .Include(s => s.Examiner)
-                .Include(s => s.Student)
-                .Include(s => s.Technology)
-                .SingleOrDefaultAsync(m => m.Id == id);
-            if (skillAssessment == null)
+            var request = await this.CreateRequest(id.Value);
+
+            var response = await this.manager.DeleteGet(request);
+
+            if (response.Code == ResponseCode.Success)
             {
-                return NotFound();
+                return View(response.Item);
             }
 
-            return View(skillAssessment);
+            return this.NotFound();
         }
 
-        // POST: Assessments/Delete/5
+        /// <summary>
+        /// Deletes <see cref="SkillAssessment"/>
+        /// </summary>
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            var skillAssessment = await context.SkillAssessment.SingleOrDefaultAsync(m => m.Id == id);
-            context.SkillAssessment.Remove(skillAssessment);
-            await context.SaveChangesAsync();
-            return RedirectToAction("Index");
+            var request = await this.CreateRequest(id);
+
+            var response = await this.manager.DeletePost(request);
+
+            if (response.Code == ResponseCode.Success)
+            {
+                return RedirectToAction(nameof(ProfilesController.Visit), "Profiles", new { id = response.Item.StudentId ?? response.Item.Student.Id });
+            }
+
+            if (response.Code == ResponseCode.ValidationError)
+            {
+                return View(nameof(Delete), response.Item);
+            }
+
+            return this.NotFound();
         }
     }
 }

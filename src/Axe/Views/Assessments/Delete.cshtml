@@ -4,56 +4,34 @@
     ViewData["Title"] = "Delete";
 }
 
-<h2>Delete</h2>
+<h4> @Html.ActionLink(@Model.Student.UserName, "Visit", "Profiles", new { id = Model.Student.Id }) skill assessment</h4>
+<h4>Are you sure you want to delete this?</h4>
+<hr />
 
-<h3>Are you sure you want to delete this?</h3>
+
 <div>
-    <h4>SkillAssessment</h4>
-    <hr />
-    <dl class="dl-horizontal">
-        <input type="hidden" asp-for="Id" />
-        <dt>
-            @Html.DisplayNameFor(model => model.ExamDate)
-        </dt>
-        <dd>
-            @Html.DisplayFor(model => model.ExamDate)
-        </dd>
-        <dt>
-            @Html.DisplayNameFor(model => model.ExamScore)
-        </dt>
-        <dd>
-            @Html.DisplayFor(model => model.ExamScore)
-        </dd>
-        <dt>
-            @Html.DisplayNameFor(model => model.IsPassed)
-        </dt>
-        <dd>
-            @Html.DisplayFor(model => model.IsPassed)
-        </dd>
-        <dt>
-            @Html.DisplayNameFor(model => model.Examiner)
-        </dt>
-        <dd>
-            @Html.DisplayFor(model => model.Examiner.Id)
-        </dd>
-        <dt>
-            @Html.DisplayNameFor(model => model.Student)
-        </dt>
-        <dd>
-            @Html.DisplayFor(model => model.Student.Id)
-        </dd>
-        <dt>
-            @Html.DisplayNameFor(model => model.Technology)
-        </dt>
-        <dd>
-            @Html.DisplayFor(model => model.Technology.InformationText)
-        </dd>
+    <input type="hidden" asp-for="Id" />
+
+    <dl>
+        <dt><label asp-for="Technology" class="control-label"></label></dt>
+        <dd>@Html.DisplayFor(model => model.Technology.Name)</dd>
+
+        <dt><label asp-for="Examiner" class="control-label"></label></dt>
+        <dd>@Html.DisplayFor(model => model.Examiner.UserName)</dd>
+
+        <dt><label asp-for="ExamDate" class="control-label"></label></dt>
+        <dd>@Html.DisplayFor(model => model.ExamDate)</dd>
     </dl>
-    
+
     <form asp-action="Delete">
-        <div class="form-actions no-color">
-            <input type="submit" value="Delete" class="btn btn-default" /> |
-            <a asp-action="Index">Back to List</a>
+        <div class="form-group row">
+            <div class="col-md-10">
+                @Html.ActionLink("Cancel", "Details", "Assessments", new { id = Model.Id })
+            </div>
+
+            <div class="form-actions no-color col-md-2">
+                <input type="submit" value="Delete" class="btn btn-danger" />
+            </div>
         </div>
     </form>
 </div>
