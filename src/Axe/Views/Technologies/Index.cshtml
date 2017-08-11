@@ -12,7 +12,7 @@
     <div class="row">
         <div class="jumbotron">
             <h2><kbd>@Model.SelectedTechnology.Name</kbd></h2>
-            <p>@Model.SelectedTechnology.InformationText</p>
+            <p class="codeblock">@Model.SelectedTechnology.InformationText</p>
         </div>
     </div>
 }
@@ -88,8 +88,6 @@
                                     </td>
                                     <td>@item.question.Author?.UserName</td>
                                     <td>
-                                        @Html.ActionLink("edit", "Input", "Questions", new { id = item.question.Id, technologyId = item.question.TechnologyId })
-                                        |
                                         @Html.ActionLink("details", "Details", "Questions", new { id = item.question.Id })
                                     </td>
                                 </tr>

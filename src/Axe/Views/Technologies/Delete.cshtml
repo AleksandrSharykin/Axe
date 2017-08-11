@@ -5,30 +5,33 @@
 }
 
 <h3>Are you sure you want to delete @Model.Name?</h3>
+<hr />
+
+<div class="form-horizontal">
+    <input type="hidden" asp-for="Id" />
+
+    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+    <dl>
+        <dt><label asp-for="Name" class="control-label"></label></dt>
+        <dd>@Html.DisplayFor(model => model.Name)</dd>
+
+        <dt><label asp-for="InformationText" class="control-label"></label></dt>
+        <dd><span class="codeblock">@Html.DisplayFor(model => model.InformationText)</span></dd>
+    </dl>
+
     <hr />
-
-    <div>
-        <input type="hidden" asp-for="Id" />
-        <dl>
-
-            <dt>@Html.DisplayNameFor(model => model.Name)</dt>
-            <dd>@Html.DisplayFor(model => model.Name)</dd>
-
-            <dt>@Html.DisplayNameFor(model => model.InformationText)</dt>
-            <dd>@Html.DisplayFor(model => model.InformationText)</dd>
-        </dl>
-
-        <form asp-action="Delete">
-            <div class="form-group row">
-                <div class="col-md-10">
-                    @Html.ActionLink("Cancel", "Index", "Technologies", new { technologyId = Model.Id })
-                </div>
-
-                <div class="form-actions no-color col-md-2">
-                    <input type="submit" value="Delete" class="btn btn-danger" />
-                </div>
+    <form asp-action="Delete">
+        <div class="form-group row">
+            <div class="col-md-10">
+                @Html.ActionLink("Cancel", "Index", "Technologies", new { technologyId = Model.Id })
             </div>
-        </form>
-    </div>
+
+            <div class="form-actions no-color col-md-2">
+                <input type="submit" value="Delete" class="btn btn-danger" />
+            </div>
+        </div>
+    </form>
+</div>
 
 

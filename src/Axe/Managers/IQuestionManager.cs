@@ -44,5 +44,19 @@ namespace Axe.Managers
         /// Gets <see cref="TaskQuestion"/> object for preview
         /// </summary>
         Task<Response<TaskQuestion>> DetailsGet(Request<int> request);
+
+        /// <summary>
+        /// Gets <see cref="TaskQuestion"/> object for preview before deletion
+        /// </summary>
+        /// <param name="request"></param>
+        /// <returns></returns>
+        Task<Response<TaskQuestion>> DeleteGet(Request<int> request);
+
+        /// <summary>
+        /// Deletes <see cref="TaskQuestion"/>
+        /// </summary>
+        /// <param name="request"></param>
+        /// <returns></returns>
+        Task<Response<TaskQuestion>> DeletePost(Request<int> request);
     }
 }

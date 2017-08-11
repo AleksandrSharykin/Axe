@@ -296,5 +296,49 @@ namespace Axe.Managers
 
             return this.Response(question);
         }
+
+        /// <summary>
+        /// Gets <see cref="TaskQuestion"/> for preview before deletion
+        /// </summary>
+        public async Task<Response<TaskQuestion>> DeleteGet(Request<int> request)
+        {
+            var question = await this.context.TaskQuestion
+                                     .Include(t => t.Technology).ThenInclude(t => t.Experts)
+                                     .SingleOrDefaultAsync(t => t.Id == request.Item);
+
+            if (question == null || false == question.Technology.Experts.Any(u => u.UserId == request.CurrentUser.Id))
+            {
+                return this.NotFound<TaskQuestion>();
+            }
+
+            return this.Response(question);
+        }
+
+        /// <summary>
+        /// Deletes <see cref="TaskQuestion"/>
+        /// </summary>
+        public async Task<Response<TaskQuestion>> DeletePost(Request<int> request)
+        {
+            var question = await this.context.TaskQuestion
+                                     .Include(t => t.Technology).ThenInclude(t => t.Experts)
+                                     .Include(q => q.Answers)
+                                     .SingleOrDefaultAsync(t => t.Id == request.Item);
+
+            if (question == null)
+            {
+                return this.NotFound<TaskQuestion>();
+            }
+
+            if (false == question.Technology.Experts.Any(u => u.UserId == request.CurrentUser.Id))
+            {
+                request.ModelState.AddModelError(String.Empty, "Only expert can delete " + question.Technology.Name + " questions");
+                return this.ValidationError(question);
+            }
+
+            this.context.Remove(question);
+            await this.context.SaveChangesAsync();
+
+            return this.Response(new TaskQuestion());
+        }
     }
 }

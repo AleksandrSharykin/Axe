@@ -31,7 +31,7 @@
                             <div>
                                 <span class="techTitle">@tech.Name</span>
                                 <p>                                
-                                    @Html.DisplayFor(t => tech.InformationText)
+                                    <span class="codeblock">@Html.DisplayFor(t => tech.InformationText)</span>
                                     <br /> <br />
                                     
                                     <a href="@Url.Action("Details", "Exams", new { id = tech.Id })" class="btn btn-primary">

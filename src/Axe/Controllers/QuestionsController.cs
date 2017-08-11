@@ -72,6 +72,10 @@ namespace Axe.Controllers
 
                 if (response.Code == ResponseCode.Success)
                 {
+                    if (id > 0)
+                    {
+                        return RedirectToAction(nameof(Details), new { id = id });
+                    }
                     return RedirectToAction("Index", "Technologies", new { technologyId = response.Item.TechnologyId });
                 }
             }
@@ -101,6 +105,46 @@ namespace Axe.Controllers
             }
 
             return View(response.Item);
+        }
+
+        public async Task<IActionResult> Delete(int? id)
+        {
+            if (id == null)
+            {
+                return NotFound();
+            }
+
+            var request = await this.CreateRequest(id.Value);
+
+            var response = await this.manager.DeleteGet(request);
+
+            if (response.Code == ResponseCode.NotFound)
+            {
+                return NotFound();
+            }
+
+            return View(response.Item);
+        }
+
+        [HttpPost, ActionName("Delete")]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> DeleteConfirmed(int id)
+        {
+            var request = await this.CreateRequest(id);
+
+            var response = await this.manager.DeletePost(request);
+
+            if (response.Code == ResponseCode.Success)
+            {
+                return RedirectToAction(nameof(TechnologiesController.Index), "Technologies");
+            }
+
+            if (response.Code == ResponseCode.ValidationError)
+            {
+                return View(nameof(Delete), response.Item);
+            }
+
+            return this.NotFound();
         }
     }
 }
