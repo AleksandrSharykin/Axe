@@ -129,11 +129,14 @@
                 </div>
             }
         </div>
-        
+
         <div class="row">
             <div class="btn-group col-md-3">
                 <input type="submit" value="&nbsp;Add&nbsp;" name="cmd" class="btn btn-default" title="Add an answer" />
-                <input type="submit" value="Remove" name="cmd" class="btn btn-default" title="Remove last answer" />
+                @if (Model.Answers.Count > 1)
+                {
+                    <input type="submit" value="Remove" name="cmd" class="btn btn-default" title="Remove last answer" />
+                }                
             </div>
         </div>            
     }

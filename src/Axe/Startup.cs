@@ -39,8 +39,8 @@ namespace Axe
             services.AddDbContext<AxeDbContext>(options =>
                     options.UseSqlServer(Configuration.GetConnectionString("AxeDbContext")));
 
-            services.AddIdentity<ApplicationUser, IdentityRole>()                
-                    .AddEntityFrameworkStores<AxeDbContext>()                    
+            services.AddIdentity<ApplicationUser, IdentityRole>()
+                    .AddEntityFrameworkStores<AxeDbContext>()
                     .AddDefaultTokenProviders();
 
             services.AddScoped<IHomeManager, HomeManager>();
@@ -48,6 +48,8 @@ namespace Axe
             services.AddScoped<ITechnologyManager, TechnologyManager>();
 
             services.AddScoped<IAssessmentManager, AssessmentManager>();
+
+            services.AddScoped<IQuestionManager, QuestionManager>();
 
             services.AddScoped<IExamEvaluator, ExamEvaluator>();
             services.AddScoped<IExamManager, ExamManager>();
@@ -60,7 +62,7 @@ namespace Axe
                 options.Password.RequiredLength = 8;
                 options.Password.RequireNonAlphanumeric = false;
                 options.Password.RequireUppercase = true;
-                options.Password.RequireLowercase = false;                
+                options.Password.RequireLowercase = false;
 
                 // Lockout settings
                 options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(30);
@@ -72,7 +74,7 @@ namespace Axe
                 options.Cookies.ApplicationCookie.LogoutPath = "/Account/LogOut";
 
                 // User settings
-                options.User.RequireUniqueEmail = true;                
+                options.User.RequireUniqueEmail = true;
             });
         }
 
@@ -106,8 +108,8 @@ namespace Axe
             var dbContext = serviceProvider.GetRequiredService<AxeDbContext>();
             var userManager = serviceProvider.GetRequiredService<UserManager<ApplicationUser>>();
             var roleManager = serviceProvider.GetRequiredService<RoleManager<IdentityRole>>();
-            
-            await AxeDbDeployment.Deploy(userManager, roleManager, dbContext);            
+
+            await AxeDbDeployment.Deploy(userManager, roleManager, dbContext);
         }
     }
 }
