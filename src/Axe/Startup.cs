@@ -51,6 +51,8 @@ namespace Axe
 
             services.AddScoped<IQuestionManager, QuestionManager>();
 
+            services.AddScoped<IExamTaskManager, ExamTaskManager>();
+
             services.AddScoped<IExamEvaluator, ExamEvaluator>();
             services.AddScoped<IExamManager, ExamManager>();
 
