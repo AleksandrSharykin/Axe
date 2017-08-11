@@ -62,6 +62,7 @@
                                     <span class="glyphicon glyphicon-th"></span>
                                 </th>
                                 <th>Question</th>
+                                <th>Type</th>
                                 <th>Author</th>
                                 <th>Actions</th>
                             </tr>
@@ -72,6 +73,19 @@
                                 <tr>
                                     <td>@item.idx</td>
                                     <td title="@item.question.Text">@item.question.Preview</td>
+                                    <td>
+                                        @switch (@item.question.Type)
+                                        {
+                                            case TaskQuestionType.MultiChoice: <span class="glyphicon glyphicon-tags">&nbsp; Multi-Choice</span>
+                                            break;
+                                            case TaskQuestionType.SingleChoice: <span class="glyphicon glyphicon-tag">&nbsp; Single-Choice</span>
+                                            break;
+                                            case TaskQuestionType.MultiLine: <span class="glyphicon glyphicon-duplicate">&nbsp; Multi-Line</span>
+                                            break;
+                                            case TaskQuestionType.SingleLine: <span class="glyphicon glyphicon-file">&nbsp; Single-Line</span>
+                                            break;
+                                        }
+                                    </td>
                                     <td>@item.question.Author?.UserName</td>
                                     <td>
                                         @Html.ActionLink("edit", "Input", "Questions", new { id = item.question.Id, technologyId = item.question.TechnologyId })
@@ -126,9 +140,10 @@
                         }
                     </tbody>
                 </table>
-                
+
+
                 @if (Model.SelectedTechnology != null)
-                {
+                                        {
                     <br />
                     @Html.ActionLink("Add", "Input", "Tasks", new { technologyId = Model.SelectedTechnology?.Id }, new { @class = "btn btn-primary" })
                 }
@@ -146,14 +161,14 @@
                     </thead>
                     <tbody>
                         @foreach(var e in Model.Experts)
-                        {
+                                        {
                             <tr>
                                 <td>@Html.ActionLink(e.UserName, "Visit", "Profiles")</td>
                                 <td>@e.Email</td>
                                 <td>
                                     @{
-                                        string category = e.IsExpert ? "default" : "primary";
-                                        string linkName = e.IsExpert ? "Exclude" : "Include";
+                                                string category = e.IsExpert ? "default" : "primary";
+                                                string linkName = e.IsExpert ? "Exclude" : "Include";
                                         <a href="@Url.Action(linkName+"Expert", new { id = e.Id, technologyId = Model.SelectedTechnology?.Id})">
                                             <label class="btn btn-@category">
                                                 @linkName

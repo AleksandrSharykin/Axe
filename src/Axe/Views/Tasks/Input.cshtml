@@ -1,3 +1,4 @@
+@using Axe.Models
 @model Axe.Models.ExamTasksVm.TaskInputVm
 
 @{
@@ -60,7 +61,7 @@
                     <tbody>
                         @for (int i = 0; i < Model.Questions.Count; i++)
                         {
-                            <tr title="@Model.Questions[i].Text">
+                            <tr title="@Model.Questions[i].Type @Model.Questions[i].Text">
                                 <td>
                                     <input type="hidden" asp-for="@Model.Questions[i].Id" />
                                     @Html.CheckBoxFor(m => m.Questions[i].IsSelected)
@@ -68,7 +69,19 @@
                                 <td>
                                     <p>@Model.Questions[i].Preview</p>
                                 </td>
-                                <td>@Model.Questions[i].Type</td>
+                                <td>
+                                    @switch (Model.Questions[i].Type)
+                                    {
+                                        case TaskQuestionType.MultiChoice: <span class="glyphicon glyphicon-tags">&nbsp; MultiChoice</span>
+                                        break;
+                                        case TaskQuestionType.SingleChoice: <span class="glyphicon glyphicon-tag">&nbsp; SingleChoice</span>
+                                        break;
+                                        case TaskQuestionType.MultiLine: <span class="glyphicon glyphicon-duplicate">&nbsp; MultiLine</span>
+                                        break;
+                                        case TaskQuestionType.SingleLine: <span class="glyphicon glyphicon-file">&nbsp; SingleLine</span>
+                                        break;
+                                    }
+                                </td>
                             </tr>
 
                         }

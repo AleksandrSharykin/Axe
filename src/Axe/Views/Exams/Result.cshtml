@@ -87,14 +87,13 @@
                                              (answer.IsSelected ? "list-group-item-success" : null);
 
                             <li class="list-group-item @success">
-                                @Html.CheckBoxFor(m => m.Questions[q].AttemptAnswers[a].IsSelected, new { @class = "disabled" })
+                                @Html.CheckBoxFor(m => m.Questions[q].AttemptAnswers[a].IsSelected, new { @disabled = "disabled" })
                                 @answer.TaskAnswer.Text
                             </li>
 
                         }
                     </ul>
                 }
-
 
             </div>
         </div>
