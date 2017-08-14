@@ -171,7 +171,7 @@
                             @foreach (var e in Model.Experts)
                             {
                                 <tr>
-                                    <td>@Html.ActionLink(e.UserName, "Visit", "Profiles")</td>
+                                    <td>@Html.ActionLink(e.UserName, "Visit", "Profiles", new { id = e.Id })</td>
                                     <td>@e.Email</td>
                                     <td>
                                         @{
@@ -193,7 +193,28 @@
 
             @*Active exams*@
             <div id="menuMonitor" class="tab-pane fade">
-                Active exams
+                <br />
+                <div class="table-responsive">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>User</th>
+                                <th>Exam Time</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var a in Model.ActiveAttempts)
+                            {
+                                <tr>
+                                    <td>@Html.ActionLink(a.Student.UserName, "Visit", "Profiles", new { id = a.Student.Id })</td>
+                                    <td>@a.ExamDate</td>
+                                    <td>@Html.ActionLink("View", "Result", "Exams", new { id = a.Id })</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </div>
     </div>

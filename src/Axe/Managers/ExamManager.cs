@@ -61,6 +61,7 @@ namespace Axe.Managers
                 ExamDate = DateTime.Now,
                 Task = task,
                 TaskId = task.Id,
+                TechnologyId = task.TechnologyId,
                 Questions = task.Questions
                                 .Select(q => new AttemptQuestion
                                 {
@@ -73,71 +74,146 @@ namespace Axe.Managers
                                 .ToList().Shuffle()
             };
 
+            // not saving results of demo tests
+            // for other tests saving each attempt to enable monitoring
+            if (false == task.IsDemonstration)
+            {
+                examAttempt.StudentId = request.CurrentUser.Id;
+
+                this.context.Add(examAttempt);
+                await this.context.SaveChangesAsync();
+            }
+
             return this.Response(examAttempt);
         }
 
         public async Task<Response<ExamAttempt>> AttemptPost(Request<ExamAttempt> request)
         {
-            var attempt = request.Item;
+            var attemptInput = request.Item;
 
-            if (attempt.StudentId == null)
-                attempt.Student = request.CurrentUser ?? new ApplicationUser { UserName = "Guest" };
-
-            if (attempt.ExamDate is null)
-                attempt.ExamDate = DateTime.Now;
-
-            foreach (var q in attempt.Questions)
+            ExamAttempt examAttempt = null;
+            if (attemptInput.Id > 0)
             {
-                q.Attempt = attempt;
-                foreach (var a in q.AttemptAnswers)
-                    a.AttemptQuestion = q;
-            }
-
-            // restore Task properties
-            var task = await this.context.ExamTask
-                                 .Include(t => t.Technology)
-                                 .Include(t => t.Questions).ThenInclude(q => q.Question).ThenInclude(q => q.Answers)
-                                 .SingleOrDefaultAsync(t => t.Id == attempt.TaskId);
-
-            attempt.Technology = task.Technology;
-            attempt.Task = task;
-
-            // restore Questions ans Answers navigation properties 
-            foreach (var question in attempt.Questions)
-            {
-                question.TaskQuestion = task.Questions.FirstOrDefault(q => q.QuestionId == question.TaskQuestionId).Question;
-                foreach (var answer in question.AttemptAnswers)
+                examAttempt = await this.GetAttemptData(attemptInput.Id);
+                if (examAttempt == null)
                 {
-                    answer.TaskAnswer = question.TaskQuestion.Answers.FirstOrDefault(a => a.Id == answer.TaskAnswerId);
-                    if (question.TaskQuestion.Type == TaskQuestionType.SingleChoice)
+                    return this.NotFound<ExamAttempt>();
+                }
+
+                if (false == examAttempt.IsFinished)
+                {
+
+                    // apply submitted answers
+                    foreach (var question in examAttempt.Questions)
                     {
-                        answer.Value = (answer.TaskAnswer.Id == question.SelectedAnswerId) ? Boolean.TrueString : Boolean.FalseString;
+                        var questionInput = attemptInput.Questions.FirstOrDefault(q => q.TaskQuestionId == question.TaskQuestionId);
+                        if (questionInput == null)
+                        {
+                            continue;
+                        }
+
+                        foreach (var answer in question.AttemptAnswers)
+                        {
+                            var answerInput = questionInput.AttemptAnswers.FirstOrDefault(a => a.TaskAnswerId == answer.TaskAnswerId);
+
+                            if (question.TaskQuestion.Type == TaskQuestionType.SingleChoice)
+                            {
+                                answerInput.Value = (answer.TaskAnswer.Id == question.SelectedAnswerId) ? Boolean.TrueString : Boolean.FalseString;
+                            }
+
+                            if (answerInput == null)
+                            {
+                                continue;
+                            }
+
+                            answer.Value = answerInput.Value;
+                        }
                     }
+
+                    // mark correct answers and calculate score
+                    examEvaluator.Evaluate(examAttempt);
+
+                    // not saving results of demo tests
+                    examAttempt.IsFinished = true;
+                    this.context.Update(examAttempt);
+                    await this.context.SaveChangesAsync();
                 }
             }
-
-            // mark correct answers and calculate score
-            examEvaluator.Evaluate(attempt);
-
-            // not saving results of demo tests
-            if (false == task.IsDemonstration)
+            else
             {
-                this.context.Add(attempt);
-                await this.context.SaveChangesAsync();
+                if (attemptInput.StudentId == null)
+                {
+                    attemptInput.Student = request.CurrentUser ?? new ApplicationUser { UserName = "Guest" };
+                }
+
+                if (attemptInput.ExamDate is null)
+                {
+                    attemptInput.ExamDate = DateTime.Now;
+                }
+
+                foreach (var q in attemptInput.Questions)
+                {
+                    q.Attempt = attemptInput;
+                    foreach (var a in q.AttemptAnswers)
+                    {
+                        a.AttemptQuestion = q;
+                    }
+                }
+
+                // restore Task properties
+                var task = await this.context.ExamTask
+                                     .Include(t => t.Technology)
+                                     .Include(t => t.Questions).ThenInclude(q => q.Question).ThenInclude(q => q.Answers)
+                                     .SingleOrDefaultAsync(t => t.Id == attemptInput.TaskId);
+
+                attemptInput.Technology = task.Technology;
+                attemptInput.Task = task;
+
+                // restore Questions ans Answers navigation properties 
+                foreach (var question in attemptInput.Questions)
+                {
+                    question.TaskQuestion = task.Questions.FirstOrDefault(q => q.QuestionId == question.TaskQuestionId).Question;
+                    foreach (var answer in question.AttemptAnswers)
+                    {
+                        answer.TaskAnswer = question.TaskQuestion.Answers.FirstOrDefault(a => a.Id == answer.TaskAnswerId);
+                        if (question.TaskQuestion.Type == TaskQuestionType.SingleChoice)
+                        {
+                            answer.Value = (answer.TaskAnswer.Id == question.SelectedAnswerId) ? Boolean.TrueString : Boolean.FalseString;
+                        }
+                    }
+                }
+
+                // mark correct answers and calculate score
+                examEvaluator.Evaluate(attemptInput);
             }
 
-            return this.Response(attempt);
+            return this.Response(examAttempt ?? attemptInput);
         }
 
-        public async Task<Response<ExamAttempt>> Results(Request<int> request)
+        /// <summary>
+        /// Gets <see cref="ExamAttempt"/> object with requested identifier
+        /// </summary>
+        /// <param name="id">Attempt identifier</param>
+        /// <returns></returns>
+        private async Task<ExamAttempt> GetAttemptData(int id)
         {
-            var attempt = await this.context.ExamAttempt
+            return await this.context.ExamAttempt
                                     .Include(a => a.Task)
                                     .Include(a => a.Student)
                                     .Include(a => a.Technology)
                                     .Include(a => a.Questions).ThenInclude(q => q.TaskQuestion)
                                     .Include(a => a.Questions).ThenInclude(q => q.AttemptAnswers).ThenInclude(a => a.TaskAnswer)
-                                    .SingleOrDefaultAsync(a => a.Id == request.Item);
+                                    .FirstOrDefaultAsync(a => a.Id == id);
+        }
+
+        /// <summary>
+        /// Loads exam attempt evaluation results
+        /// </summary>
+        /// <param name="request"></param>
+        /// <returns></returns>
+        public async Task<Response<ExamAttempt>> Results(Request<int> request)
+        {
+            var attempt = await GetAttemptData(request.Item);
 
             return attempt != null ? this.Response(attempt) : this.NotFound<ExamAttempt>();
         }

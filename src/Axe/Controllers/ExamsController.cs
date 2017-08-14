@@ -65,8 +65,14 @@ namespace Axe.Controllers
 
                 var response = await this.manager.AttemptPost(request);
 
+                if (response.Code == ResponseCode.NotFound)
+                {
+                    return this.NotFound();
+                }
+
                 return View("Result", response.Item);
             }
+
             return View(attempt);
         }
 

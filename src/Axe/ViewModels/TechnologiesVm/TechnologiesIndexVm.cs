@@ -26,6 +26,11 @@ namespace Axe.Models.TechnologiesVm
         public IList<ExamTask> Exams { get; set; }
 
         /// <summary>
+        /// Gets or sets a list of exam attempts currently performed by users
+        /// </summary>
+        public IList<ExamAttempt> ActiveAttempts { get; set; }
+
+        /// <summary>
         /// Gets or sets a list of questions in selected technology
         /// </summary>
         public IList<TaskQuestion> Questions { get; set; }

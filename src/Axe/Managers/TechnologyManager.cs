@@ -69,6 +69,10 @@ namespace Axe.Managers
                                 .Where(t => t.TechnologyId == technologyId)
                                 .ToList(),
 
+                ActiveAttempts = this.context.ExamAttempt.Include(t => t.Task).Include(t => t.Student)
+                                .Where(a => a.IsFinished == false && a.TechnologyId == technologyId)
+                                .ToList(),
+
                 Experts = experts
             };
 

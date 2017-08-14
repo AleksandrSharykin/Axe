@@ -13,7 +13,7 @@ namespace Axe.Models
         /// <summary>
         /// Gets or sets identifier
         /// </summary>
-        public int Id { get; set;}
+        public int Id { get; set; }
 
 
         /// <summary>
@@ -55,6 +55,11 @@ namespace Axe.Models
         public IList<AttemptQuestion> Questions { get; set; }
 
         /// <summary>
+        /// Gets or sets indicator that user submitted exam answers for evaluation
+        /// </summary>
+        public bool IsFinished { get; set; }
+
+        /// <summary>
         /// Gets or sets maximum possible test score 
         /// </summary>
         public int? MaxScore { get; set; }
@@ -72,6 +77,6 @@ namespace Axe.Models
         /// <summary>
         /// Get or sets indication that test is passed/not passed
         /// </summary>
-        public bool? IsPassed { get; set; }                
+        public bool? IsPassed { get; set; }
     }
 }
