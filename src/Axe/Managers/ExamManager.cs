@@ -24,14 +24,24 @@ namespace Axe.Managers
         {
             if (request.Item.Id > 0)
             {
+                if (request.CurrentUser == null)
+                {
+                    return this.NotFound<ExamAttempt>();
+                }
+
                 var attempt = await this.GetAttemptData(request.Item.Id);
-                if (attempt != null)
+
+                if (attempt != null && attempt.StudentId == request.CurrentUser.Id)
                 {
                     foreach (var question in attempt.Questions.Where(q => q.TaskQuestion.Type == TaskQuestionType.SingleChoice))
                     {
                         question.SelectedAnswerId = question.AttemptAnswers.FirstOrDefault(a => a.Value == Boolean.TrueString)?.TaskAnswerId;
                     }
                     return this.Response(attempt);
+                }
+                else
+                {
+                    return this.NotFound<ExamAttempt>();
                 }
             }
 

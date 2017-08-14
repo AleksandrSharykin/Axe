@@ -20,7 +20,7 @@ namespace Axe.Tests
         [OneTimeSetUp]
         public void InitTestFixture()
         {
-            this.InitStorage("TechManagerDb");
+            this.InitStorage("SkillManagerDb");
             this.InitTechnologies();
         }
 

@@ -11,8 +11,8 @@ namespace Axe.Tests
     [TestFixture]
     public class ExamEvaluatorTests
     {
-        private readonly string True = Boolean.TrueString;
-        private readonly string False = Boolean.FalseString;
+        public static readonly string True = Boolean.TrueString;
+        public static readonly string False = Boolean.FalseString;
 
         /// <summary>
         /// Shortcut for line break sequence
@@ -32,10 +32,10 @@ namespace Axe.Tests
                 Type = TaskQuestionType.MultiChoice,
                 Answers = new List<TaskAnswer>
                 {
-                    new TaskAnswer { Text = "1", Value = this.False, Score = 0 },
-                    new TaskAnswer { Text = "2", Value = this.True, Score = 10 },
-                    new TaskAnswer { Text = "3", Value = this.True, Score = 20 },
-                    new TaskAnswer { Text = "4", Value = this.False, Score = 0 },
+                    new TaskAnswer { Text = "1", Value = False, Score = 0 },
+                    new TaskAnswer { Text = "2", Value = True, Score = 10 },
+                    new TaskAnswer { Text = "3", Value = True, Score = 20 },
+                    new TaskAnswer { Text = "4", Value = False, Score = 0 },
                 }
             };
 
@@ -44,10 +44,10 @@ namespace Axe.Tests
                 Type = TaskQuestionType.SingleChoice,
                 Answers = new List<TaskAnswer>
                 {
-                    new TaskAnswer { Text = "1", Value = this.False, Score = 0 },
-                    new TaskAnswer { Text = "2", Value = this.True, Score = 10 },
-                    new TaskAnswer { Text = "3", Value = this.False, Score = 0 },
-                    new TaskAnswer { Text = "4", Value = this.False, Score = 0 },
+                    new TaskAnswer { Text = "1", Value = False, Score = 0 },
+                    new TaskAnswer { Text = "2", Value = True, Score = 10 },
+                    new TaskAnswer { Text = "3", Value = False, Score = 0 },
+                    new TaskAnswer { Text = "4", Value = False, Score = 0 },
                 }
             };
 
@@ -58,7 +58,7 @@ namespace Axe.Tests
                 Answers = new List<TaskAnswer> { new TaskAnswer { Text = multiline, Value = multiline, Score = 40 } }
             };
 
-            string repeated = this.False + this.NL + this.False + this.NL + this.False;
+            string repeated = False + this.NL + False + this.NL + False;
             this.qRepeated = new TaskQuestion
             {
                 Type = TaskQuestionType.MultiLine,
@@ -121,10 +121,10 @@ namespace Axe.Tests
             var A = this.qMultiChoice.Answers;
             var answers = new AttemptAnswer[]
             {
-                new AttemptAnswer { TaskAnswer = A[0], Value = this.False },
-                new AttemptAnswer { TaskAnswer = A[1], Value = this.True },
-                new AttemptAnswer { TaskAnswer = A[2], Value = this.True },
-                new AttemptAnswer { TaskAnswer = A[3], Value = this.False },
+                new AttemptAnswer { TaskAnswer = A[0], Value = False },
+                new AttemptAnswer { TaskAnswer = A[1], Value = True },
+                new AttemptAnswer { TaskAnswer = A[2], Value = True },
+                new AttemptAnswer { TaskAnswer = A[3], Value = False },
             };
 
             var attempt = this.MakeSingleQuestionAttempt(this.qMultiChoice, answers);
@@ -144,10 +144,10 @@ namespace Axe.Tests
             var A = this.qMultiChoice.Answers;
             var answers = new AttemptAnswer[]
             {
-                new AttemptAnswer { TaskAnswer = A[0], Value = this.False },
-                new AttemptAnswer { TaskAnswer = A[1], Value = this.False },
-                new AttemptAnswer { TaskAnswer = A[2], Value = this.False },
-                new AttemptAnswer { TaskAnswer = A[3], Value = this.False },
+                new AttemptAnswer { TaskAnswer = A[0], Value = False },
+                new AttemptAnswer { TaskAnswer = A[1], Value = False },
+                new AttemptAnswer { TaskAnswer = A[2], Value = False },
+                new AttemptAnswer { TaskAnswer = A[3], Value = False },
             };
 
             var attempt = this.MakeSingleQuestionAttempt(this.qMultiChoice, answers);
@@ -167,10 +167,10 @@ namespace Axe.Tests
             var A = this.qMultiChoice.Answers;
             var answers = new AttemptAnswer[]
             {
-                new AttemptAnswer { TaskAnswer = A[0], Value = this.False },
-                new AttemptAnswer { TaskAnswer = A[1], Value = this.True },
-                new AttemptAnswer { TaskAnswer = A[2], Value = this.True },
-                new AttemptAnswer { TaskAnswer = A[3], Value = this.True },
+                new AttemptAnswer { TaskAnswer = A[0], Value = False },
+                new AttemptAnswer { TaskAnswer = A[1], Value = True },
+                new AttemptAnswer { TaskAnswer = A[2], Value = True },
+                new AttemptAnswer { TaskAnswer = A[3], Value = True },
             };
 
             var attempt = this.MakeSingleQuestionAttempt(this.qMultiChoice, answers);
@@ -190,10 +190,10 @@ namespace Axe.Tests
             var A = this.qMultiChoice.Answers;
             var answers = new AttemptAnswer[]
             {
-                new AttemptAnswer { TaskAnswer = A[0], Value = this.False },
-                new AttemptAnswer { TaskAnswer = A[1], Value = this.False },
-                new AttemptAnswer { TaskAnswer = A[2], Value = this.True },
-                new AttemptAnswer { TaskAnswer = A[3], Value = this.False },
+                new AttemptAnswer { TaskAnswer = A[0], Value = False },
+                new AttemptAnswer { TaskAnswer = A[1], Value = False },
+                new AttemptAnswer { TaskAnswer = A[2], Value = True },
+                new AttemptAnswer { TaskAnswer = A[3], Value = False },
             };
 
             var attempt = this.MakeSingleQuestionAttempt(this.qMultiChoice, answers);
@@ -213,10 +213,10 @@ namespace Axe.Tests
             var A = this.qMultiChoice.Answers;
             var answers = new AttemptAnswer[]
             {
-                new AttemptAnswer { TaskAnswer = A[0], Value = this.False },
-                new AttemptAnswer { TaskAnswer = A[1], Value = this.True },
-                new AttemptAnswer { TaskAnswer = A[2], Value = this.False },
-                new AttemptAnswer { TaskAnswer = A[3], Value = this.False },
+                new AttemptAnswer { TaskAnswer = A[0], Value = False },
+                new AttemptAnswer { TaskAnswer = A[1], Value = True },
+                new AttemptAnswer { TaskAnswer = A[2], Value = False },
+                new AttemptAnswer { TaskAnswer = A[3], Value = False },
             };
 
             var attempt = this.MakeSingleQuestionAttempt(this.qMultiChoice, answers);
@@ -236,10 +236,10 @@ namespace Axe.Tests
             var A = this.qSingleChoice.Answers;
             var answers = new AttemptAnswer[]
             {
-                new AttemptAnswer { TaskAnswer = A[0], Value = this.False },
-                new AttemptAnswer { TaskAnswer = A[1], Value = this.True },
-                new AttemptAnswer { TaskAnswer = A[2], Value = this.False },
-                new AttemptAnswer { TaskAnswer = A[3], Value = this.False },
+                new AttemptAnswer { TaskAnswer = A[0], Value = False },
+                new AttemptAnswer { TaskAnswer = A[1], Value = True },
+                new AttemptAnswer { TaskAnswer = A[2], Value = False },
+                new AttemptAnswer { TaskAnswer = A[3], Value = False },
             };
 
             var attempt = this.MakeSingleQuestionAttempt(this.qSingleChoice, answers);
@@ -259,10 +259,10 @@ namespace Axe.Tests
             var A = this.qSingleChoice.Answers;
             var answers = new AttemptAnswer[]
             {
-                new AttemptAnswer { TaskAnswer = A[0], Value = this.False },
-                new AttemptAnswer { TaskAnswer = A[1], Value = this.False },
-                new AttemptAnswer { TaskAnswer = A[2], Value = this.False },
-                new AttemptAnswer { TaskAnswer = A[3], Value = this.False },
+                new AttemptAnswer { TaskAnswer = A[0], Value = False },
+                new AttemptAnswer { TaskAnswer = A[1], Value = False },
+                new AttemptAnswer { TaskAnswer = A[2], Value = False },
+                new AttemptAnswer { TaskAnswer = A[3], Value = False },
             };
 
             var attempt = this.MakeSingleQuestionAttempt(this.qSingleChoice, answers);
@@ -285,10 +285,10 @@ namespace Axe.Tests
             var A = this.qSingleChoice.Answers;
             var answers = new AttemptAnswer[]
             {
-                new AttemptAnswer { TaskAnswer = A[0], Value = this.False },
-                new AttemptAnswer { TaskAnswer = A[1], Value = this.True },
-                new AttemptAnswer { TaskAnswer = A[2], Value = this.True },
-                new AttemptAnswer { TaskAnswer = A[3], Value = this.False },
+                new AttemptAnswer { TaskAnswer = A[0], Value = False },
+                new AttemptAnswer { TaskAnswer = A[1], Value = True },
+                new AttemptAnswer { TaskAnswer = A[2], Value = True },
+                new AttemptAnswer { TaskAnswer = A[3], Value = False },
             };
 
             var attempt = this.MakeSingleQuestionAttempt(this.qSingleChoice, answers);
@@ -443,7 +443,7 @@ namespace Axe.Tests
         [Test]
         public void EvalMultiLineQuestion_RepeatedAnswer()
         {
-            var answer = new AttemptAnswer { TaskAnswer = this.qRepeated.Answers[0], Value = this.False + this.NL };
+            var answer = new AttemptAnswer { TaskAnswer = this.qRepeated.Answers[0], Value = False + this.NL };
             var attempt = MakeSingleQuestionAttempt(qRepeated, answer);
 
             this.evaluator.Evaluate(attempt);
@@ -542,10 +542,10 @@ namespace Axe.Tests
                         TaskQuestion = new TaskQuestion { Type = TaskQuestionType.MultiChoice, },
                         AttemptAnswers = new List<AttemptAnswer>
                         {
-                            new AttemptAnswer { TaskAnswer = new TaskAnswer { Value = this.False, Score = 0 }, Value = this.False },
-                            new AttemptAnswer { TaskAnswer = new TaskAnswer { Value = this.True,  Score = 1 }, Value = this.False },
-                            new AttemptAnswer { TaskAnswer = new TaskAnswer { Value = this.False, Score = 0 }, Value = this.False },
-                            new AttemptAnswer { TaskAnswer = new TaskAnswer { Value = this.True,  Score = 1 }, Value = this.False },
+                            new AttemptAnswer { TaskAnswer = new TaskAnswer { Value = False, Score = 0 }, Value = False },
+                            new AttemptAnswer { TaskAnswer = new TaskAnswer { Value = True,  Score = 1 }, Value = False },
+                            new AttemptAnswer { TaskAnswer = new TaskAnswer { Value = False, Score = 0 }, Value = False },
+                            new AttemptAnswer { TaskAnswer = new TaskAnswer { Value = True,  Score = 1 }, Value = False },
                         }
                     },
 
@@ -554,10 +554,10 @@ namespace Axe.Tests
                         TaskQuestion = new TaskQuestion { Type = TaskQuestionType.SingleChoice, },
                         AttemptAnswers = new List<AttemptAnswer>
                         {
-                            new AttemptAnswer { TaskAnswer = new TaskAnswer { Value = this.True,  Score = 1 }, Value = this.False },
-                            new AttemptAnswer { TaskAnswer = new TaskAnswer { Value = this.False, Score = 0 }, Value = this.False },
-                            new AttemptAnswer { TaskAnswer = new TaskAnswer { Value = this.False, Score = 0 }, Value = this.False },
-                            new AttemptAnswer { TaskAnswer = new TaskAnswer { Value = this.False, Score = 0 }, Value = this.False },
+                            new AttemptAnswer { TaskAnswer = new TaskAnswer { Value = True,  Score = 1 }, Value = False },
+                            new AttemptAnswer { TaskAnswer = new TaskAnswer { Value = False, Score = 0 }, Value = False },
+                            new AttemptAnswer { TaskAnswer = new TaskAnswer { Value = False, Score = 0 }, Value = False },
+                            new AttemptAnswer { TaskAnswer = new TaskAnswer { Value = False, Score = 0 }, Value = False },
                         }
                     },
 
@@ -675,7 +675,7 @@ namespace Axe.Tests
                         TaskQuestion = new TaskQuestion { Type = TaskQuestionType.MultiChoice, },
                         AttemptAnswers =
                             Enumerable.Range(1,4)
-                            .Select(i => new AttemptAnswer { TaskAnswer = new TaskAnswer { Value = this.True, Score = 1 }, Value = this.True })
+                            .Select(i => new AttemptAnswer { TaskAnswer = new TaskAnswer { Value = True, Score = 1 }, Value = True })
                             .ToList(),
                     }
                 }
@@ -701,10 +701,10 @@ namespace Axe.Tests
                         TaskQuestion = new TaskQuestion { Type = TaskQuestionType.MultiChoice, },
                         AttemptAnswers = new List<AttemptAnswer>
                         {
-                            new AttemptAnswer { TaskAnswer = new TaskAnswer { Value = this.True, Score = 1 }, Value = this.True },
-                            new AttemptAnswer { TaskAnswer = new TaskAnswer { Value = this.True, Score = 1 }, Value = this.True },
-                            new AttemptAnswer { TaskAnswer = new TaskAnswer { Value = this.True, Score = 1 }, Value = this.True },
-                            new AttemptAnswer { TaskAnswer = new TaskAnswer { Value = this.True, Score = 1 }, Value = this.False },
+                            new AttemptAnswer { TaskAnswer = new TaskAnswer { Value = True, Score = 1 }, Value = True },
+                            new AttemptAnswer { TaskAnswer = new TaskAnswer { Value = True, Score = 1 }, Value = True },
+                            new AttemptAnswer { TaskAnswer = new TaskAnswer { Value = True, Score = 1 }, Value = True },
+                            new AttemptAnswer { TaskAnswer = new TaskAnswer { Value = True, Score = 1 }, Value = False },
                         }
                     }
                 }
@@ -730,11 +730,11 @@ namespace Axe.Tests
                         TaskQuestion = new TaskQuestion { Type = TaskQuestionType.MultiChoice, },
                         AttemptAnswers = new List<AttemptAnswer>
                         {
-                            new AttemptAnswer { TaskAnswer = new TaskAnswer { Value = this.True, Score = 1 }, Value = this.True },
-                            new AttemptAnswer { TaskAnswer = new TaskAnswer { Value = this.True, Score = 1 }, Value = this.True },
-                            new AttemptAnswer { TaskAnswer = new TaskAnswer { Value = this.True, Score = 1 }, Value = this.True },
-                            new AttemptAnswer { TaskAnswer = new TaskAnswer { Value = this.True, Score = 1 }, Value = this.True },
-                            new AttemptAnswer { TaskAnswer = new TaskAnswer { Value = this.True, Score = 1 }, Value = this.False },
+                            new AttemptAnswer { TaskAnswer = new TaskAnswer { Value = True, Score = 1 }, Value = True },
+                            new AttemptAnswer { TaskAnswer = new TaskAnswer { Value = True, Score = 1 }, Value = True },
+                            new AttemptAnswer { TaskAnswer = new TaskAnswer { Value = True, Score = 1 }, Value = True },
+                            new AttemptAnswer { TaskAnswer = new TaskAnswer { Value = True, Score = 1 }, Value = True },
+                            new AttemptAnswer { TaskAnswer = new TaskAnswer { Value = True, Score = 1 }, Value = False },
                         }
                     }
                 }
@@ -760,11 +760,11 @@ namespace Axe.Tests
                         TaskQuestion = new TaskQuestion { Type = TaskQuestionType.MultiChoice, },
                         AttemptAnswers = new List<AttemptAnswer>
                         {
-                            new AttemptAnswer { TaskAnswer = new TaskAnswer { Value = this.True, Score = 1 }, Value = this.True },
-                            new AttemptAnswer { TaskAnswer = new TaskAnswer { Value = this.True, Score = 1 }, Value = this.True },
-                            new AttemptAnswer { TaskAnswer = new TaskAnswer { Value = this.True, Score = 1 }, Value = this.False },
-                            new AttemptAnswer { TaskAnswer = new TaskAnswer { Value = this.True, Score = 1 }, Value = this.False },
-                            new AttemptAnswer { TaskAnswer = new TaskAnswer { Value = this.True, Score = 1 }, Value = this.False },
+                            new AttemptAnswer { TaskAnswer = new TaskAnswer { Value = True, Score = 1 }, Value = True },
+                            new AttemptAnswer { TaskAnswer = new TaskAnswer { Value = True, Score = 1 }, Value = True },
+                            new AttemptAnswer { TaskAnswer = new TaskAnswer { Value = True, Score = 1 }, Value = False },
+                            new AttemptAnswer { TaskAnswer = new TaskAnswer { Value = True, Score = 1 }, Value = False },
+                            new AttemptAnswer { TaskAnswer = new TaskAnswer { Value = True, Score = 1 }, Value = False },
                         }
                     }
                 }
@@ -790,11 +790,11 @@ namespace Axe.Tests
                         TaskQuestion = new TaskQuestion { Type = TaskQuestionType.MultiChoice, },
                         AttemptAnswers = new List<AttemptAnswer>
                         {
-                            new AttemptAnswer { TaskAnswer = new TaskAnswer { Value = this.True, Score = 1 }, Value = this.True },
-                            new AttemptAnswer { TaskAnswer = new TaskAnswer { Value = this.True, Score = 1 }, Value = this.False },
-                            new AttemptAnswer { TaskAnswer = new TaskAnswer { Value = this.True, Score = 1 }, Value = this.False },
-                            new AttemptAnswer { TaskAnswer = new TaskAnswer { Value = this.True, Score = 1 }, Value = this.False },
-                            new AttemptAnswer { TaskAnswer = new TaskAnswer { Value = this.True, Score = 1 }, Value = this.False },
+                            new AttemptAnswer { TaskAnswer = new TaskAnswer { Value = True, Score = 1 }, Value = True },
+                            new AttemptAnswer { TaskAnswer = new TaskAnswer { Value = True, Score = 1 }, Value = False },
+                            new AttemptAnswer { TaskAnswer = new TaskAnswer { Value = True, Score = 1 }, Value = False },
+                            new AttemptAnswer { TaskAnswer = new TaskAnswer { Value = True, Score = 1 }, Value = False },
+                            new AttemptAnswer { TaskAnswer = new TaskAnswer { Value = True, Score = 1 }, Value = False },
                         }
                     }
                 }
