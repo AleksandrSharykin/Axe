@@ -17,14 +17,14 @@ namespace Axe.Tests
         private ITechnologyManager manager;
 
         #region Setup
-        [OneTimeSetUp]        
+        [OneTimeSetUp]
         public void InitTestFixture()
         {
             this.InitStorage("TechManagerDb");
             this.InitTechnologies();
-        }        
+        }
 
-        [SetUp]        
+        [SetUp]
         public void InitTestCase()
         {
             this.db = NewDbContext();
@@ -98,7 +98,7 @@ namespace Axe.Tests
             int count = this.db.Technology.Count();
 
             var tech = new Technology { Id = 100, Name = "Q", InformationText = "Q" };
-            
+
             var request = Request(tech, this.expertA);
 
             var response = await this.manager.InputPost(request);
@@ -120,7 +120,7 @@ namespace Axe.Tests
 
             Assert.AreEqual(ResponseCode.Success, responseA.Code);
             Assert.True(vm.Technologies.Count == 1 && vm.Technologies[0].Id == techA.Id);
-            Assert.True(vm.SelectedTechnology.Id == techA.Id);            
+            Assert.True(vm.SelectedTechnology.Id == techA.Id);
             Assert.True(vm.Questions.Count == 0);
             Assert.True(vm.Exams.Count == 0);
             Assert.True(vm.Experts.Count == 2 && vm.Experts.Count(x => x.Id == expertB.Id) == 1 && vm.Experts.Count(x => x.Id == expertC.Id) == 1);
@@ -245,10 +245,10 @@ namespace Axe.Tests
         {
             var request = this.Request<int?>(techB.Id, this.expertA);
 
-            var response = await this.manager.InputGet(request);            
+            var response = await this.manager.InputGet(request);
 
             Assert.AreEqual(ResponseCode.NotFound, response.Code);
-            Assert.Null(response.Item);            
+            Assert.Null(response.Item);
         }
 
         /// <summary>
@@ -292,9 +292,9 @@ namespace Axe.Tests
             var request = Request(tech, this.expertA);
 
             var response = await this.manager.InputPost(request);
-            
+
             var techEdited = this.db.Technology.Single(t => t.Id == techA.Id);
-            
+
             Assert.AreEqual(ResponseCode.ValidationError, response.Code);
             Assert.AreEqual(techA.Name, techEdited.Name);
             Assert.AreEqual(count, this.db.Technology.Count());
@@ -314,9 +314,9 @@ namespace Axe.Tests
             var response = await this.manager.InputPost(request);
 
             var techEdited = this.db.Technology.Single(t => t.Id == techC.Id);
-            
+
             Assert.AreEqual(ResponseCode.ValidationError, response.Code);
-            Assert.AreEqual(techC.InformationText, techEdited.InformationText);            
+            Assert.AreEqual(techC.InformationText, techEdited.InformationText);
         }
 
         [TestCase]
@@ -333,7 +333,7 @@ namespace Axe.Tests
             Assert.IsTrue(tech.Experts.Count(u => u.UserId == this.expertB.Id) == 1);
 
             await this.manager.ExcludeExpert(request);
-            
+
             using (var dbConfirm = NewDbContext())
             {
                 tech = dbConfirm.Technology.Include(t => t.Experts).Single(t => t.Id == this.techA.Id);
@@ -383,6 +383,82 @@ namespace Axe.Tests
             Assert.AreEqual(1, tech.Experts.Count());
             Assert.IsTrue(tech.Experts.Count(u => u.UserId == this.expertA.Id) == 1);
             Assert.IsTrue(tech.Experts.Count(u => u.UserId == this.expertB.Id) == 0);
+        }
+
+        [TestCase]
+        public async Task TechnologyDelete_WrongId()
+        {
+            var request = this.Request(100500);
+
+            var response = await this.manager.DeleteGet(request);
+
+            Assert.AreEqual(ResponseCode.NotFound, response.Code);
+            Assert.IsNull(response.Item);
+
+            response = await this.manager.DeletePost(request);
+
+            Assert.AreEqual(ResponseCode.NotFound, response.Code);
+            Assert.IsNull(response.Item);
+        }
+
+        [TestCase]
+        public async Task TechnologyDelete_Expert()
+        {
+            var tech = new Technology { Name = "delete me" };
+            var expertLink = new ExpertTechnologyLink { Technology = tech, UserId = expertA.Id };
+
+            this.db.AddRange(tech, expertLink);
+            this.db.SaveChanges();
+
+            Assert.True(tech.Id > 0);
+
+            var request = this.Request(tech.Id, this.expertA);
+
+            var response = await this.manager.DeleteGet(request);
+
+            Assert.AreEqual(ResponseCode.Success, response.Code);
+            Assert.AreEqual(tech.Id, response.Item.Id);
+
+            bool exists = this.db.Technology.Any(t => t.Id == tech.Id);
+            Assert.True(exists);
+
+            response = await this.manager.DeletePost(request);
+
+            Assert.AreEqual(ResponseCode.Success, response.Code);
+
+            exists = this.db.Technology.Any(t => t.Id == tech.Id);
+            Assert.False(exists);
+        }
+
+        [TestCase]
+        public async Task TechnologyDelete_NonExpert()
+        {
+            var tech = new Technology { Name = "delete me" };
+            var expertLink = new ExpertTechnologyLink { Technology = tech, UserId = expertA.Id };
+
+            this.db.AddRange(tech, expertLink);
+            this.db.SaveChanges();
+
+            Assert.True(tech.Id > 0);
+
+            var request = this.Request(tech.Id, this.expertC);
+
+            var response = await this.manager.DeleteGet(request);
+
+            Assert.AreEqual(ResponseCode.NotFound, response.Code);
+
+            bool exists = this.db.Technology.Any(t => t.Id == tech.Id);
+            Assert.True(exists);
+
+            response = await this.manager.DeletePost(request);
+
+            Assert.AreEqual(ResponseCode.ValidationError, response.Code);
+
+            exists = this.db.Technology.Any(t => t.Id == tech.Id);
+            Assert.True(exists);
+
+            this.db.RemoveRange(tech, expertLink);
+            this.db.SaveChanges();
         }
     }
 }
