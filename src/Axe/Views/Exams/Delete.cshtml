@@ -43,10 +43,10 @@
     <form asp-action="Delete">
         <div class="form-actions no-color">
             <div class="col-md-11">
-                <a asp-action="Index">Back to results list</a>
+                @Html.ActionLink("Cancel", "Visit", "Profiles", null, new { @class = "btn btn-default" })                
             </div>
             
-            <input type="submit" value="Delete" class="btn btn-primary" />
+            <input type="submit" value="Delete" class="btn btn-danger" />
         </div>
     </form>
 </div>

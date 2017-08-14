@@ -240,7 +240,15 @@
                                     <td>@a.Task.Title</td>
                                     <td>@a.ExamScore of @a.MaxScore</td>
                                     <td>
-                                        @Html.ActionLink("Results", "Result", "Exams", new { id = a.Id })
+                                        @if (a.IsFinished)
+                                        {
+                                            @Html.ActionLink("Results", "Result", "Exams", new { id = a.Id })
+                                        }
+                                        else
+                                        {
+                                            @Html.ActionLink("Continue", "Take", "Exams", new { id = a.Id }, new { @class = "bg-success"})
+                                        }
+
                                         @if (Model.Self)
                                         {
                                             @Html.Raw(" | ")

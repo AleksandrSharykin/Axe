@@ -15,8 +15,8 @@ namespace Axe.Controllers
 {
     [Authorize]
     public class ProfilesController : ControllerExt
-    {        
-        private readonly SignInManager<ApplicationUser> _signInManager;        
+    {
+        private readonly SignInManager<ApplicationUser> _signInManager;
         private readonly string _externalCookieScheme;
         private readonly ILogger _logger;
 
@@ -26,7 +26,7 @@ namespace Axe.Controllers
           AxeDbContext context,
           IOptions<IdentityCookieOptions> identityCookieOptions,
           ILoggerFactory loggerFactory)
-            : base (userManager, context)
+            : base(userManager, context)
         {
             this.userManager = userManager;
             _signInManager = signInManager;
@@ -47,7 +47,7 @@ namespace Axe.Controllers
                 .Include(u => u.Technologies).ThenInclude(t => t.Technology);
 
             if (false == String.IsNullOrWhiteSpace(userFilter))
-                userList = userList.Where(u => u.UserName.Contains(userFilter) || u.Email.Contains(userFilter) || u.JobPosition.Contains(userFilter));                
+                userList = userList.Where(u => u.UserName.Contains(userFilter) || u.Email.Contains(userFilter) || u.JobPosition.Contains(userFilter));
 
             ViewData[nameof(userFilter)] = userFilter;
 
@@ -64,7 +64,7 @@ namespace Axe.Controllers
 
             return View(data);
         }
-               
+
         /// <summary>
         /// Returns data for user profile
         /// </summary>
@@ -74,15 +74,6 @@ namespace Axe.Controllers
         [HttpGet]
         public async Task<IActionResult> Visit(string id = null, int? technologyId = null)
         {
-            //ViewData["StatusMessage"] =
-            //    message == ManageMessageId.ChangePasswordSuccess ? "Your password has been changed."
-            //    : message == ManageMessageId.SetPasswordSuccess ? "Your password has been set."
-            //    : message == ManageMessageId.SetTwoFactorSuccess ? "Your two-factor authentication provider has been set."
-            //    : message == ManageMessageId.Error ? "An error has occurred."
-            //    : message == ManageMessageId.AddPhoneSuccess ? "Your phone number was added."
-            //    : message == ManageMessageId.RemovePhoneSuccess ? "Your phone number was removed."
-            //    : "";
-
             ApplicationUser user = await this.GetCurrentUserAsync();
 
             var users = this.context.Users
@@ -96,9 +87,9 @@ namespace Axe.Controllers
                 return View("Error");
             }
 
-            var techs = await this.context.Technology.ToListAsync();            
+            var techs = await this.context.Technology.ToListAsync();
             var selectedTech = techs.FirstOrDefault(t => t.Id == technologyId) ??
-                               techs.FirstOrDefault();            
+                               techs.FirstOrDefault();
 
             IList<ExamTask> tasks = null;
             IList<ExamAttempt> attempts = null;
@@ -110,7 +101,8 @@ namespace Axe.Controllers
 
                 attempts = await this.context.ExamAttempt.Where(a => a.TechnologyId == selectedTech.Id && a.StudentId == profile.Id).ToListAsync();
 
-                bestAttempts = attempts.GroupBy(a => a.Task.Id)
+                bestAttempts = attempts.Where(a => a.IsFinished)
+                                       .GroupBy(a => a.Task.Id)
                                        .Select(g => g.OrderByDescending(a => a.ExamScore).First())
                                        .ToList();
             }
@@ -130,11 +122,11 @@ namespace Axe.Controllers
                 ExpertKnowledge = profile.Technologies.Select(t => t.Technology).ToList(),
 
                 Skills = profile.GetSkills().Concat(profile.AssessmentsAsStudent.Where(a => a.IsPassed is null)).ToList(),
-                Assessments = profile.AssessmentsAsStudent.Where(a=>a.TechnologyId == selectedTech.Id),
+                Assessments = profile.AssessmentsAsStudent.Where(a => a.TechnologyId == selectedTech.Id),
 
-                                AllAttempts = attempts ?? new List<ExamAttempt>(),
+                AllAttempts = attempts ?? new List<ExamAttempt>(),
                 BestAttempts = bestAttempts ?? new List<ExamAttempt>(),
-                Tasks = self ? ( tasks ?? new List<ExamTask>() ) : null,
+                Tasks = self ? (tasks ?? new List<ExamTask>()) : null,
             };
 
             return View(model);
@@ -161,7 +153,7 @@ namespace Axe.Controllers
             var user = await this.GetCurrentUserAsync();
             if (user == null)
                 return RedirectToAction(nameof(Index));
-            
+
             return View(new EditProfileVm { Id = user.Id, UserName = user.UserName, JobPosition = user.JobPosition });
         }
 
@@ -281,7 +273,7 @@ namespace Axe.Controllers
             RemovePhoneSuccess,
             Error
         }
- 
+
         #endregion
     }
 }

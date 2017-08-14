@@ -27,6 +27,10 @@ namespace Axe.Managers
                 var attempt = await this.GetAttemptData(request.Item.Id);
                 if (attempt != null)
                 {
+                    foreach (var question in attempt.Questions.Where(q => q.TaskQuestion.Type == TaskQuestionType.SingleChoice))
+                    {
+                        question.SelectedAnswerId = question.AttemptAnswers.FirstOrDefault(a => a.Value == Boolean.TrueString)?.TaskAnswerId;
+                    }
                     return this.Response(attempt);
                 }
             }
@@ -127,7 +131,6 @@ namespace Axe.Managers
 
                 if (false == examAttempt.IsFinished)
                 {
-
                     // apply submitted answers
                     foreach (var question in examAttempt.Questions)
                     {
@@ -155,11 +158,13 @@ namespace Axe.Managers
                         }
                     }
 
-                    // mark correct answers and calculate score
-                    examEvaluator.Evaluate(examAttempt);
-
-                    // not saving results of demo tests
                     examAttempt.IsFinished = attemptInput.IsFinished;
+
+                    if (examAttempt.IsFinished)
+                    {
+                        // mark correct answers and calculate score
+                        examEvaluator.Evaluate(examAttempt);
+                    }
 
                     this.context.Update(examAttempt);
                     await this.context.SaveChangesAsync();

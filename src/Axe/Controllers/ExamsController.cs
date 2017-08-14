@@ -53,6 +53,11 @@ namespace Axe.Controllers
                 return NotFound();
             }
 
+            if (response.Item.IsFinished)
+            {
+                return RedirectToAction("Result", new { id = response.Item.Id });
+            }
+
             return View(response.Item);
         }
 
