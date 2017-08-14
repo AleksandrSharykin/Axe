@@ -332,6 +332,21 @@ namespace Axe.Tests
             Assert.AreEqual(0, attempt.ExamScore);
         }
 
+        [TestCase]
+        public void EvalMultiLineQuestion_NoFirstAnswer()
+        {
+            var answer = new AttemptAnswer { TaskAnswer = this.qMultiLine.Answers[0], Value = this.NL + "123" };
+            var attempt = MakeSingleQuestionAttempt(this.qMultiLine, answer);
+
+            this.evaluator.Evaluate(attempt);
+
+            Assert.AreEqual(true, attempt.Questions[0].IsAccepted);
+            Assert.AreEqual(false, attempt.Questions[0].IsPerfect);
+            Assert.AreEqual(true, attempt.IsPassed);
+            Assert.AreEqual(40, attempt.MaxScore);
+            Assert.AreEqual(20, attempt.ExamScore);
+        }
+
         /// <summary>
         /// Evaluator should ignore: casing; whites spaces at the start/end of each line; trailing line breaks
         /// </summary>

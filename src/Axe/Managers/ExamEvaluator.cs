@@ -85,7 +85,7 @@ namespace Axe.Managers
         /// <returns></returns>
         private string Normalize(string answer)
         {
-            return (answer ?? String.Empty).Trim().ToLower();
+            return (answer ?? String.Empty).TrimStart(' ', '\t').TrimEnd().ToLower();
         }
 
         /// <summary>
