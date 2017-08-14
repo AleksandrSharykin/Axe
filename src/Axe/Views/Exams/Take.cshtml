@@ -4,9 +4,17 @@
     ViewData["Title"] = Model.Task?.Technology?.Name + " Exam";
 }
 
+@if (Model.Id > 0)
+{
+@section Scripts
+{
+    <script src="~/js/exams.take.js"></script>
+}
+}
+
 <br />
 
-<form asp-action="Take" method="post">
+<form id="examForm" asp-action="Take" asp-controller="Exams" method="post">
     <div class="jumbotron">
         <h2><kbd>@Model.Task.Title</kbd></h2>
         <p>
@@ -20,9 +28,9 @@
     <div class="row">
         <div class="col-sm-11">
             @*exam navigation*@
-            <ul class="nav nav-tabs">
+            <ul id="questionsTab" class="nav nav-tabs">
                 @foreach (var item in Model.Questions.Select((q, i) => new { Question = q, Idx = i }))
-            {
+                {
                 var active = item.Idx == 0 ? "active" : null;
                     <li class="@active"><a href="#q_@item.Idx" data-toggle="tab"> #@(item.Idx + 1)</a></li>
                 }
@@ -85,7 +93,7 @@
         </div>
 
         <div class="col-sm-1">
-            <button class="btn btn-primary">Submit</button>
+            <button class="btn btn-primary" name="cmd" value="final">Submit</button>            
         </div>  
     </div>
 

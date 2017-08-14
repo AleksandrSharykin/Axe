@@ -64,5 +64,10 @@ namespace Axe.Models
         /// Gets or sets points awarded for answering question
         /// </summary>
         public int? Score { get; set; }
+
+        /// <summary>
+        /// Gets or sets question position in exam attempt questions list
+        /// </summary>
+        public int SortNumber { get; set; }
     }
 }

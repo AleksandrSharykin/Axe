@@ -16,6 +16,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Content Include="wwwroot\js\exams.take.js" />
     <Content Include="wwwroot\js\tasks.input.js" />
   </ItemGroup>
 

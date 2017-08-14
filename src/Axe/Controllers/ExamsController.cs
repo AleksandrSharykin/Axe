@@ -42,9 +42,9 @@ namespace Axe.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> Take(int? taskId, int? technologyId = null)
+        public async Task<IActionResult> Take(int? id = null, int? taskId = null, int? technologyId = null)
         {
-            var request = await this.CreateRequest(new ExamTask { Id = taskId ?? 0, TechnologyId = technologyId });
+            var request = await this.CreateRequest(new ExamAttempt { Id = id ?? 0, TaskId = taskId ?? 0, TechnologyId = technologyId });
 
             var response = await this.manager.AttemptGet(request);
 
@@ -57,11 +57,13 @@ namespace Axe.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> Take(ExamAttempt attempt)
+        public async Task<IActionResult> Take(ExamAttempt attempt, string cmd = null)
         {
             if (ModelState.IsValid)
             {
                 var request = await CreateRequest(attempt);
+
+                attempt.IsFinished = cmd != null;
 
                 var response = await this.manager.AttemptPost(request);
 
@@ -70,13 +72,17 @@ namespace Axe.Controllers
                     return this.NotFound();
                 }
 
-                return View("Result", response.Item);
+                if (response.Item.IsFinished)
+                {
+                    return RedirectToAction("Result", new { id = response.Item.Id });
+                }
+
+                return View(response.Item);
             }
 
             return View(attempt);
         }
 
-        [Authorize]
         public async Task<IActionResult> Result(int id)
         {
             var request = new Request<int>(id);

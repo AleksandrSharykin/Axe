@@ -16,7 +16,7 @@ namespace Axe.Managers
         /// </summary>
         /// <param name="request"></param>
         /// <returns></returns>
-        Task<Response<ExamAttempt>> AttemptGet(Request<ExamTask> request);
+        Task<Response<ExamAttempt>> AttemptGet(Request<ExamAttempt> request);
 
         Task<Response<ExamAttempt>> AttemptPost(Request<ExamAttempt> request);
 

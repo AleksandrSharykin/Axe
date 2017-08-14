@@ -4,6 +4,7 @@ using System.Linq;
 using Microsoft.EntityFrameworkCore;
 using System.Threading.Tasks;
 using Axe.Models;
+using Newtonsoft.Json;
 
 namespace Axe.Managers
 {
@@ -19,9 +20,18 @@ namespace Axe.Managers
             this.examEvaluator = examEvaluator;
         }
 
-        public async Task<Response<ExamAttempt>> AttemptGet(Request<ExamTask> request)
+        public async Task<Response<ExamAttempt>> AttemptGet(Request<ExamAttempt> request)
         {
-            int taskId = request.Item.Id;
+            if (request.Item.Id > 0)
+            {
+                var attempt = await this.GetAttemptData(request.Item.Id);
+                if (attempt != null)
+                {
+                    return this.Response(attempt);
+                }
+            }
+
+            int taskId = request.Item.TaskId;
 
             var exams = this.context.ExamTask
                             .Include(t => t.Technology)
@@ -74,6 +84,20 @@ namespace Axe.Managers
                                 .ToList().Shuffle()
             };
 
+            int questionNum = 0;
+            foreach (var q in examAttempt.Questions)
+            {
+                q.SortNumber = questionNum;
+                questionNum++;
+
+                int answerNum = 0;
+                foreach (var a in q.AttemptAnswers)
+                {
+                    a.SortNumber = answerNum;
+                    answerNum++;
+                }
+            }
+
             // not saving results of demo tests
             // for other tests saving each attempt to enable monitoring
             if (false == task.IsDemonstration)
@@ -81,6 +105,7 @@ namespace Axe.Managers
                 examAttempt.StudentId = request.CurrentUser.Id;
 
                 this.context.Add(examAttempt);
+
                 await this.context.SaveChangesAsync();
             }
 
@@ -118,7 +143,7 @@ namespace Axe.Managers
 
                             if (question.TaskQuestion.Type == TaskQuestionType.SingleChoice)
                             {
-                                answerInput.Value = (answer.TaskAnswer.Id == question.SelectedAnswerId) ? Boolean.TrueString : Boolean.FalseString;
+                                answerInput.Value = (answer.TaskAnswerId == questionInput.SelectedAnswerId) ? Boolean.TrueString : Boolean.FalseString;
                             }
 
                             if (answerInput == null)
@@ -134,7 +159,8 @@ namespace Axe.Managers
                     examEvaluator.Evaluate(examAttempt);
 
                     // not saving results of demo tests
-                    examAttempt.IsFinished = true;
+                    examAttempt.IsFinished = attemptInput.IsFinished;
+
                     this.context.Update(examAttempt);
                     await this.context.SaveChangesAsync();
                 }
@@ -197,13 +223,25 @@ namespace Axe.Managers
         /// <returns></returns>
         private async Task<ExamAttempt> GetAttemptData(int id)
         {
-            return await this.context.ExamAttempt
+            var attempt = await this.context.ExamAttempt
                                     .Include(a => a.Task)
                                     .Include(a => a.Student)
                                     .Include(a => a.Technology)
                                     .Include(a => a.Questions).ThenInclude(q => q.TaskQuestion)
                                     .Include(a => a.Questions).ThenInclude(q => q.AttemptAnswers).ThenInclude(a => a.TaskAnswer)
                                     .FirstOrDefaultAsync(a => a.Id == id);
+
+            if (attempt != null)
+            {
+                attempt.Questions = attempt.Questions.OrderBy(q => q.SortNumber).ToList();
+
+                foreach (var question in attempt.Questions.Where(q => q.AttemptAnswers.Count > 1))
+                {
+                    question.AttemptAnswers = question.AttemptAnswers.OrderBy(a => a.SortNumber).ToList();
+                }
+            }
+
+            return attempt;
         }
 
         /// <summary>

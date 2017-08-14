@@ -25,8 +25,8 @@ namespace Axe.Models
         /// <summary>
         /// Get or sets associated question
         /// </summary>
-        public AttemptQuestion AttemptQuestion { get; set;}
-        
+        public AttemptQuestion AttemptQuestion { get; set; }
+
 
         /// <summary>
         /// Gets or sets base <see cref="TaskAnswer"/>
@@ -36,7 +36,7 @@ namespace Axe.Models
         /// <summary>
         /// Gets or sets base <see cref="TaskAnswer"/>
         /// </summary>
-        public TaskAnswer TaskAnswer { get; set; }       
+        public TaskAnswer TaskAnswer { get; set; }
 
 
         /// <summary>
@@ -57,5 +57,10 @@ namespace Axe.Models
             }
             set { Value = value.ToString(); }
         }
+
+        /// <summary>
+        /// Gets or sets answer position in question answers list
+        /// </summary>
+        public int SortNumber { get; set; }
     }
 }
