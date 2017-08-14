@@ -16,7 +16,7 @@ namespace Axe.Controllers
         public HomeController(UserManager<ApplicationUser> userManager, IHomeManager manager) : base(userManager, null)
         {
             this.manager = manager;
-        }                
+        }
 
         public async Task<IActionResult> Index()
         {
@@ -38,8 +38,13 @@ namespace Axe.Controllers
             return View();
         }
 
-        public IActionResult Error()
+        public IActionResult Error(string id = null)
         {
+            if (id == "404")
+            {
+                return View("NotFound");
+            }
+
             return View();
         }
     }

@@ -100,6 +100,8 @@ namespace Axe
 
             app.UseIdentity();
 
+            app.UseStatusCodePagesWithRedirects("/Home/Error/{0}");
+
             app.UseMvc(routes =>
             {
                 routes.MapRoute(
