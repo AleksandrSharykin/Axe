@@ -79,7 +79,7 @@ namespace Axe.Controllers
 
                 if (response.Item.IsFinished)
                 {
-                    return RedirectToAction("Result", new { id = response.Item.Id });
+                    return View("Result", response.Item);
                 }
 
                 return View(response.Item);
@@ -90,7 +90,7 @@ namespace Axe.Controllers
 
         public async Task<IActionResult> Result(int id)
         {
-            var request = new Request<int>(id);
+            var request = await this.CreateRequest(id);
 
             var response = await this.manager.Results(request);
 

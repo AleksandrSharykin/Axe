@@ -256,9 +256,36 @@ namespace Axe.Managers
         /// <returns></returns>
         public async Task<Response<ExamAttempt>> Results(Request<int> request)
         {
+            if (request.CurrentUser == null)
+            {
+                return this.NotFound<ExamAttempt>();
+            }
+
             var attempt = await GetAttemptData(request.Item);
 
-            return attempt != null ? this.Response(attempt) : this.NotFound<ExamAttempt>();
+            if (attempt == null)
+            {
+                return this.NotFound<ExamAttempt>();
+            }
+
+            // while exam attempt is not finished, student should not be allowed to see results
+            // experts can see intermediate results from attempts monitor
+            if (false == attempt.IsFinished)
+            {
+                ApplicationUser user = request.CurrentUser;
+                if (user != null)
+                {
+                    user = await this.context.Users.Include(u => u.Technologies)
+                                             .FirstOrDefaultAsync(u => u.Id == user.Id);
+
+                    if (false == user.Technologies.Any(t => t.TechnologyId == attempt.TechnologyId))
+                    {
+                        return this.NotFound<ExamAttempt>();
+                    }
+                }
+            }
+
+            return this.Response(attempt);
         }
 
         /// <summary>

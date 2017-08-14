@@ -238,7 +238,12 @@
                                     <td><span class="glyphicon glyphicon-thumbs-up"></span></td>
                                     <td>@a.ExamDate</td>
                                     <td>@a.Task.Title</td>
-                                    <td>@a.ExamScore of @a.MaxScore</td>
+                                    <td>
+                                    @if (a.IsFinished)
+                                    {
+                                        <span>@a.ExamScore of @a.MaxScore</span>
+                                    }
+                                    </td>
                                     <td>
                                         @if (a.IsFinished)
                                         {
@@ -246,7 +251,10 @@
                                         }
                                         else
                                         {
-                                            @Html.ActionLink("Continue", "Take", "Exams", new { id = a.Id }, new { @class = "bg-success"})
+                                            if (Model.Self)
+                                            {
+                                                @Html.ActionLink("Continue", "Take", "Exams", new { id = a.Id }, new { @class = "bg-success" })
+                                            }
                                         }
 
                                         @if (Model.Self)
