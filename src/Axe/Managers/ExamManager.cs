@@ -86,6 +86,7 @@ namespace Axe.Managers
                 Task = task,
                 TaskId = task.Id,
                 TechnologyId = task.TechnologyId,
+                Technology = task.Technology,
                 Questions = task.Questions
                                 .Select(q => new AttemptQuestion
                                 {
@@ -98,6 +99,7 @@ namespace Axe.Managers
                                 .ToList().Shuffle()
             };
 
+            // questions and answers order should be consistent, saving their sort number 
             int questionNum = 0;
             foreach (var q in examAttempt.Questions)
             {
@@ -226,6 +228,8 @@ namespace Axe.Managers
 
                 // mark correct answers and calculate score
                 examEvaluator.Evaluate(attemptInput);
+
+                attemptInput.IsFinished = true;
             }
 
             return this.Response(examAttempt ?? attemptInput);
@@ -328,16 +332,16 @@ namespace Axe.Managers
         {
             var attempt = await context.ExamAttempt.SingleOrDefaultAsync(m => m.Id == request.Item);
 
-            if (attempt != null)
+            if (attempt == null || attempt.StudentId != request.CurrentUser.Id)
             {
-                context.ExamAttempt.Remove(attempt);
-
-                await context.SaveChangesAsync();
-
-                return this.Response(true);
+                return this.NotFound<bool>();
             }
 
-            return this.Response(false);
+            context.ExamAttempt.Remove(attempt);
+
+            await context.SaveChangesAsync();
+
+            return this.Response(true);
         }
     }
 }
