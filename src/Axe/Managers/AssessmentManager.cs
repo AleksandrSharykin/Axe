@@ -60,8 +60,8 @@ namespace Axe.Managers
                 ExamDate = a.ExamDate,
                 IsPassed = a.IsPassed,
                 CanMark = a.IsPassed == null && userId == a.ExaminerId,
-                CanEdit = a.IsPassed == null,
-                CanDelete = a.IsPassed == null,
+                CanEdit = a.IsPassed == null && userId == a.ExaminerId,
+                CanDelete = userId == a.ExaminerId,
             };
         }
 
@@ -113,6 +113,7 @@ namespace Axe.Managers
             }
 
             if (examiner == null || student == null || technology == null ||
+                examiner.Id == student.Id ||
                 false == technology.Experts.Any(u => u.UserId == examiner.Id))
             {
                 return this.NotFound<AssessmentInputVm>();
@@ -150,12 +151,17 @@ namespace Axe.Managers
 
             var technology = await this.context.Technology
                            .Include(t => t.Experts)
-                           .SingleAsync(t => t.Id == assessmentInput.TechnologyId);
+                           .SingleOrDefaultAsync(t => t.Id == assessmentInput.TechnologyId);
 
             if (technology == null)
             {
                 request.ModelState.AddModelError(String.Empty, "Unknown technology");
                 return this.ValidationError(assessmentInput);
+            }
+
+            if (request.CurrentUser.Id != assessmentInput.ExaminerId)
+            {
+                request.ModelState.AddModelError(String.Empty, "Cannot appoint other users as examiners");
             }
 
             if (request.ModelState.IsValid)
@@ -230,7 +236,7 @@ namespace Axe.Managers
             var examiner = await this.context.Users.SingleOrDefaultAsync(u => u.Id == assessmentInput.ExaminerId);
             assessmentInput.ExaminerName = examiner?.UserName;
 
-            return this.Response(assessmentInput);
+            return this.ValidationError(assessmentInput);
         }
 
         /// <summary>
@@ -274,6 +280,11 @@ namespace Axe.Managers
             if (assessment == null)
             {
                 return this.NotFound<AssessmentDetailsVm>();
+            }
+
+            if (assessment.IsPassed.HasValue)
+            {
+                request.ModelState.AddModelError(String.Empty, "Assessment has already been marked");
             }
 
             var user = request.CurrentUser;
