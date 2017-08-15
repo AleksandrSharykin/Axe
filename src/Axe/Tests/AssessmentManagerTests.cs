@@ -149,7 +149,7 @@ namespace Axe.Tests
         }
 
         [TestCase]
-        public async Task AssessmentPost_CreateWrongTechnology()
+        public async Task AssessmentPost_CreateUnknownTechnology()
         {
             var dt = new DateTime(2017, 12, 31, 14, 15, 0);
             var input = new AssessmentInputVm
@@ -169,6 +169,10 @@ namespace Axe.Tests
             Assert.AreEqual(ResponseCode.ValidationError, response.Code);
             Assert.NotNull(item);
             Assert.Null(item.TechnologyName);
+
+            Assert.False(request.ModelState.IsValid);
+            Assert.AreEqual(1, request.ModelState.Count);
+            Assert.True(request.ModelState[String.Empty].Errors.Any(e => e.ErrorMessage == ValidationMessages.Instance.UnknownTechnology));
 
             int count = this.db.SkillAssessment.Count();
             Assert.AreEqual(0, count);
@@ -196,12 +200,16 @@ namespace Axe.Tests
             Assert.NotNull(item);
             Assert.True(this.IsAssessmentDataComplete(item));
 
+            Assert.False(request.ModelState.IsValid);
+            Assert.AreEqual(1, request.ModelState.Count);
+            Assert.True(request.ModelState[String.Empty].Errors.Any(e => e.ErrorMessage == ValidationMessages.Instance.AssessmentExpertAssign(this.techA.Name)));
+
             int count = this.db.SkillAssessment.Count();
             Assert.AreEqual(0, count);
         }
 
         [TestCase]
-        public async Task AssessmentPost_CreateWrongExaminer()
+        public async Task AssessmentPost_CreateAppointWrongExaminer()
         {
             var dt = new DateTime(2017, 12, 31, 14, 15, 0);
             var input = new AssessmentInputVm
@@ -221,6 +229,10 @@ namespace Axe.Tests
             Assert.AreEqual(ResponseCode.ValidationError, response.Code);
             Assert.NotNull(item);
             Assert.True(this.IsAssessmentDataComplete(item));
+
+            Assert.False(request.ModelState.IsValid);
+            Assert.AreEqual(1, request.ModelState.Count);
+            Assert.True(request.ModelState[String.Empty].Errors.Any(e => e.ErrorMessage == ValidationMessages.Instance.AssessmentCannotAppointExaminer));
 
             int count = this.db.SkillAssessment.Count();
             Assert.AreEqual(0, count);
@@ -247,6 +259,10 @@ namespace Axe.Tests
             Assert.AreEqual(ResponseCode.ValidationError, response.Code);
             Assert.NotNull(item);
             Assert.True(this.IsAssessmentDataComplete(item));
+
+            Assert.False(request.ModelState.IsValid);
+            Assert.AreEqual(1, request.ModelState.Count);
+            Assert.True(request.ModelState[String.Empty].Errors.Any(e => e.ErrorMessage == ValidationMessages.Instance.AssessmentSelf));
 
             int count = this.db.SkillAssessment.Count();
             Assert.AreEqual(0, count);
@@ -346,6 +362,11 @@ namespace Axe.Tests
                 var item = response.Item;
                 Assert.AreEqual(ResponseCode.ValidationError, response.Code);
                 Assert.NotNull(item);
+
+                Assert.False(request.ModelState.IsValid);
+                Assert.AreEqual(1, request.ModelState.Count);
+                Assert.True(request.ModelState[String.Empty].Errors.Any(e => e.ErrorMessage == ValidationMessages.Instance.AssessmentInvalidDetails));
+
                 Assert.AreEqual(existingAssessment.Id, item.Id);
                 Assert.True(this.IsAssessmentDataComplete(item));
 
@@ -404,6 +425,11 @@ namespace Axe.Tests
                 var item = response.Item;
                 Assert.AreEqual(ResponseCode.ValidationError, response.Code);
                 Assert.NotNull(item);
+
+                Assert.False(request.ModelState.IsValid);
+                Assert.AreEqual(1, request.ModelState.Count);
+                Assert.True(request.ModelState[String.Empty].Errors.Any(e => e.ErrorMessage == ValidationMessages.Instance.AssessmentPastEvent));
+
                 Assert.AreEqual(existingAssessment.Id, item.Id);
                 Assert.True(this.IsAssessmentDataComplete(item));
 
@@ -654,6 +680,51 @@ namespace Axe.Tests
         }
 
         [TestCase]
+        public async Task AssessmentMarkPost_NotExaminer()
+        {
+            var existingAssessment = new SkillAssessment
+            {
+                TechnologyId = this.techA.Id,
+                StudentId = this.expertB.Id,
+                ExaminerId = this.expertA.Id,
+                ExamDate = new DateTime(2000, 1, 1),
+            };
+            this.db.Add(existingAssessment);
+            this.db.SaveChanges();
+
+            var mark = new AssessmentDetailsVm
+            {
+                Id = existingAssessment.Id,
+                ExaminerId = this.expertB.Id,
+                IsPassed = true,
+            };
+
+            try
+            {
+                var request = this.Request(mark, this.expertB);
+
+                var response = await this.manager.MarkPost(request);
+
+                var item = response.Item;
+                Assert.AreEqual(ResponseCode.ValidationError, response.Code);
+                Assert.NotNull(item);
+                Assert.True(IsAssessmentDataComplete(item));
+
+                Assert.False(request.ModelState.IsValid);
+                Assert.AreEqual(1, request.ModelState.Count);
+                Assert.True(request.ModelState[String.Empty].Errors.Any(e => e.ErrorMessage == ValidationMessages.Instance.AssessmentNonExaminerMark));
+            }
+            finally
+            {
+                this.db.Remove(existingAssessment);
+                this.db.SaveChanges();
+
+                int count = this.db.SkillAssessment.Count();
+                Assert.AreEqual(0, count);
+            }
+        }
+
+        [TestCase]
         public async Task AssessmentMarkPost_ExaminerMarkPassed()
         {
             SkillAssessment existingAssessment;
@@ -791,6 +862,10 @@ namespace Axe.Tests
                 var item = response.Item;
                 Assert.AreEqual(ResponseCode.ValidationError, response.Code);
                 Assert.NotNull(item);
+
+                Assert.False(request.ModelState.IsValid);
+                Assert.AreEqual(1, request.ModelState.Count);
+                Assert.True(request.ModelState[String.Empty].Errors.Any(e => e.ErrorMessage == ValidationMessages.Instance.AssessmentMarked));
 
                 var assessment = this.db.SkillAssessment.Single(a => a.Id == existingAssessment.Id);
                 Assert.False(assessment.IsPassed);
@@ -942,6 +1017,10 @@ namespace Axe.Tests
                 response = await this.manager.DeletePost(request);
 
                 Assert.AreEqual(ResponseCode.ValidationError, response.Code);
+
+                Assert.False(request.ModelState.IsValid);
+                Assert.AreEqual(1, request.ModelState.Count);
+                Assert.True(request.ModelState[String.Empty].Errors.Any(e => e.ErrorMessage == ValidationMessages.Instance.AssessmentCannotDelete));
 
                 count = this.db.SkillAssessment.Count(a => a.Id == existingAssessment.Id);
                 Assert.AreEqual(1, count);

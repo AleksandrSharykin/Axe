@@ -135,7 +135,7 @@ namespace Axe.Managers
 
                 if (false == tech.Experts.Any(u => u.UserId == user.Id))
                 {
-                    request.ModelState.AddModelError(String.Empty, "Only " + tech.Name + " experts can write questions");
+                    request.ModelState.AddModelError(String.Empty, ValidationMessages.Instance.QuestionExpertInput(tech.Name));
                 }
 
                 switch (questionVm.EditorType)
@@ -148,11 +148,11 @@ namespace Axe.Managers
 
                     if (questionVm.Answers.Count < 2)
                     {
-                        request.ModelState.AddModelError(String.Empty, "Question should have at least two options");
+                        request.ModelState.AddModelError(String.Empty, ValidationMessages.Instance.QuestionTwoChoiceOptions);
                     }
                     else if (false == questionVm.Answers.Any(a => a.IsCorrect))
                     {
-                        request.ModelState.AddModelError(String.Empty, "Question should have an answer");
+                        request.ModelState.AddModelError(String.Empty, ValidationMessages.Instance.QuestionNeedAnswer);
                     }
                     break;
 
@@ -160,7 +160,7 @@ namespace Axe.Managers
                     case TaskQuestionType.SingleLine:
                     if (String.IsNullOrWhiteSpace(questionVm.Answers[0].Text))
                     {
-                        request.ModelState.AddModelError(String.Empty, "Question should have an answer");
+                        request.ModelState.AddModelError(String.Empty, ValidationMessages.Instance.QuestionNeedAnswer);
                     }
                     else
                     {
@@ -331,7 +331,7 @@ namespace Axe.Managers
 
             if (false == question.Technology.Experts.Any(u => u.UserId == request.CurrentUser.Id))
             {
-                request.ModelState.AddModelError(String.Empty, "Only expert can delete " + question.Technology.Name + " questions");
+                request.ModelState.AddModelError(String.Empty, ValidationMessages.Instance.QuestionExpertDelete(question.Technology.Name));
                 return this.ValidationError(question);
             }
 

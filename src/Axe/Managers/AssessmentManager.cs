@@ -155,13 +155,13 @@ namespace Axe.Managers
 
             if (technology == null)
             {
-                request.ModelState.AddModelError(String.Empty, "Unknown technology");
+                request.ModelState.AddModelError(String.Empty, ValidationMessages.Instance.UnknownTechnology);
                 return this.ValidationError(assessmentInput);
             }
 
             if (request.CurrentUser.Id != assessmentInput.ExaminerId)
             {
-                request.ModelState.AddModelError(String.Empty, "Cannot appoint other users as examiners");
+                request.ModelState.AddModelError(String.Empty, ValidationMessages.Instance.AssessmentCannotAppointExaminer);
             }
 
             if (request.ModelState.IsValid)
@@ -175,11 +175,11 @@ namespace Axe.Managers
                     // validation for create
                     if (false == technology.Experts.Any(u => u.UserId == currentUser.Id))
                     {
-                        request.ModelState.AddModelError(String.Empty, "Only " + technology.Name + "expert can assign skill assessment");
+                        request.ModelState.AddModelError(String.Empty, ValidationMessages.Instance.AssessmentExpertAssign(technology.Name));
                     }
                     else if (assessmentInput.StudentId == currentUser.Id)
                     {
-                        request.ModelState.AddModelError(String.Empty, "Cannot assign skill assessment to self");
+                        request.ModelState.AddModelError(String.Empty, ValidationMessages.Instance.AssessmentSelf);
                     }
                     else
                     {
@@ -196,14 +196,14 @@ namespace Axe.Managers
                     // validation for update
                     if (a.IsPassed.HasValue)
                     {
-                        request.ModelState.AddModelError(String.Empty, "Event has already happened");
+                        request.ModelState.AddModelError(String.Empty, ValidationMessages.Instance.AssessmentPastEvent);
                     }
 
                     if (a.ExaminerId != assessmentInput.ExaminerId ||
                         a.StudentId != assessmentInput.StudentId ||
                         a.TechnologyId != assessmentInput.TechnologyId)
                     {
-                        request.ModelState.AddModelError(String.Empty, "Invalid assessment details");
+                        request.ModelState.AddModelError(String.Empty, ValidationMessages.Instance.AssessmentInvalidDetails);
                     }
                 }
 
@@ -284,13 +284,13 @@ namespace Axe.Managers
 
             if (assessment.IsPassed.HasValue)
             {
-                request.ModelState.AddModelError(String.Empty, "Assessment has already been marked");
+                request.ModelState.AddModelError(String.Empty, ValidationMessages.Instance.AssessmentMarked);
             }
 
             var user = request.CurrentUser;
             if (assessment.ExaminerId != user.Id)
             {
-                request.ModelState.AddModelError(String.Empty, "Only examiner can mark assessment");
+                request.ModelState.AddModelError(String.Empty, ValidationMessages.Instance.AssessmentNonExaminerMark);
             }
 
             if (request.ModelState.IsValid && request.Item.IsPassed.HasValue)
@@ -346,7 +346,7 @@ namespace Axe.Managers
 
             if (false == data.CanDelete)
             {
-                request.ModelState.AddModelError(String.Empty, "You cannot delete this record");
+                request.ModelState.AddModelError(String.Empty, ValidationMessages.Instance.AssessmentCannotDelete);
                 return this.ValidationError(data);
             }
 

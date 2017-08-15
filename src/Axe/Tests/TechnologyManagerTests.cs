@@ -85,6 +85,9 @@ namespace Axe.Tests
             Assert.AreEqual(ResponseCode.ValidationError, response.Code);
             Assert.AreEqual(0, tech.Id);
             Assert.False(request.ModelState.IsValid);
+            Assert.AreEqual(1, request.ModelState.Count);
+            Assert.True(request.ModelState[String.Empty].Errors.Any(e => e.ErrorMessage == ValidationMessages.Instance.TechnologyDuplicate(this.techA.Name)));
+
             Assert.AreEqual(count, this.db.Technology.Count());
         }
 
@@ -296,6 +299,11 @@ namespace Axe.Tests
             var techEdited = this.db.Technology.Single(t => t.Id == techA.Id);
 
             Assert.AreEqual(ResponseCode.ValidationError, response.Code);
+
+            Assert.False(request.ModelState.IsValid);
+            Assert.AreEqual(1, request.ModelState.Count);
+            Assert.True(request.ModelState[String.Empty].Errors.Any(e => e.ErrorMessage == ValidationMessages.Instance.TechnologyDuplicate(this.techC.Name)));
+
             Assert.AreEqual(techA.Name, techEdited.Name);
             Assert.AreEqual(count, this.db.Technology.Count());
         }
@@ -316,6 +324,11 @@ namespace Axe.Tests
             var techEdited = this.db.Technology.Single(t => t.Id == techC.Id);
 
             Assert.AreEqual(ResponseCode.ValidationError, response.Code);
+
+            Assert.False(request.ModelState.IsValid);
+            Assert.AreEqual(1, request.ModelState.Count);
+            Assert.True(request.ModelState[String.Empty].Errors.Any(e => e.ErrorMessage == ValidationMessages.Instance.TechnologyExpertInput));
+
             Assert.AreEqual(techC.InformationText, techEdited.InformationText);
         }
 
@@ -453,6 +466,10 @@ namespace Axe.Tests
             response = await this.manager.DeletePost(request);
 
             Assert.AreEqual(ResponseCode.ValidationError, response.Code);
+
+            Assert.False(request.ModelState.IsValid);
+            Assert.AreEqual(1, request.ModelState.Count);
+            Assert.True(request.ModelState[String.Empty].Errors.Any(e => e.ErrorMessage == ValidationMessages.Instance.TechnologyExpertDelete));
 
             exists = this.db.Technology.Any(t => t.Id == tech.Id);
             Assert.True(exists);

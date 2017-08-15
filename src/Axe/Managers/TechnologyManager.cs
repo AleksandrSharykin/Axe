@@ -136,14 +136,14 @@ namespace Axe.Managers
                 // duplicate names are not allowed
                 if (this.context.Technology.Any(t => t.Name == technologyInput.Name && t.Id != id))
                 {
-                    request.ModelState.AddModelError(String.Empty, technologyInput.Name + " technology is already exists");
+                    request.ModelState.AddModelError(String.Empty, ValidationMessages.Instance.TechnologyDuplicate(technologyInput.Name));
                     return this.ValidationError(technologyInput);
                 }
 
                 // if User is not an Expert they cannot edit Technology
                 if (false == technology.Experts.Any(t => t.UserId == user.Id))
                 {
-                    request.ModelState.AddModelError(String.Empty, "Only experts can edit technology");
+                    request.ModelState.AddModelError(String.Empty, ValidationMessages.Instance.TechnologyExpertInput);
                     return this.ValidationError(technologyInput);
                 }
 
@@ -156,7 +156,7 @@ namespace Axe.Managers
                 // duplicate names are not allowed
                 if (this.context.Technology.Any(t => t.Name == technologyInput.Name))
                 {
-                    request.ModelState.AddModelError(String.Empty, technologyInput.Name + " technology is already exists");
+                    request.ModelState.AddModelError(String.Empty, ValidationMessages.Instance.TechnologyDuplicate(technologyInput.Name));
                 }
 
                 if (request.ModelState.IsValid)
@@ -271,7 +271,7 @@ namespace Axe.Managers
 
             if (false == tech.Experts.Any(u => u.UserId == request.CurrentUser.Id))
             {
-                request.ModelState.AddModelError(String.Empty, "Only expert can delete " + tech.Name);
+                request.ModelState.AddModelError(String.Empty, ValidationMessages.Instance.TechnologyExpertDelete);
                 return this.ValidationError(tech);
             }
 

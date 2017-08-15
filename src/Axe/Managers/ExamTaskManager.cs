@@ -117,7 +117,22 @@ namespace Axe.Managers
 
                 if (ids.Count == 0)
                 {
-                    request.ModelState.AddModelError(String.Empty, "Test task should contain at least one question");
+                    request.ModelState.AddModelError(String.Empty, ValidationMessages.Instance.TaskNoQuestions);
+                }
+            }
+
+            Technology tech = null;
+            if (request.ModelState.IsValid)
+            {
+                tech = this.context.Technology.Include(t => t.Experts)
+                           .FirstOrDefault(t => t.Id == taskInput.TechnologyId);
+                if (tech == null)
+                {
+                    request.ModelState.AddModelError(String.Empty, ValidationMessages.Instance.UnknownTechnology);
+                }
+                else if (false == tech.Experts.Any(t => t.UserId == request.CurrentUser.Id))
+                {
+                    request.ModelState.AddModelError(String.Empty, ValidationMessages.Instance.TaskExpertInput(tech.Name));
                 }
             }
 
@@ -183,7 +198,7 @@ namespace Axe.Managers
             }
 
             // restore information fields which were not posted
-            taskInput.TechnologyName = (await this.context.Technology.SingleOrDefaultAsync(t => t.Id == taskInput.TechnologyId)).Name;
+            taskInput.TechnologyName = tech?.Name;
 
             // restore question list
             var questions = this.context.TaskQuestion.Where(q => q.TechnologyId == taskInput.TechnologyId).ToList();
@@ -234,7 +249,7 @@ namespace Axe.Managers
 
             if (false == exam.Technology.Experts.Any(u => u.UserId == request.CurrentUser.Id))
             {
-                request.ModelState.AddModelError(String.Empty, "Only expert can delete " + exam.Technology.Name + " tasks");
+                request.ModelState.AddModelError(String.Empty, ValidationMessages.Instance.TaskExpertDelete(exam.Technology.Name));
                 return this.ValidationError(exam);
             }
 
