@@ -25,11 +25,11 @@ namespace Axe.Managers
             }
 
             var examTask = await context.ExamTask
-                .Include(e => e.Technology)
+                .Include(e => e.Technology).ThenInclude(t => t.Experts)
                 .Include(e => e.Questions).ThenInclude(q => q.Question)
                 .SingleOrDefaultAsync(m => m.Id == id);
 
-            if (examTask == null)
+            if (examTask == null || false == examTask.Technology.Experts.Any(u => u.UserId == request.CurrentUser.Id))
             {
                 return this.NotFound<ExamTask>();
             }
@@ -50,7 +50,7 @@ namespace Axe.Managers
             if (id > 0)
             {
                 // edit existing exam task
-                examTask = await context.ExamTask.Include(t => t.Technology)
+                examTask = await context.ExamTask.Include(t => t.Technology).ThenInclude(t => t.Experts)
                                                  .Include(t => t.Questions)
                                                  .SingleOrDefaultAsync(m => m.Id == id);
                 if (examTask == null)
@@ -61,7 +61,8 @@ namespace Axe.Managers
             else
             {
                 // create new exam task
-                var tech = await this.context.Technology.SingleOrDefaultAsync(t => t.Id == technologyId);
+                var tech = await this.context.Technology.Include(t => t.Experts)
+                                     .SingleOrDefaultAsync(t => t.Id == technologyId);
                 if (tech == null)
                 {
                     return this.NotFound<TaskInputVm>();
@@ -74,9 +75,15 @@ namespace Axe.Managers
                 };
             }
 
+            if (false == examTask.Technology.Experts.Any(u => u.UserId == request.CurrentUser.Id))
+            {
+                return this.NotFound<TaskInputVm>();
+            }
+
             // get all questions for selected technology for exam task 
             var questions = this.context.TaskQuestion.Include(q => q.Answers)
-                                .Where(q => q.TechnologyId == examTask.Technology.Id).ToList();
+                                .Where(q => q.TechnologyId == examTask.Technology.Id)
+                                .ToList();
 
             var taskVm = new TaskInputVm
             {
@@ -123,19 +130,16 @@ namespace Axe.Managers
                 }
             }
 
-            Technology tech = null;
-            if (request.ModelState.IsValid)
+            Technology tech = this.context.Technology.Include(t => t.Experts)
+                                  .FirstOrDefault(t => t.Id == taskInput.TechnologyId);
+
+            if (tech == null)
             {
-                tech = this.context.Technology.Include(t => t.Experts)
-                           .FirstOrDefault(t => t.Id == taskInput.TechnologyId);
-                if (tech == null)
-                {
-                    request.ModelState.AddModelError(String.Empty, ValidationMessages.Instance.UnknownTechnology);
-                }
-                else if (false == tech.Experts.Any(t => t.UserId == request.CurrentUser.Id))
-                {
-                    request.ModelState.AddModelError(String.Empty, ValidationMessages.Instance.TaskExpertInput(tech.Name));
-                }
+                request.ModelState.AddModelError(String.Empty, ValidationMessages.Instance.UnknownTechnology);
+            }
+            else if (false == tech.Experts.Any(t => t.UserId == request.CurrentUser.Id))
+            {
+                request.ModelState.AddModelError(String.Empty, ValidationMessages.Instance.TaskExpertInput(tech.Name));
             }
 
             if (request.ModelState.IsValid)
@@ -196,7 +200,7 @@ namespace Axe.Managers
 
                 await context.SaveChangesAsync();
 
-                return this.Response(new TaskInputVm() { TechnologyId = taskInput.TechnologyId });
+                return this.Response(new TaskInputVm() { Id = task.Id, TechnologyId = task.TechnologyId.Value });
             }
 
             // restore information fields which were not posted
@@ -253,7 +257,7 @@ namespace Axe.Managers
             if (false == exam.Technology.Experts.Any(u => u.UserId == request.CurrentUser.Id))
             {
                 request.ModelState.AddModelError(String.Empty, ValidationMessages.Instance.TaskExpertDelete(exam.Technology.Name));
-                return this.ValidationError(exam);
+                return this.ValidationError(new ExamTask());
             }
 
             this.context.Remove(exam);
