@@ -4,6 +4,11 @@
     ViewData["Title"] = "Question Editor";
 }
 
+@section Scripts
+{
+    <script src="~/js/questions.input.js"></script>
+}
+
 <h2>Ask a question</h2>
 
 <form asp-action="Input" asp-controller="Questions" method="post">
@@ -76,8 +81,8 @@
 
             <div class="form-group col-md-6">
                 <label class="control-label">Score</label>
-                <div>
-                    @Html.EditorFor(m => m.Answers[0].Score)
+                <div>                    
+                    <input asp-for="@Model.Answers[0].Score" class="form-control answer-score"/>
                 </div>
             </div>
         </div>
@@ -122,8 +127,8 @@
 
                     </div>
 
-                    <div class="col-md-1">
-                        @Html.EditorFor(m => m.Answers[i].Score)
+                    <div class="col-md-1">                        
+                        <input asp-for="@Model.Answers[i].Score" class="form-control answer-score" />
                         <span asp-validation-for="@Model.Answers[i].Score" class="text-danger"></span>
                     </div>
                 </div>
@@ -137,6 +142,10 @@
                 {
                     <input type="submit" value="Remove" name="cmd" class="btn btn-default" title="Remove last answer" />
                 }                
+            </div>
+            <div class="col-md-1 col-md-offset-8" title="Total score">                
+                <span>&#931; = </span>
+                <span id="totalScore"></span>                
             </div>
         </div>            
     }
