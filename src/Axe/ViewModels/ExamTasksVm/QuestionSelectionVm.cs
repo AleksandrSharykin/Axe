@@ -34,5 +34,10 @@ namespace Axe.Models.ExamTasksVm
         /// Gets or sets selection indicator
         /// </summary>
         public bool IsSelected { get; set; }
+
+        /// <summary>
+        /// Gets or sets maximum points awarded for correct answer
+        /// </summary>
+        public int Score { get; set; }
     }
 }

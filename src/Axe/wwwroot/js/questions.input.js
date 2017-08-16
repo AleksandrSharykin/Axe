@@ -8,10 +8,12 @@
 
         if (!score) {
             score = 0;
-            $('#totalScore').addClass('text-danger');
+            $('#totalScore').removeClass('label-primary');
+            $('#totalScore').addClass('label-danger');
         }
         else {
-            $('#totalScore').removeClass('text-danger');
+            $('#totalScore').removeClass('label-danger');
+            $('#totalScore').addClass('label-primary');
         }
 
         $('#totalScore').text(score);

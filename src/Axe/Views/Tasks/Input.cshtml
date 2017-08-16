@@ -54,6 +54,11 @@
             </div>
         </div>
 
+        <label class="control-label">Total Score</label>
+        <div class="form-group">
+            <span id="totalScore" class="label">0</span>
+        </div>
+
         <label asp-for="Questions" class="control-label"></label>
 
         <div class="form-group row">                        
@@ -72,11 +77,14 @@
                         {
                             <tr title="@Model.Questions[i].Type @Model.Questions[i].Text">
                                 <td>
-                                    <input type="hidden" asp-for="@Model.Questions[i].Id" />
-                                    @Html.CheckBoxFor(m => m.Questions[i].IsSelected)
+                                    <input type="hidden" asp-for="@Model.Questions[i].Id" />                                    
+                                    <input type="checkbox" asp-for="@Model.Questions[i].IsSelected" class="question-selector"/>
                                 </td>                                
                                 <td>
                                     <p>@Model.Questions[i].Preview</p>
+                                </td>
+                                <td>
+                                    +<span class="question-score">@Model.Questions[i].Score</span>
                                 </td>
                                 <td>
                                     @switch (Model.Questions[i].Type)

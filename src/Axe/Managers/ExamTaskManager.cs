@@ -75,7 +75,8 @@ namespace Axe.Managers
             }
 
             // get all questions for selected technology for exam task 
-            var questions = this.context.TaskQuestion.Where(q => q.TechnologyId == examTask.Technology.Id).ToList();
+            var questions = this.context.TaskQuestion.Include(q => q.Answers)
+                                .Where(q => q.TechnologyId == examTask.Technology.Id).ToList();
 
             var taskVm = new TaskInputVm
             {
@@ -93,6 +94,7 @@ namespace Axe.Managers
                     Preview = q.Preview,
                     Type = q.Type,
                     IsSelected = examTask.Questions.Any(x => x.QuestionId == q.Id),
+                    Score = q.Answers.Sum(a => a.Score)
                 }).ToList()
             };
 
@@ -201,7 +203,7 @@ namespace Axe.Managers
             taskInput.TechnologyName = tech?.Name;
 
             // restore question list
-            var questions = this.context.TaskQuestion.Where(q => q.TechnologyId == taskInput.TechnologyId).ToList();
+            var questions = this.context.TaskQuestion.Include(q => q.Answers).Where(q => q.TechnologyId == taskInput.TechnologyId).ToList();
             foreach (var q in taskInput.Questions)
             {
                 var original = questions.FirstOrDefault(x => x.Id == q.Id);
@@ -210,6 +212,7 @@ namespace Axe.Managers
                     q.Type = original.Type;
                     q.Text = original.Text;
                     q.Preview = original.Preview;
+                    q.Score = original.Answers.Sum(a => a.Score);
                 }
             }
 
