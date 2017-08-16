@@ -790,5 +790,188 @@ namespace Axe.Tests
             Assert.AreEqual(0, count);
 
         }
+
+        [TestCase]
+        public void QuestionInput_AddAnswer()
+        {
+            var input = new QuestionInputVm
+            {
+                Text = "123",
+                TechnologyId = techC.Id,
+                EditorType = TaskQuestionType.SingleChoice,
+                Answers = new List<TaskAnswer>
+                {
+                    new TaskAnswer { },
+                    new TaskAnswer { },
+                },
+            };
+
+            var request = this.Request(input, this.expertC);
+
+            var response = this.manager.ChangeAnswers(request, true);
+
+            Assert.AreEqual(ResponseCode.Success, response.Code);
+            Assert.AreEqual(3, response.Item.Answers.Count);
+            Assert.True(this.IsQuestionDataComplete(response.Item));
+        }
+
+        [TestCase]
+        public void QuestionInput_AddInputAnswerWithNullCollection()
+        {
+            var input = new QuestionInputVm
+            {
+                Text = "123",
+                TechnologyId = techC.Id,
+                EditorType = TaskQuestionType.SingleLine,
+            };
+
+            var request = this.Request(input, this.expertC);
+
+            var response = this.manager.ChangeAnswers(request, true);
+
+            Assert.AreEqual(ResponseCode.Success, response.Code);
+            Assert.AreEqual(1, response.Item.Answers.Count);
+            Assert.True(this.IsQuestionDataComplete(response.Item));
+        }
+
+        [TestCase]
+        public void QuestionInput_AddChoiceAnswerWithNullCollection()
+        {
+            var input = new QuestionInputVm
+            {
+                Text = "123",
+                TechnologyId = techC.Id,
+                EditorType = TaskQuestionType.SingleChoice,
+            };
+
+            var request = this.Request(input, this.expertC);
+
+            var response = this.manager.ChangeAnswers(request, true);
+
+            Assert.AreEqual(ResponseCode.Success, response.Code);
+            Assert.AreEqual(2, response.Item.Answers.Count);
+            Assert.True(this.IsQuestionDataComplete(response.Item));
+        }
+
+        [TestCase]
+        public void QuestionInput_RemoveChoiceAnswer()
+        {
+            var input = new QuestionInputVm
+            {
+                Text = "123",
+                TechnologyId = techC.Id,
+                EditorType = TaskQuestionType.SingleChoice,
+                Answers = new List<TaskAnswer>
+                {
+                    new TaskAnswer { },
+                    new TaskAnswer { },
+                    new TaskAnswer { },
+                }
+            };
+
+            var request = this.Request(input, this.expertC);
+
+            var response = this.manager.ChangeAnswers(request, false);
+
+            Assert.AreEqual(ResponseCode.Success, response.Code);
+            Assert.AreEqual(2, response.Item.Answers.Count);
+            Assert.True(this.IsQuestionDataComplete(response.Item));
+        }
+
+        [TestCase]
+        public void QuestionInput_RemoveChoiceLastAnswer()
+        {
+            var input = new QuestionInputVm
+            {
+                Text = "123",
+                TechnologyId = techC.Id,
+                EditorType = TaskQuestionType.SingleChoice,
+                Answers = new List<TaskAnswer>
+                {
+                    new TaskAnswer { },
+                }
+            };
+
+            var request = this.Request(input, this.expertC);
+
+            var response = this.manager.ChangeAnswers(request, false);
+
+            Assert.AreEqual(ResponseCode.Success, response.Code);
+            Assert.AreEqual(1, response.Item.Answers.Count);
+            Assert.True(this.IsQuestionDataComplete(response.Item));
+        }
+
+        [TestCase]
+        public void QuestionInput_RemoveInputAnswer()
+        {
+            var input = new QuestionInputVm
+            {
+                Text = "123",
+                TechnologyId = techC.Id,
+                EditorType = TaskQuestionType.SingleLine,
+                Answers = new List<TaskAnswer>
+                {
+                    new TaskAnswer { },
+                }
+            };
+
+            var request = this.Request(input, this.expertC);
+
+            var response = this.manager.ChangeAnswers(request, false);
+
+            Assert.AreEqual(ResponseCode.Success, response.Code);
+            Assert.AreEqual(1, response.Item.Answers.Count);
+            Assert.True(this.IsQuestionDataComplete(response.Item));
+        }
+
+        [TestCase]
+        public void QuestionInput_ChangeInputToChoice()
+        {
+            var input = new QuestionInputVm
+            {
+                Text = "123",
+                TechnologyId = techC.Id,
+                EditorType = TaskQuestionType.SingleLine,
+                Answers = new List<TaskAnswer>
+                {
+                    new TaskAnswer { },
+                }
+            };
+
+            var request = this.Request(input, this.expertC);
+
+            var response = this.manager.ChangeQuestionType(request, TaskQuestionType.MultiChoice);
+
+            Assert.AreEqual(ResponseCode.Success, response.Code);
+            Assert.AreEqual(1, response.Item.Answers.Count);
+            Assert.False(response.Item.WithUserInput);
+            Assert.True(this.IsQuestionDataComplete(response.Item));
+        }
+
+        [TestCase]
+        public void QuestionInput_ChangeChoiceToInput()
+        {
+            var input = new QuestionInputVm
+            {
+                Text = "123",
+                TechnologyId = techC.Id,
+                EditorType = TaskQuestionType.MultiChoice,
+                Answers = new List<TaskAnswer>
+                {
+                    new TaskAnswer { },
+                    new TaskAnswer { },
+                    new TaskAnswer { },
+                }
+            };
+
+            var request = this.Request(input, this.expertC);
+
+            var response = this.manager.ChangeQuestionType(request, TaskQuestionType.MultiLine);
+
+            Assert.AreEqual(ResponseCode.Success, response.Code);
+            Assert.AreEqual(1, response.Item.Answers.Count);
+            Assert.True(response.Item.WithUserInput);
+            Assert.True(this.IsQuestionDataComplete(response.Item));
+        }
     }
 }

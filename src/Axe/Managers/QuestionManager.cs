@@ -277,7 +277,7 @@ namespace Axe.Managers
                 if (adding)
                 {
                     // adding one more answer option
-                    questionVm.Answers.Add(new TaskAnswer() { Value = Boolean.FalseString });
+                    questionVm.Answers.Add(new TaskAnswer() { Value = Boolean.FalseString, Code = questionVm.Answers.Count });
                 }
                 else if (questionVm.Answers.Count > 1)
                 {
@@ -299,6 +299,11 @@ namespace Axe.Managers
             questionVm.EditorType = etp;
 
             this.RestoreInputVmProperties(questionVm, request.CurrentUser.Id);
+
+            if (questionVm.WithUserInput && questionVm.Answers.Count > 1)
+            {
+                questionVm.Answers = questionVm.Answers.Take(1).ToList();
+            }
 
             return this.Response(questionVm);
         }
