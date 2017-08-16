@@ -61,6 +61,8 @@ namespace Axe.Managers
 
         public string QuestionNeedAnswer => "Question should have an answer";
 
+        public string QuestionNeedScorePoints => "Answers should have positive score";
+
         public string QuestionExpertDelete(string technologyName) => $"Only expert can delete {technologyName} questions";
 
 

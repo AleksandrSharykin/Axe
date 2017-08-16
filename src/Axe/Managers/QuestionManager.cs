@@ -27,6 +27,20 @@ namespace Axe.Managers
             int? technologyId = item.TechnologyId;
             var questionType = item.Type;
 
+            TaskQuestion question = null;
+            if (id > 0)
+            {
+                question = await this.context.TaskQuestion
+                            .Include(q => q.Answers)
+                            .AsNoTracking()
+                            .SingleOrDefaultAsync(q => q.Id == id);
+                if (question != null)
+                {
+                    technologyId = question.TechnologyId;
+                    questionType = question.Type;
+                }
+            }
+
             var user = await this.context.Users
                  .Include(u => u.Technologies).ThenInclude(t => t.Technology)
                  .SingleOrDefaultAsync(u => u.Id == request.CurrentUser.Id);
@@ -35,11 +49,6 @@ namespace Axe.Managers
             {
                 return this.NotFound<QuestionInputVm>();
             }
-
-            var question = await this.context.TaskQuestion
-                                    .Include(q => q.Answers)
-                                    .AsNoTracking()
-                                    .SingleOrDefaultAsync(q => q.Id == id);
 
             if (question == null)
             {
@@ -138,8 +147,21 @@ namespace Axe.Managers
                     request.ModelState.AddModelError(String.Empty, ValidationMessages.Instance.QuestionExpertInput(tech.Name));
                 }
 
+                if (questionVm.Answers.Sum(a => a.Score) == 0)
+                {
+                    request.ModelState.AddModelError(String.Empty, ValidationMessages.Instance.QuestionNeedScorePoints);
+                }
+
                 switch (questionVm.EditorType)
                 {
+                    case TaskQuestionType.MultiChoice:
+                    if (questionVm.Answers.Count < 2)
+                    {
+                        request.ModelState.AddModelError(String.Empty, ValidationMessages.Instance.QuestionTwoChoiceOptions);
+                    }
+
+                    break;
+
                     case TaskQuestionType.SingleChoice:
                     foreach (var a in questionVm.Answers)
                     {
@@ -158,6 +180,7 @@ namespace Axe.Managers
 
                     case TaskQuestionType.MultiLine:
                     case TaskQuestionType.SingleLine:
+
                     if (String.IsNullOrWhiteSpace(questionVm.Answers[0].Text))
                     {
                         request.ModelState.AddModelError(String.Empty, ValidationMessages.Instance.QuestionNeedAnswer);
@@ -211,7 +234,9 @@ namespace Axe.Managers
 
                 this.context.RemoveRange(deleted);
                 foreach (var d in deleted)
+                {
                     question.Answers.Remove(d);
+                }
             }
 
             question.Text = questionVm.Text;
@@ -219,7 +244,7 @@ namespace Axe.Managers
 
             if (question.AuthorId == null)
             {
-                question.Author = user;
+                question.AuthorId = user.Id;
             }
 
             question.TechnologyId = questionVm.TechnologyId.Value;
@@ -235,7 +260,7 @@ namespace Axe.Managers
 
             await this.context.SaveChangesAsync();
 
-            return this.Response(new QuestionInputVm { TechnologyId = question.TechnologyId });
+            return this.Response(new QuestionInputVm { Id = question.Id, TechnologyId = question.TechnologyId });
         }
 
         /// <summary>
@@ -332,7 +357,7 @@ namespace Axe.Managers
             if (false == question.Technology.Experts.Any(u => u.UserId == request.CurrentUser.Id))
             {
                 request.ModelState.AddModelError(String.Empty, ValidationMessages.Instance.QuestionExpertDelete(question.Technology.Name));
-                return this.ValidationError(question);
+                return this.ValidationError(new TaskQuestion());
             }
 
             this.context.Remove(question);
