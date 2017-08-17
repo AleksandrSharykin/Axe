@@ -139,6 +139,70 @@ namespace Axe.Tests
         }
 
         [TestCase]
+        public void EvalMultichoiceQuestion_AllAnswersFalse()
+        {
+            var qMulti = new TaskQuestion
+            {
+                Type = TaskQuestionType.MultiChoice,
+                Answers = new List<TaskAnswer>
+                {
+                    new TaskAnswer { Text = "1", Value = False, Score = 1 },
+                    new TaskAnswer { Text = "2", Value = False, Score = 2 },
+                    new TaskAnswer { Text = "3", Value = False, Score = 3 },
+                }
+            };
+            var A = qMulti.Answers;
+            var answers = new AttemptAnswer[]
+            {
+                new AttemptAnswer { TaskAnswer = A[0], Value = False },
+                new AttemptAnswer { TaskAnswer = A[1], Value = False },
+                new AttemptAnswer { TaskAnswer = A[2], Value = False },
+            };
+
+            var attempt = this.MakeSingleQuestionAttempt(qMulti, answers);
+
+            this.evaluator.Evaluate(attempt);
+
+            Assert.AreEqual(true, attempt.Questions[0].IsAccepted);
+            Assert.AreEqual(true, attempt.Questions[0].IsPerfect);
+            Assert.AreEqual(true, attempt.IsPassed);
+            Assert.AreEqual(6, attempt.MaxScore);
+            Assert.AreEqual(6, attempt.ExamScore);
+        }
+
+        [TestCase]
+        public void EvalMultichoiceQuestion_AllAnswersFalseIncorrectValue()
+        {
+            var qMulti = new TaskQuestion
+            {
+                Type = TaskQuestionType.MultiChoice,
+                Answers = new List<TaskAnswer>
+                {
+                    new TaskAnswer { Text = "1", Value = False, Score = 1 },
+                    new TaskAnswer { Text = "2", Value = False, Score = 2 },
+                    new TaskAnswer { Text = "3", Value = False, Score = 3 },
+                }
+            };
+            var A = qMulti.Answers;
+            var answers = new AttemptAnswer[]
+            {
+                new AttemptAnswer { TaskAnswer = A[0], Value = True },
+                new AttemptAnswer { TaskAnswer = A[1], Value = False },
+                new AttemptAnswer { TaskAnswer = A[2], Value = False },
+            };
+
+            var attempt = this.MakeSingleQuestionAttempt(qMulti, answers);
+
+            this.evaluator.Evaluate(attempt);
+
+            Assert.AreEqual(false, attempt.Questions[0].IsAccepted);
+            Assert.AreEqual(false, attempt.Questions[0].IsPerfect);
+            Assert.AreEqual(false, attempt.IsPassed);
+            Assert.AreEqual(6, attempt.MaxScore);
+            Assert.AreEqual(0, attempt.ExamScore);
+        }
+
+        [TestCase]
         public void EvalMultichoiceQuestion_NoAnswers()
         {
             var A = this.qMultiChoice.Answers;
