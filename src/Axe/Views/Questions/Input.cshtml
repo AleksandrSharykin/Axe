@@ -118,7 +118,7 @@
                     <div class="col-md-1">
                         @if (Model.EditorType == Axe.Models.TaskQuestionType.SingleChoice)
                         {
-                            <input asp-for="SelectedAnswer" type="radio" value="@Model.Answers[i].Code" />
+                            <input asp-for="SelectedAnswer" type="radio" value="@i" />
                         }
                         else
                         {

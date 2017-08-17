@@ -31,5 +31,36 @@ namespace Axe
 
             return items;
         }
+
+        /// <summary>
+        /// Returns the index of the first element in sequence which match search predicate
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="items">Sequence of elements</param>
+        /// <param name="predicate">Search predicate</param>
+        /// <returns>Returns the index of the first element in sequence which match search predicate or -1 if no matches were found</returns>
+        public static int IndexOf<T>(this IEnumerable<T> items, Func<T, bool> predicate)
+        {
+            if (items == null)
+            {
+                throw new ArgumentNullException(nameof(items));
+            }
+
+            if (predicate == null)
+            {
+                throw new ArgumentNullException(nameof(predicate));
+            }
+
+            int idx = 0;
+            foreach (T item in items)
+            {
+                if (predicate(item))
+                {
+                    return idx;
+                }
+                idx++;
+            }
+            return -1;
+        }
     }
 }

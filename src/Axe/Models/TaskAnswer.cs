@@ -15,7 +15,7 @@ namespace Axe.Models
         /// Gets or sets answer identifier
         /// </summary>
         public int Id { get; set; }
-        
+
 
         /// <summary>
         /// Gets or sets associated question
@@ -44,7 +44,7 @@ namespace Axe.Models
         /// Gets or sets points awarded for correct answer
         /// </summary>
         [Display(Prompt = "answer score")]
-        [Range(0,100)]
+        [Range(0, 100)]
         public int Score { get; set; }
 
         /// <summary>
@@ -60,11 +60,5 @@ namespace Axe.Models
             }
             set { Value = value.ToString(); }
         }
-
-        /// <summary>
-        /// Gets or sets answer number in a question answers list
-        /// </summary>
-        [NotMapped]
-        public int Code { get; set; }
     }
 }

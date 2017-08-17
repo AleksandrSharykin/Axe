@@ -68,13 +68,6 @@ namespace Axe.Managers
                 technologyId = question.TechnologyId;
             }
 
-            int c = 0;
-            foreach (var q in question.Answers)
-            {
-                q.Code = c;
-                c++;
-            }
-
             var questionVm = new QuestionInputVm()
             {
                 Id = question.Id,
@@ -88,7 +81,11 @@ namespace Axe.Managers
 
             if (question.Type == TaskQuestionType.SingleChoice)
             {
-                questionVm.SelectedAnswer = questionVm.Answers.FirstOrDefault(a => Equals(a.Value, Boolean.TrueString))?.Code;
+                int idx = questionVm.Answers.IndexOf(a => Equals(a.Value, Boolean.TrueString));
+                if (idx >= 0)
+                {
+                    questionVm.SelectedAnswer = idx;
+                }
             }
 
             return this.Response(questionVm);
@@ -105,13 +102,6 @@ namespace Axe.Managers
             if (questionVm.Answers == null)
             {
                 questionVm.Answers = new List<TaskAnswer> { new TaskAnswer { } };
-            }
-
-            int c = 0;
-            foreach (var a in questionVm.Answers)
-            {
-                a.Code = c;
-                c++;
             }
 
             questionVm.WithUserInput = questionVm.EditorType == TaskQuestionType.SingleLine || questionVm.EditorType == TaskQuestionType.MultiLine;
@@ -163,9 +153,10 @@ namespace Axe.Managers
                     break;
 
                     case TaskQuestionType.SingleChoice:
-                    foreach (var a in questionVm.Answers)
+                    for (int idx = 0; idx < questionVm.Answers.Count; idx++)
                     {
-                        a.IsCorrect = a.Code == questionVm.SelectedAnswer;
+                        var a = questionVm.Answers[idx];
+                        a.IsCorrect = idx == questionVm.SelectedAnswer;
                     }
 
                     if (questionVm.Answers.Count < 2)
@@ -277,7 +268,7 @@ namespace Axe.Managers
                 if (adding)
                 {
                     // adding one more answer option
-                    questionVm.Answers.Add(new TaskAnswer() { Value = Boolean.FalseString, Code = questionVm.Answers.Count });
+                    questionVm.Answers.Add(new TaskAnswer() { Value = Boolean.FalseString });
                 }
                 else if (questionVm.Answers.Count > 1)
                 {

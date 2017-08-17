@@ -44,8 +44,7 @@ namespace Axe.Tests
         {
             return
                 q.Technologies != null && q.Technologies.Count() > 0 &&
-                q.Answers != null && q.Answers.Count > 0 &&
-                q.Answers.Where((a, i) => a.Code != i).Any() == false;
+                q.Answers != null && q.Answers.Count > 0;
         }
 
         [TestCase]
