@@ -40,7 +40,7 @@ namespace Axe.Managers
 
                     question.IsPerfect = question.IsAccepted.Value && matchCount == correctValues.Count;
 
-                    if (question.IsAccepted == true)
+                    if (true == question.IsAccepted)
                     {
                         if (true == question.IsPerfect)
                         {
@@ -51,6 +51,54 @@ namespace Axe.Managers
                         {
                             // award part of points for some correct answers
                             score = (int)Math.Floor(answer.TaskAnswer.Score * matchCount / (float)correctValues.Count);
+                        }
+                    }
+                }
+                else if (question.TaskQuestion.Type == TaskQuestionType.PrioritySelection)
+                {
+                    // all options are selected correctly
+                    question.IsPerfect = question.AttemptAnswers
+                            .All(answer => Normalize(answer.Value) == Normalize(answer.TaskAnswer.Value));
+
+                    if (true == question.IsPerfect)
+                    {
+                        question.IsAccepted = true;
+                        score = question.AttemptAnswers.Sum(a => a.TaskAnswer.Score);
+                    }
+                    else
+                    {
+                        var hasWrongSelection =
+                            // user selected options which should not have been selected
+                            question.AttemptAnswers.Any(a => a.Value != "=" && a.TaskAnswer.Value == "=") ||
+                            // user doens't know the answer and attempts to hack some points, e.g. selecting 1 for all options
+                            question.AttemptAnswers.Where(a => a.Value != "=").GroupBy(a => a.Value).Any(g => g.Count() > 1);
+
+                        if (hasWrongSelection)
+                        {
+                            question.IsAccepted = false;
+                        }
+                        else
+                        {
+                            // correctly selected options
+                            var matches = question.AttemptAnswers
+                                .Where(a => a.TaskAnswer.Value != "=")
+                                .OrderBy(a => int.Parse(a.TaskAnswer.Value))
+                                .TakeWhile(a => Normalize(a.Value) == Normalize(a.TaskAnswer.Value))
+                                .ToList();
+
+                            // accept question if at least one options is selected
+                            question.IsAccepted = matches.Count > 0;
+
+                            if (true == question.IsAccepted)
+                            {
+                                // award points for correct selected options
+                                score += matches.Sum(a => a.TaskAnswer.Score);
+
+                                // adding award points for all correctly not selected options only if there is correc                                
+                                score += question.AttemptAnswers
+                                    .Where(a => a.TaskAnswer.Value == "=")
+                                    .Sum(a => a.TaskAnswer.Score);
+                            }
                         }
                     }
                 }

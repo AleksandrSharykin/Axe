@@ -14,13 +14,17 @@ namespace Axe.Tests
         public static readonly string True = Boolean.TrueString;
         public static readonly string False = Boolean.FalseString;
 
+        public static readonly string None = "=";
+
         /// <summary>
         /// Shortcut for line break sequence
         /// </summary>
         private readonly string NL = Environment.NewLine;
 
         private IExamEvaluator evaluator;
-        private TaskQuestion qMultiChoice, qSingleChoice, qMultiLine, qRepeated, qSingleLine;
+        private TaskQuestion qMultiChoice, qSingleChoice, qMultiLine, qSingleLine, qPriorityAll, qPrioritySome;
+
+        #region Setup
 
         [OneTimeSetUp]
         public void InitTestFixture()
@@ -32,10 +36,10 @@ namespace Axe.Tests
                 Type = TaskQuestionType.MultiChoice,
                 Answers = new List<TaskAnswer>
                 {
-                    new TaskAnswer { Text = "1", Value = False, Score = 0 },
-                    new TaskAnswer { Text = "2", Value = True, Score = 10 },
-                    new TaskAnswer { Text = "3", Value = True, Score = 20 },
-                    new TaskAnswer { Text = "4", Value = False, Score = 0 },
+                    new TaskAnswer { Text = "A1", Value = False, Score = 0 },
+                    new TaskAnswer { Text = "A2", Value = True, Score = 10 },
+                    new TaskAnswer { Text = "A3", Value = True, Score = 20 },
+                    new TaskAnswer { Text = "A4", Value = False, Score = 0 },
                 }
             };
 
@@ -44,10 +48,10 @@ namespace Axe.Tests
                 Type = TaskQuestionType.SingleChoice,
                 Answers = new List<TaskAnswer>
                 {
-                    new TaskAnswer { Text = "1", Value = False, Score = 0 },
-                    new TaskAnswer { Text = "2", Value = True, Score = 10 },
-                    new TaskAnswer { Text = "3", Value = False, Score = 0 },
-                    new TaskAnswer { Text = "4", Value = False, Score = 0 },
+                    new TaskAnswer { Text = "A1", Value = False, Score = 0 },
+                    new TaskAnswer { Text = "A2", Value = True, Score = 10 },
+                    new TaskAnswer { Text = "A3", Value = False, Score = 0 },
+                    new TaskAnswer { Text = "A4", Value = False, Score = 0 },
                 }
             };
 
@@ -58,18 +62,37 @@ namespace Axe.Tests
                 Answers = new List<TaskAnswer> { new TaskAnswer { Text = multiline, Value = multiline, Score = 40 } }
             };
 
-            string repeated = False + this.NL + False + this.NL + False;
-            this.qRepeated = new TaskQuestion
-            {
-                Type = TaskQuestionType.MultiLine,
-                Answers = new List<TaskAnswer> { new TaskAnswer { Text = repeated, Value = repeated, Score = 30 } }
-            };
-
             string singleline = "100abc";
             this.qSingleLine = new TaskQuestion
             {
                 Type = TaskQuestionType.SingleLine,
                 Answers = new List<TaskAnswer> { new TaskAnswer { Text = singleline, Value = singleline, Score = 10 } }
+            };
+
+            this.qPriorityAll = new TaskQuestion
+            {
+                Type = TaskQuestionType.PrioritySelection,
+                Answers = new List<TaskAnswer>
+                {
+                    new TaskAnswer { Text = "A1", Value = "1", Score = 1 },
+                    new TaskAnswer { Text = "A2", Value = "2", Score = 2 },
+                    new TaskAnswer { Text = "A3", Value = "3", Score = 10 },
+                    new TaskAnswer { Text = "A4", Value = "4", Score = 20 },
+                }
+            };
+
+            this.qPrioritySome = new TaskQuestion
+            {
+                Type = TaskQuestionType.PrioritySelection,
+                Answers = new List<TaskAnswer>
+                {
+                    new TaskAnswer { Text = "A1", Value = "1", Score = 1 },
+                    new TaskAnswer { Text = "A2", Value = "2", Score = 2 },
+                    new TaskAnswer { Text = "A3", Value = "3", Score = 10 },
+                    new TaskAnswer { Text = "A4", Value = "4", Score = 20 },
+                    new TaskAnswer { Text = "A5", Value = None, Score = 50 },
+                    new TaskAnswer { Text = "A6", Value = None, Score = 100 },
+                }
             };
         }
 
@@ -77,6 +100,8 @@ namespace Axe.Tests
         public void InitTestCase()
         {
         }
+
+        #endregion
 
         /// <summary>
         /// Creates exam attempt with provided answers for a task consisting of a single question
@@ -110,10 +135,12 @@ namespace Axe.Tests
             };
             this.evaluator.Evaluate(attempt);
 
-            Assert.AreEqual(true, attempt.IsPassed);
+            Assert.True(attempt.IsPassed);
             Assert.AreEqual(0, attempt.MaxScore);
             Assert.AreEqual(0, attempt.ExamScore);
         }
+
+        #region Multi Choice
 
         [TestCase]
         public void EvalMultichoiceQuestion_AllAnswersCorrect()
@@ -131,9 +158,9 @@ namespace Axe.Tests
 
             this.evaluator.Evaluate(attempt);
 
-            Assert.AreEqual(true, attempt.Questions[0].IsAccepted);
-            Assert.AreEqual(true, attempt.Questions[0].IsPerfect);
-            Assert.AreEqual(true, attempt.IsPassed);
+            Assert.True(attempt.Questions[0].IsAccepted);
+            Assert.True(attempt.Questions[0].IsPerfect);
+            Assert.True(attempt.IsPassed);
             Assert.AreEqual(30, attempt.MaxScore);
             Assert.AreEqual(30, attempt.ExamScore);
         }
@@ -163,9 +190,9 @@ namespace Axe.Tests
 
             this.evaluator.Evaluate(attempt);
 
-            Assert.AreEqual(true, attempt.Questions[0].IsAccepted);
-            Assert.AreEqual(true, attempt.Questions[0].IsPerfect);
-            Assert.AreEqual(true, attempt.IsPassed);
+            Assert.True(attempt.Questions[0].IsAccepted);
+            Assert.True(attempt.Questions[0].IsPerfect);
+            Assert.True(attempt.IsPassed);
             Assert.AreEqual(6, attempt.MaxScore);
             Assert.AreEqual(6, attempt.ExamScore);
         }
@@ -195,9 +222,9 @@ namespace Axe.Tests
 
             this.evaluator.Evaluate(attempt);
 
-            Assert.AreEqual(false, attempt.Questions[0].IsAccepted);
-            Assert.AreEqual(false, attempt.Questions[0].IsPerfect);
-            Assert.AreEqual(false, attempt.IsPassed);
+            Assert.False(attempt.Questions[0].IsAccepted);
+            Assert.False(attempt.Questions[0].IsPerfect);
+            Assert.False(attempt.IsPassed);
             Assert.AreEqual(6, attempt.MaxScore);
             Assert.AreEqual(0, attempt.ExamScore);
         }
@@ -218,9 +245,9 @@ namespace Axe.Tests
 
             this.evaluator.Evaluate(attempt);
 
-            Assert.AreEqual(false, attempt.Questions[0].IsAccepted);
-            Assert.AreEqual(false, attempt.Questions[0].IsPerfect);
-            Assert.AreEqual(false, attempt.IsPassed);
+            Assert.False(attempt.Questions[0].IsAccepted);
+            Assert.False(attempt.Questions[0].IsPerfect);
+            Assert.False(attempt.IsPassed);
             Assert.AreEqual(30, attempt.MaxScore);
             Assert.AreEqual(0, attempt.ExamScore);
         }
@@ -241,9 +268,9 @@ namespace Axe.Tests
 
             this.evaluator.Evaluate(attempt);
 
-            Assert.AreEqual(false, attempt.Questions[0].IsAccepted);
-            Assert.AreEqual(false, attempt.Questions[0].IsPerfect);
-            Assert.AreEqual(false, attempt.IsPassed);
+            Assert.False(attempt.Questions[0].IsAccepted);
+            Assert.False(attempt.Questions[0].IsPerfect);
+            Assert.False(attempt.IsPassed);
             Assert.AreEqual(30, attempt.MaxScore);
             Assert.AreEqual(0, attempt.ExamScore);
         }
@@ -264,9 +291,9 @@ namespace Axe.Tests
 
             this.evaluator.Evaluate(attempt);
 
-            Assert.AreEqual(true, attempt.Questions[0].IsAccepted);
-            Assert.AreEqual(false, attempt.Questions[0].IsPerfect);
-            Assert.AreEqual(true, attempt.IsPassed);
+            Assert.True(attempt.Questions[0].IsAccepted);
+            Assert.False(attempt.Questions[0].IsPerfect);
+            Assert.True(attempt.IsPassed);
             Assert.AreEqual(30, attempt.MaxScore);
             Assert.AreEqual(20, attempt.ExamScore);
         }
@@ -287,12 +314,16 @@ namespace Axe.Tests
 
             this.evaluator.Evaluate(attempt);
 
-            Assert.AreEqual(true, attempt.Questions[0].IsAccepted);
-            Assert.AreEqual(false, attempt.Questions[0].IsPerfect);
-            Assert.AreEqual(false, attempt.IsPassed);
+            Assert.True(attempt.Questions[0].IsAccepted);
+            Assert.False(attempt.Questions[0].IsPerfect);
+            Assert.False(attempt.IsPassed);
             Assert.AreEqual(30, attempt.MaxScore);
             Assert.AreEqual(10, attempt.ExamScore);
         }
+
+        #endregion
+
+        #region Single Choice
 
         [TestCase]
         public void EvalSingleChoiceQuestion_CorrectAnswer()
@@ -310,9 +341,9 @@ namespace Axe.Tests
 
             this.evaluator.Evaluate(attempt);
 
-            Assert.AreEqual(true, attempt.Questions[0].IsAccepted);
-            Assert.AreEqual(true, attempt.Questions[0].IsPerfect);
-            Assert.AreEqual(true, attempt.IsPassed);
+            Assert.True(attempt.Questions[0].IsAccepted);
+            Assert.True(attempt.Questions[0].IsPerfect);
+            Assert.True(attempt.IsPassed);
             Assert.AreEqual(10, attempt.MaxScore);
             Assert.AreEqual(10, attempt.ExamScore);
         }
@@ -333,9 +364,9 @@ namespace Axe.Tests
 
             this.evaluator.Evaluate(attempt);
 
-            Assert.AreEqual(false, attempt.Questions[0].IsAccepted);
-            Assert.AreEqual(false, attempt.Questions[0].IsPerfect);
-            Assert.AreEqual(false, attempt.IsPassed);
+            Assert.False(attempt.Questions[0].IsAccepted);
+            Assert.False(attempt.Questions[0].IsPerfect);
+            Assert.False(attempt.IsPassed);
             Assert.AreEqual(10, attempt.MaxScore);
             Assert.AreEqual(0, attempt.ExamScore);
         }
@@ -359,12 +390,16 @@ namespace Axe.Tests
 
             this.evaluator.Evaluate(attempt);
 
-            Assert.AreEqual(false, attempt.Questions[0].IsAccepted);
-            Assert.AreEqual(false, attempt.Questions[0].IsPerfect);
-            Assert.AreEqual(false, attempt.IsPassed);
+            Assert.False(attempt.Questions[0].IsAccepted);
+            Assert.False(attempt.Questions[0].IsPerfect);
+            Assert.False(attempt.IsPassed);
             Assert.AreEqual(10, attempt.MaxScore);
             Assert.AreEqual(0, attempt.ExamScore);
         }
+
+        #endregion
+
+        #region Multi Line
 
         [TestCase]
         public void EvalMultiLineQuestion_AllAnswersCorrect()
@@ -374,9 +409,9 @@ namespace Axe.Tests
 
             this.evaluator.Evaluate(attempt);
 
-            Assert.AreEqual(true, attempt.Questions[0].IsAccepted);
-            Assert.AreEqual(true, attempt.Questions[0].IsPerfect);
-            Assert.AreEqual(true, attempt.IsPassed);
+            Assert.True(attempt.Questions[0].IsAccepted);
+            Assert.True(attempt.Questions[0].IsPerfect);
+            Assert.True(attempt.IsPassed);
             Assert.AreEqual(40, attempt.MaxScore);
             Assert.AreEqual(40, attempt.ExamScore);
         }
@@ -389,9 +424,9 @@ namespace Axe.Tests
 
             this.evaluator.Evaluate(attempt);
 
-            Assert.AreEqual(false, attempt.Questions[0].IsAccepted);
-            Assert.AreEqual(false, attempt.Questions[0].IsPerfect);
-            Assert.AreEqual(false, attempt.IsPassed);
+            Assert.False(attempt.Questions[0].IsAccepted);
+            Assert.False(attempt.Questions[0].IsPerfect);
+            Assert.False(attempt.IsPassed);
             Assert.AreEqual(40, attempt.MaxScore);
             Assert.AreEqual(0, attempt.ExamScore);
         }
@@ -404,9 +439,9 @@ namespace Axe.Tests
 
             this.evaluator.Evaluate(attempt);
 
-            Assert.AreEqual(true, attempt.Questions[0].IsAccepted);
-            Assert.AreEqual(false, attempt.Questions[0].IsPerfect);
-            Assert.AreEqual(true, attempt.IsPassed);
+            Assert.True(attempt.Questions[0].IsAccepted);
+            Assert.False(attempt.Questions[0].IsPerfect);
+            Assert.True(attempt.IsPassed);
             Assert.AreEqual(40, attempt.MaxScore);
             Assert.AreEqual(20, attempt.ExamScore);
         }
@@ -422,9 +457,9 @@ namespace Axe.Tests
 
             this.evaluator.Evaluate(attempt);
 
-            Assert.AreEqual(true, attempt.Questions[0].IsAccepted);
-            Assert.AreEqual(true, attempt.Questions[0].IsPerfect);
-            Assert.AreEqual(true, attempt.IsPassed);
+            Assert.True(attempt.Questions[0].IsAccepted);
+            Assert.True(attempt.Questions[0].IsPerfect);
+            Assert.True(attempt.IsPassed);
             Assert.AreEqual(40, attempt.MaxScore);
             Assert.AreEqual(40, attempt.ExamScore);
         }
@@ -437,9 +472,9 @@ namespace Axe.Tests
 
             this.evaluator.Evaluate(attempt);
 
-            Assert.AreEqual(true, attempt.Questions[0].IsAccepted);
-            Assert.AreEqual(false, attempt.Questions[0].IsPerfect);
-            Assert.AreEqual(true, attempt.IsPassed);
+            Assert.True(attempt.Questions[0].IsAccepted);
+            Assert.False(attempt.Questions[0].IsPerfect);
+            Assert.True(attempt.IsPassed);
             Assert.AreEqual(40, attempt.MaxScore);
             Assert.AreEqual(20, attempt.ExamScore);
         }
@@ -452,9 +487,9 @@ namespace Axe.Tests
 
             this.evaluator.Evaluate(attempt);
 
-            Assert.AreEqual(false, attempt.Questions[0].IsAccepted);
-            Assert.AreEqual(false, attempt.Questions[0].IsPerfect);
-            Assert.AreEqual(false, attempt.IsPassed);
+            Assert.False(attempt.Questions[0].IsAccepted);
+            Assert.False(attempt.Questions[0].IsPerfect);
+            Assert.False(attempt.IsPassed);
             Assert.AreEqual(40, attempt.MaxScore);
             Assert.AreEqual(0, attempt.ExamScore);
         }
@@ -467,9 +502,9 @@ namespace Axe.Tests
 
             this.evaluator.Evaluate(attempt);
 
-            Assert.AreEqual(false, attempt.Questions[0].IsAccepted);
-            Assert.AreEqual(false, attempt.Questions[0].IsPerfect);
-            Assert.AreEqual(false, attempt.IsPassed);
+            Assert.False(attempt.Questions[0].IsAccepted);
+            Assert.False(attempt.Questions[0].IsPerfect);
+            Assert.False(attempt.IsPassed);
             Assert.AreEqual(40, attempt.MaxScore);
             Assert.AreEqual(0, attempt.ExamScore);
         }
@@ -482,9 +517,9 @@ namespace Axe.Tests
 
             this.evaluator.Evaluate(attempt);
 
-            Assert.AreEqual(true, attempt.Questions[0].IsAccepted);
-            Assert.AreEqual(false, attempt.Questions[0].IsPerfect);
-            Assert.AreEqual(true, attempt.IsPassed);
+            Assert.True(attempt.Questions[0].IsAccepted);
+            Assert.False(attempt.Questions[0].IsPerfect);
+            Assert.True(attempt.IsPassed);
             Assert.AreEqual(40, attempt.MaxScore);
             Assert.AreEqual(20, attempt.ExamScore);
         }
@@ -497,9 +532,9 @@ namespace Axe.Tests
 
             this.evaluator.Evaluate(attempt);
 
-            Assert.AreEqual(true, attempt.Questions[0].IsAccepted);
-            Assert.AreEqual(true, attempt.Questions[0].IsPerfect);
-            Assert.AreEqual(true, attempt.IsPassed);
+            Assert.True(attempt.Questions[0].IsAccepted);
+            Assert.True(attempt.Questions[0].IsPerfect);
+            Assert.True(attempt.IsPassed);
             Assert.AreEqual(40, attempt.MaxScore);
             Assert.AreEqual(40, attempt.ExamScore);
         }
@@ -507,17 +542,28 @@ namespace Axe.Tests
         [Test]
         public void EvalMultiLineQuestion_RepeatedAnswer()
         {
-            var answer = new AttemptAnswer { TaskAnswer = this.qRepeated.Answers[0], Value = False + this.NL };
+            string repeated = False + this.NL + False + this.NL + False;
+            var qRepeated = new TaskQuestion
+            {
+                Type = TaskQuestionType.MultiLine,
+                Answers = new List<TaskAnswer> { new TaskAnswer { Text = repeated, Value = repeated, Score = 30 } }
+            };
+
+            var answer = new AttemptAnswer { TaskAnswer = qRepeated.Answers[0], Value = False + this.NL };
             var attempt = MakeSingleQuestionAttempt(qRepeated, answer);
 
             this.evaluator.Evaluate(attempt);
 
-            Assert.AreEqual(true, attempt.Questions[0].IsAccepted);
-            Assert.AreEqual(false, attempt.Questions[0].IsPerfect);
-            Assert.AreEqual(false, attempt.IsPassed);
+            Assert.True(attempt.Questions[0].IsAccepted);
+            Assert.False(attempt.Questions[0].IsPerfect);
+            Assert.False(attempt.IsPassed);
             Assert.AreEqual(30, attempt.MaxScore);
             Assert.AreEqual(10, attempt.ExamScore);
         }
+
+        #endregion
+
+        #region Single Line
 
         [TestCase]
         public void EvalSingleLineQuestion_CorrectAnswer()
@@ -527,9 +573,9 @@ namespace Axe.Tests
 
             this.evaluator.Evaluate(attempt);
 
-            Assert.AreEqual(true, attempt.Questions[0].IsAccepted);
-            Assert.AreEqual(true, attempt.Questions[0].IsPerfect);
-            Assert.AreEqual(true, attempt.IsPassed);
+            Assert.True(attempt.Questions[0].IsAccepted);
+            Assert.True(attempt.Questions[0].IsPerfect);
+            Assert.True(attempt.IsPassed);
             Assert.AreEqual(10, attempt.MaxScore);
             Assert.AreEqual(10, attempt.ExamScore);
         }
@@ -542,9 +588,9 @@ namespace Axe.Tests
 
             this.evaluator.Evaluate(attempt);
 
-            Assert.AreEqual(false, attempt.Questions[0].IsAccepted);
-            Assert.AreEqual(false, attempt.Questions[0].IsPerfect);
-            Assert.AreEqual(false, attempt.IsPassed);
+            Assert.False(attempt.Questions[0].IsAccepted);
+            Assert.False(attempt.Questions[0].IsPerfect);
+            Assert.False(attempt.IsPassed);
             Assert.AreEqual(10, attempt.MaxScore);
             Assert.AreEqual(0, attempt.ExamScore);
         }
@@ -557,9 +603,9 @@ namespace Axe.Tests
 
             this.evaluator.Evaluate(attempt);
 
-            Assert.AreEqual(false, attempt.Questions[0].IsAccepted);
-            Assert.AreEqual(false, attempt.Questions[0].IsPerfect);
-            Assert.AreEqual(false, attempt.IsPassed);
+            Assert.False(attempt.Questions[0].IsAccepted);
+            Assert.False(attempt.Questions[0].IsPerfect);
+            Assert.False(attempt.IsPassed);
             Assert.AreEqual(10, attempt.MaxScore);
             Assert.AreEqual(0, attempt.ExamScore);
         }
@@ -572,9 +618,9 @@ namespace Axe.Tests
 
             this.evaluator.Evaluate(attempt);
 
-            Assert.AreEqual(true, attempt.Questions[0].IsAccepted);
-            Assert.AreEqual(true, attempt.Questions[0].IsPerfect);
-            Assert.AreEqual(true, attempt.IsPassed);
+            Assert.True(attempt.Questions[0].IsAccepted);
+            Assert.True(attempt.Questions[0].IsPerfect);
+            Assert.True(attempt.IsPassed);
             Assert.AreEqual(10, attempt.MaxScore);
             Assert.AreEqual(10, attempt.ExamScore);
         }
@@ -587,12 +633,404 @@ namespace Axe.Tests
 
             this.evaluator.Evaluate(attempt);
 
-            Assert.AreEqual(true, attempt.Questions[0].IsAccepted);
-            Assert.AreEqual(true, attempt.Questions[0].IsPerfect);
-            Assert.AreEqual(true, attempt.IsPassed);
+            Assert.True(attempt.Questions[0].IsAccepted);
+            Assert.True(attempt.Questions[0].IsPerfect);
+            Assert.True(attempt.IsPassed);
             Assert.AreEqual(10, attempt.MaxScore);
             Assert.AreEqual(10, attempt.ExamScore);
         }
+
+        #endregion
+
+        #region Priority
+
+        [TestCase]
+        public void EvalPriority_AllOptionsAllCorrect()
+        {
+            var A = this.qPriorityAll.Answers;
+            var answers = new AttemptAnswer[]
+            {
+                new AttemptAnswer { TaskAnswer = A[0], Value = "1" },
+                new AttemptAnswer { TaskAnswer = A[1], Value = "2" },
+                new AttemptAnswer { TaskAnswer = A[2], Value = "3" },
+                new AttemptAnswer { TaskAnswer = A[3], Value = "4" },
+            };
+
+            var attempt = this.MakeSingleQuestionAttempt(this.qPriorityAll, answers);
+
+            this.evaluator.Evaluate(attempt);
+
+            Assert.True(attempt.Questions[0].IsAccepted);
+            Assert.True(attempt.Questions[0].IsPerfect);
+            Assert.True(attempt.IsPassed);
+            Assert.AreEqual(33, attempt.MaxScore);
+            Assert.AreEqual(33, attempt.ExamScore);
+        }
+
+        [TestCase]
+        public void EvalPriority_SomeOptionsAllCorrect()
+        {
+            var A = this.qPrioritySome.Answers;
+            var answers = new AttemptAnswer[]
+            {
+                new AttemptAnswer { TaskAnswer = A[0], Value = "1" },
+                new AttemptAnswer { TaskAnswer = A[1], Value = "2" },
+                new AttemptAnswer { TaskAnswer = A[2], Value = "3" },
+                new AttemptAnswer { TaskAnswer = A[3], Value = "4" },
+                new AttemptAnswer { TaskAnswer = A[4], Value = None },
+                new AttemptAnswer { TaskAnswer = A[5], Value = None },
+            };
+
+            var attempt = this.MakeSingleQuestionAttempt(this.qPrioritySome, answers);
+
+            this.evaluator.Evaluate(attempt);
+
+            Assert.True(attempt.Questions[0].IsAccepted);
+            Assert.True(attempt.Questions[0].IsPerfect);
+            Assert.True(attempt.IsPassed);
+            Assert.AreEqual(183, attempt.MaxScore);
+            Assert.AreEqual(183, attempt.ExamScore);
+        }
+
+        [TestCase]
+        public void EvalPriority_SomeOptionsAllCorrectAndWrongSelection()
+        {
+            var A = this.qPrioritySome.Answers;
+            var answers = new AttemptAnswer[]
+            {
+                new AttemptAnswer { TaskAnswer = A[0], Value = "1" },
+                new AttemptAnswer { TaskAnswer = A[1], Value = "2" },
+                new AttemptAnswer { TaskAnswer = A[2], Value = "3" },
+                new AttemptAnswer { TaskAnswer = A[3], Value = "4" },
+                new AttemptAnswer { TaskAnswer = A[4], Value = "5" },
+                new AttemptAnswer { TaskAnswer = A[5], Value = None },
+            };
+
+            var attempt = this.MakeSingleQuestionAttempt(this.qPrioritySome, answers);
+
+            this.evaluator.Evaluate(attempt);
+
+            Assert.False(attempt.Questions[0].IsAccepted);
+            Assert.False(attempt.Questions[0].IsPerfect);
+            Assert.False(attempt.IsPassed);
+            Assert.AreEqual(183, attempt.MaxScore);
+            Assert.AreEqual(0, attempt.ExamScore);
+        }
+
+        [TestCase]
+        public void EvalPriority_AllOptionsNoAnswers()
+        {
+            var A = this.qPriorityAll.Answers;
+            var answers = new AttemptAnswer[]
+            {
+                new AttemptAnswer { TaskAnswer = A[0], Value = None },
+                new AttemptAnswer { TaskAnswer = A[1], Value = None },
+                new AttemptAnswer { TaskAnswer = A[2], Value = None },
+                new AttemptAnswer { TaskAnswer = A[3], Value = None },
+            };
+
+            var attempt = this.MakeSingleQuestionAttempt(this.qPriorityAll, answers);
+
+            this.evaluator.Evaluate(attempt);
+
+            Assert.False(attempt.Questions[0].IsAccepted);
+            Assert.False(attempt.Questions[0].IsPerfect);
+            Assert.False(attempt.IsPassed);
+            Assert.AreEqual(33, attempt.MaxScore);
+            Assert.AreEqual(0, attempt.ExamScore);
+        }
+
+        [TestCase]
+        public void EvalPriority_SomeOptionsNoAnswers()
+        {
+            var A = this.qPrioritySome.Answers;
+            var answers = new AttemptAnswer[]
+            {
+                new AttemptAnswer { TaskAnswer = A[0], Value = None },
+                new AttemptAnswer { TaskAnswer = A[1], Value = None },
+                new AttemptAnswer { TaskAnswer = A[2], Value = None },
+                new AttemptAnswer { TaskAnswer = A[3], Value = None },
+                new AttemptAnswer { TaskAnswer = A[4], Value = None },
+                new AttemptAnswer { TaskAnswer = A[5], Value = None },
+            };
+
+            var attempt = this.MakeSingleQuestionAttempt(this.qPrioritySome, answers);
+
+            this.evaluator.Evaluate(attempt);
+
+            Assert.False(attempt.Questions[0].IsAccepted);
+            Assert.False(attempt.Questions[0].IsPerfect);
+            Assert.False(attempt.IsPassed);
+            Assert.AreEqual(183, attempt.MaxScore);
+            Assert.AreEqual(0, attempt.ExamScore);
+        }
+
+        [TestCase]
+        public void EvalPriority_AllOptionsAllIncorrect()
+        {
+            var A = this.qPriorityAll.Answers;
+            var answers = new AttemptAnswer[]
+            {
+                new AttemptAnswer { TaskAnswer = A[0], Value = "4" },
+                new AttemptAnswer { TaskAnswer = A[1], Value = "3" },
+                new AttemptAnswer { TaskAnswer = A[2], Value = "2" },
+                new AttemptAnswer { TaskAnswer = A[3], Value = "1" },
+            };
+
+            var attempt = this.MakeSingleQuestionAttempt(this.qPriorityAll, answers);
+
+            this.evaluator.Evaluate(attempt);
+
+            Assert.False(attempt.Questions[0].IsAccepted);
+            Assert.False(attempt.Questions[0].IsPerfect);
+            Assert.False(attempt.IsPassed);
+            Assert.AreEqual(33, attempt.MaxScore);
+            Assert.AreEqual(0, attempt.ExamScore);
+        }
+
+        [TestCase]
+        public void EvalPriority_SomeOptionsAllIncorrect()
+        {
+            var A = this.qPrioritySome.Answers;
+            var answers = new AttemptAnswer[]
+            {
+                new AttemptAnswer { TaskAnswer = A[0], Value = "4" },
+                new AttemptAnswer { TaskAnswer = A[1], Value = "3" },
+                new AttemptAnswer { TaskAnswer = A[2], Value = "2" },
+                new AttemptAnswer { TaskAnswer = A[3], Value = "1" },
+                new AttemptAnswer { TaskAnswer = A[4], Value = None },
+                new AttemptAnswer { TaskAnswer = A[5], Value = None },
+            };
+
+            var attempt = this.MakeSingleQuestionAttempt(this.qPrioritySome, answers);
+
+            this.evaluator.Evaluate(attempt);
+
+            Assert.False(attempt.Questions[0].IsAccepted);
+            Assert.False(attempt.Questions[0].IsPerfect);
+            Assert.False(attempt.IsPassed);
+            Assert.AreEqual(183, attempt.MaxScore);
+            Assert.AreEqual(0, attempt.ExamScore);
+        }
+
+        [TestCase]
+        public void EvalPriority_AllOptionsRepeatedSelection()
+        {
+            var A = this.qPriorityAll.Answers;
+            var answers = new AttemptAnswer[]
+            {
+                new AttemptAnswer { TaskAnswer = A[0], Value = "1" },
+                new AttemptAnswer { TaskAnswer = A[1], Value = "2" },
+                new AttemptAnswer { TaskAnswer = A[2], Value = "2" },
+                new AttemptAnswer { TaskAnswer = A[3], Value = "2" },
+            };
+
+            var attempt = this.MakeSingleQuestionAttempt(this.qPriorityAll, answers);
+
+            this.evaluator.Evaluate(attempt);
+
+            Assert.False(attempt.Questions[0].IsAccepted);
+            Assert.False(attempt.Questions[0].IsPerfect);
+            Assert.False(attempt.IsPassed);
+            Assert.AreEqual(33, attempt.MaxScore);
+            Assert.AreEqual(0, attempt.ExamScore);
+        }
+
+        [TestCase]
+        public void EvalPriority_SomeOptionsRepeatedSelection()
+        {
+            var A = this.qPrioritySome.Answers;
+            var answers = new AttemptAnswer[]
+            {
+                new AttemptAnswer { TaskAnswer = A[0], Value = "1" },
+                new AttemptAnswer { TaskAnswer = A[1], Value = "2" },
+                new AttemptAnswer { TaskAnswer = A[2], Value = "2" },
+                new AttemptAnswer { TaskAnswer = A[3], Value = "2" },
+                new AttemptAnswer { TaskAnswer = A[4], Value = None },
+                new AttemptAnswer { TaskAnswer = A[5], Value = None },
+            };
+
+            var attempt = this.MakeSingleQuestionAttempt(this.qPrioritySome, answers);
+
+            this.evaluator.Evaluate(attempt);
+
+            Assert.False(attempt.Questions[0].IsAccepted);
+            Assert.False(attempt.Questions[0].IsPerfect);
+            Assert.False(attempt.IsPassed);
+            Assert.AreEqual(183, attempt.MaxScore);
+            Assert.AreEqual(0, attempt.ExamScore);
+        }
+
+        [TestCase]
+        public void EvalPriority_AllOptionsStartsCorrect()
+        {
+            var A = this.qPriorityAll.Answers;
+            var answers = new AttemptAnswer[]
+            {
+                new AttemptAnswer { TaskAnswer = A[0], Value = "1" },
+                new AttemptAnswer { TaskAnswer = A[1], Value = "3" },
+                new AttemptAnswer { TaskAnswer = A[2], Value = "2" },
+                new AttemptAnswer { TaskAnswer = A[3], Value = "4" },
+            };
+
+            var attempt = this.MakeSingleQuestionAttempt(this.qPriorityAll, answers);
+
+            this.evaluator.Evaluate(attempt);
+
+            Assert.True(attempt.Questions[0].IsAccepted);
+            Assert.False(attempt.Questions[0].IsPerfect);
+            Assert.False(attempt.IsPassed);
+            Assert.AreEqual(33, attempt.MaxScore);
+            Assert.AreEqual(1, attempt.ExamScore);
+        }
+
+        [TestCase]
+        public void EvalPriority_SomeOptionsStartsCorrect()
+        {
+            var A = this.qPrioritySome.Answers;
+            var answers = new AttemptAnswer[]
+            {
+                new AttemptAnswer { TaskAnswer = A[0], Value = "1" },
+                new AttemptAnswer { TaskAnswer = A[1], Value = "3" },
+                new AttemptAnswer { TaskAnswer = A[2], Value = "2" },
+                new AttemptAnswer { TaskAnswer = A[3], Value = "4" },
+                new AttemptAnswer { TaskAnswer = A[4], Value = None },
+                new AttemptAnswer { TaskAnswer = A[5], Value = None },
+            };
+
+            var attempt = this.MakeSingleQuestionAttempt(this.qPrioritySome, answers);
+
+            this.evaluator.Evaluate(attempt);
+
+            Assert.True(attempt.Questions[0].IsAccepted);
+            Assert.False(attempt.Questions[0].IsPerfect);
+            Assert.True(attempt.IsPassed);
+            Assert.AreEqual(183, attempt.MaxScore);
+            Assert.AreEqual(151, attempt.ExamScore);
+        }
+
+        [TestCase]
+        public void EvalPriority_SomeOptionsStartsCorrectWrongSelection()
+        {
+            var A = this.qPrioritySome.Answers;
+            var answers = new AttemptAnswer[]
+            {
+                new AttemptAnswer { TaskAnswer = A[0], Value = "1" },
+                new AttemptAnswer { TaskAnswer = A[1], Value = "3" },
+                new AttemptAnswer { TaskAnswer = A[2], Value = "2" },
+                new AttemptAnswer { TaskAnswer = A[3], Value = "4" },
+                new AttemptAnswer { TaskAnswer = A[4], Value = "5" },
+                new AttemptAnswer { TaskAnswer = A[5], Value = None },
+            };
+
+            var attempt = this.MakeSingleQuestionAttempt(this.qPrioritySome, answers);
+
+            this.evaluator.Evaluate(attempt);
+
+            Assert.False(attempt.Questions[0].IsAccepted);
+            Assert.False(attempt.Questions[0].IsPerfect);
+            Assert.False(attempt.IsPassed);
+            Assert.AreEqual(183, attempt.MaxScore);
+            Assert.AreEqual(0, attempt.ExamScore);
+        }
+
+        [TestCase]
+        public void EvalPriority_AllOptionsStartsIncorrect()
+        {
+            var A = this.qPriorityAll.Answers;
+            var answers = new AttemptAnswer[]
+            {
+                new AttemptAnswer { TaskAnswer = A[0], Value = "2" },
+                new AttemptAnswer { TaskAnswer = A[1], Value = "1" },
+                new AttemptAnswer { TaskAnswer = A[2], Value = "3" },
+                new AttemptAnswer { TaskAnswer = A[3], Value = "4" },
+            };
+
+            var attempt = this.MakeSingleQuestionAttempt(this.qPriorityAll, answers);
+
+            this.evaluator.Evaluate(attempt);
+
+            Assert.False(attempt.Questions[0].IsAccepted);
+            Assert.False(attempt.Questions[0].IsPerfect);
+            Assert.False(attempt.IsPassed);
+            Assert.AreEqual(33, attempt.MaxScore);
+            Assert.AreEqual(0, attempt.ExamScore);
+        }
+
+        [TestCase]
+        public void EvalPriority_SomeOptionsStartsIncorrect()
+        {
+            var A = this.qPrioritySome.Answers;
+            var answers = new AttemptAnswer[]
+            {
+                new AttemptAnswer { TaskAnswer = A[0], Value = "2" },
+                new AttemptAnswer { TaskAnswer = A[1], Value = "1" },
+                new AttemptAnswer { TaskAnswer = A[2], Value = "3" },
+                new AttemptAnswer { TaskAnswer = A[3], Value = "4" },
+                new AttemptAnswer { TaskAnswer = A[4], Value = None },
+                new AttemptAnswer { TaskAnswer = A[5], Value = None },
+            };
+
+            var attempt = this.MakeSingleQuestionAttempt(this.qPrioritySome, answers);
+
+            this.evaluator.Evaluate(attempt);
+
+            Assert.False(attempt.Questions[0].IsAccepted);
+            Assert.False(attempt.Questions[0].IsPerfect);
+            Assert.False(attempt.IsPassed);
+            Assert.AreEqual(183, attempt.MaxScore);
+            Assert.AreEqual(0, attempt.ExamScore);
+        }
+
+        [TestCase]
+        public void EvalPriority_SomeOptionsStartsIncorrectWrongSelection()
+        {
+            var A = this.qPrioritySome.Answers;
+            var answers = new AttemptAnswer[]
+            {
+                new AttemptAnswer { TaskAnswer = A[0], Value = "2" },
+                new AttemptAnswer { TaskAnswer = A[1], Value = "1" },
+                new AttemptAnswer { TaskAnswer = A[2], Value = "3" },
+                new AttemptAnswer { TaskAnswer = A[3], Value = "4" },
+                new AttemptAnswer { TaskAnswer = A[4], Value = "5" },
+                new AttemptAnswer { TaskAnswer = A[5], Value = None },
+            };
+
+            var attempt = this.MakeSingleQuestionAttempt(this.qPrioritySome, answers);
+
+            this.evaluator.Evaluate(attempt);
+
+            Assert.False(attempt.Questions[0].IsAccepted);
+            Assert.False(attempt.Questions[0].IsPerfect);
+            Assert.False(attempt.IsPassed);
+            Assert.AreEqual(183, attempt.MaxScore);
+            Assert.AreEqual(0, attempt.ExamScore);
+        }
+
+        [TestCase]
+        public void EvalPriority_AllOptionsStartsCorrectEndsNoSelection()
+        {
+            var A = this.qPriorityAll.Answers;
+            var answers = new AttemptAnswer[]
+            {
+                new AttemptAnswer { TaskAnswer = A[0], Value = "1" },
+                new AttemptAnswer { TaskAnswer = A[1], Value = None },
+                new AttemptAnswer { TaskAnswer = A[2], Value = "3" },
+                new AttemptAnswer { TaskAnswer = A[3], Value = None },
+            };
+
+            var attempt = this.MakeSingleQuestionAttempt(this.qPriorityAll, answers);
+
+            this.evaluator.Evaluate(attempt);
+
+            Assert.True(attempt.Questions[0].IsAccepted);
+            Assert.False(attempt.Questions[0].IsPerfect);
+            Assert.False(attempt.IsPassed);
+            Assert.AreEqual(33, attempt.MaxScore);
+            Assert.AreEqual(1, attempt.ExamScore);
+        }
+
+        #endregion
 
         private ExamAttempt MakeAttemptTemplate()
         {
@@ -653,8 +1091,8 @@ namespace Axe.Tests
 
             this.evaluator.Evaluate(attempt);
 
-            Assert.AreEqual(false, attempt.IsPassed);
-            Assert.AreEqual(false, attempt.Questions.Any(q => q.IsAccepted == true));
+            Assert.False(attempt.IsPassed);
+            Assert.False(attempt.Questions.Any(q => q.IsAccepted == true));
             Assert.AreEqual(8, attempt.MaxScore);
             Assert.AreEqual(0, attempt.ExamScore);
         }
@@ -674,8 +1112,8 @@ namespace Axe.Tests
 
             this.evaluator.Evaluate(attempt);
 
-            Assert.AreEqual(true, attempt.IsPassed);
-            Assert.AreEqual(true, attempt.Questions.All(q => q.IsAccepted == true));
+            Assert.True(attempt.IsPassed);
+            Assert.True(attempt.Questions.All(q => q.IsAccepted == true));
             Assert.AreEqual(8, attempt.MaxScore);
             Assert.AreEqual(8, attempt.ExamScore);
         }
@@ -697,8 +1135,8 @@ namespace Axe.Tests
 
             this.evaluator.Evaluate(attempt);
 
-            Assert.AreEqual(true, attempt.IsPassed);
-            Assert.AreEqual(true, attempt.Questions.All(q => q.IsAccepted == questionFilter(q)));
+            Assert.True(attempt.IsPassed);
+            Assert.True(attempt.Questions.All(q => q.IsAccepted == questionFilter(q)));
             Assert.AreEqual(8, attempt.MaxScore);
             Assert.AreEqual(5, attempt.ExamScore);
         }
@@ -720,11 +1158,13 @@ namespace Axe.Tests
 
             this.evaluator.Evaluate(attempt);
 
-            Assert.AreEqual(false, attempt.IsPassed);
-            Assert.AreEqual(true, attempt.Questions.All(q => q.IsAccepted == questionFilter(q)));
+            Assert.False(attempt.IsPassed);
+            Assert.True(attempt.Questions.All(q => q.IsAccepted == questionFilter(q)));
             Assert.AreEqual(8, attempt.MaxScore);
             Assert.AreEqual(3, attempt.ExamScore);
         }
+
+        #region Threshold
 
         [TestCase]
         public void EvalAttempt_NonDefaultThreshold_100PercentThresholdPassed()
@@ -870,5 +1310,7 @@ namespace Axe.Tests
             Assert.AreEqual(1, attempt.ExamScore);
             Assert.False(attempt.IsPassed);
         }
+
+        #endregion 
     }
 }

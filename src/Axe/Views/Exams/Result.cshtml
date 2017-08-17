@@ -89,7 +89,7 @@
                             <li class="list-group-item @success">
                                 @if (Model.Questions[q].TaskQuestion.Type == Axe.Models.TaskQuestionType.PrioritySelection)
                                 {
-                                    <span>[ @Model.Questions[q].AttemptAnswers[a].Value ]  &nbsp;</span>
+                                    <span> @Model.Questions[q].AttemptAnswers[a].Value &#8594; [ @Model.Questions[q].AttemptAnswers[a].TaskAnswer.Value ]  &nbsp;</span>
                                 }
                                 else
                                 {
