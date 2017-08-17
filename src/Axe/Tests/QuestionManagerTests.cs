@@ -517,6 +517,208 @@ namespace Axe.Tests
         }
 
         [TestCase]
+        public async Task QuestionPost_SuccessAllOptions()
+        {
+            string text = "it is a question";
+            var questionInput = new QuestionInputVm
+            {
+                TechnologyId = this.techA.Id,
+                EditorType = TaskQuestionType.PrioritySelection,
+                Text = text,
+                Answers = new List<TaskAnswer>
+                {
+                    new TaskAnswer { Text = "a", Value = "3", Score = 1 },
+                    new TaskAnswer { Text = "b", Value = "2", Score = 1 },
+                    new TaskAnswer { Text = "c", Value = "1", Score = 1 },
+                }
+            };
+
+            var request = this.Request(questionInput, this.expertA);
+            var response = await this.manager.InputPost(request);
+
+            Assert.AreEqual(ResponseCode.Success, response.Code);
+            Assert.NotNull(response.Item);
+
+            int id = response.Item.Id;
+
+            int count = this.db.TaskQuestion.Count(q => q.Id == q.Id);
+            Assert.AreEqual(1, count);
+
+            this.RemoveQuestion(id);
+        }
+
+        [TestCase]
+        public async Task QuestionPost_SuccessSomeOptions()
+        {
+            string text = "it is a question";
+            var questionInput = new QuestionInputVm
+            {
+                TechnologyId = this.techA.Id,
+                EditorType = TaskQuestionType.PrioritySelection,
+                Text = text,
+                Answers = new List<TaskAnswer>
+                {
+                    new TaskAnswer { Text = "0", Value = "=", Score = 1 },
+                    new TaskAnswer { Text = "a", Value = "3", Score = 1 },
+                    new TaskAnswer { Text = "b", Value = "2", Score = 1 },
+                    new TaskAnswer { Text = "c", Value = "1", Score = 1 },
+                    new TaskAnswer { Text = "?", Value = "=", Score = 1 },
+                }
+            };
+
+            var request = this.Request(questionInput, this.expertA);
+            var response = await this.manager.InputPost(request);
+
+            Assert.AreEqual(ResponseCode.Success, response.Code);
+            Assert.NotNull(response.Item);
+
+            int id = response.Item.Id;
+
+            int count = this.db.TaskQuestion.Count(q => q.Id == q.Id);
+            Assert.AreEqual(1, count);
+
+            this.RemoveQuestion(id);
+        }
+
+        [TestCase]
+        public async Task QuestionPost_InvalidPriorityInput_OneAnswer()
+        {
+            string text = "it is a question";
+            var questionInput = new QuestionInputVm
+            {
+                TechnologyId = this.techA.Id,
+                EditorType = TaskQuestionType.PrioritySelection,
+                Text = text,
+                Answers = new List<TaskAnswer>
+                {
+                    new TaskAnswer { Text = "123", Value = "1", Score = 1 },
+                }
+            };
+
+            var request = this.Request(questionInput, this.expertA);
+            var response = await this.manager.InputPost(request);
+
+            Assert.AreEqual(ResponseCode.ValidationError, response.Code);
+            Assert.NotNull(response.Item);
+
+            Assert.False(request.ModelState.IsValid);
+            Assert.AreEqual(1, request.ModelState.ErrorCount);
+            Assert.True(request.ModelState[String.Empty].Errors.Any(e => e.ErrorMessage == ValidationMessages.Instance.QuestionTwoChoiceOptions));
+        }
+
+        [TestCase]
+        public async Task QuestionPost_InvalidPriorityInput_NoOptions()
+        {
+            string text = "it is a question";
+            var questionInput = new QuestionInputVm
+            {
+                TechnologyId = this.techA.Id,
+                EditorType = TaskQuestionType.PrioritySelection,
+                Text = text,
+                Answers = new List<TaskAnswer>
+                {
+                    new TaskAnswer { Text = "1", Value = "=", Score = 1 },
+                    new TaskAnswer { Text = "2", Value = "=", Score = 1 },
+                    new TaskAnswer { Text = "3", Value = "=", Score = 1 },
+                }
+            };
+
+            var request = this.Request(questionInput, this.expertA);
+            var response = await this.manager.InputPost(request);
+
+            Assert.AreEqual(ResponseCode.ValidationError, response.Code);
+            Assert.NotNull(response.Item);
+
+            Assert.False(request.ModelState.IsValid);
+            Assert.AreEqual(1, request.ModelState.ErrorCount);
+            Assert.True(request.ModelState[String.Empty].Errors.Any(e => e.ErrorMessage == ValidationMessages.Instance.QuestionNeedAnswer));
+        }
+
+        [TestCase]
+        public async Task QuestionPost_InvalidPriorityInput_InconsequtiveAnswersNumbers()
+        {
+            string text = "it is a question";
+            var questionInput = new QuestionInputVm
+            {
+                TechnologyId = this.techA.Id,
+                EditorType = TaskQuestionType.PrioritySelection,
+                Text = text,
+                Answers = new List<TaskAnswer>
+                {
+                    new TaskAnswer { Text = "1", Value = "1", Score = 1 },
+                    new TaskAnswer { Text = "2", Value = "2", Score = 1 },
+                    new TaskAnswer { Text = "3", Value = "4", Score = 1 },
+                }
+            };
+
+            var request = this.Request(questionInput, this.expertA);
+            var response = await this.manager.InputPost(request);
+
+            Assert.AreEqual(ResponseCode.ValidationError, response.Code);
+            Assert.NotNull(response.Item);
+
+            Assert.False(request.ModelState.IsValid);
+            Assert.AreEqual(1, request.ModelState.ErrorCount);
+            Assert.True(request.ModelState[String.Empty].Errors.Any(e => e.ErrorMessage == ValidationMessages.Instance.QuestionPriorityInvalidOrder));
+        }
+
+        [TestCase]
+        public async Task QuestionPost_InvalidPriorityInput_DuplicateAnswersNumbers()
+        {
+            string text = "it is a question";
+            var questionInput = new QuestionInputVm
+            {
+                TechnologyId = this.techA.Id,
+                EditorType = TaskQuestionType.PrioritySelection,
+                Text = text,
+                Answers = new List<TaskAnswer>
+                {
+                    new TaskAnswer { Text = "1", Value = "1", Score = 1 },
+                    new TaskAnswer { Text = "2", Value = "2", Score = 1 },
+                    new TaskAnswer { Text = "3", Value = "2", Score = 1 },
+                }
+            };
+
+            var request = this.Request(questionInput, this.expertA);
+            var response = await this.manager.InputPost(request);
+
+            Assert.AreEqual(ResponseCode.ValidationError, response.Code);
+            Assert.NotNull(response.Item);
+
+            Assert.False(request.ModelState.IsValid);
+            Assert.AreEqual(1, request.ModelState.ErrorCount);
+            Assert.True(request.ModelState[String.Empty].Errors.Any(e => e.ErrorMessage == ValidationMessages.Instance.QuestionPriorityInvalidOrder));
+        }
+
+        [TestCase]
+        public async Task QuestionPost_InvalidPriorityInput_AnswersNumbersOrigin()
+        {
+            string text = "it is a question";
+            var questionInput = new QuestionInputVm
+            {
+                TechnologyId = this.techA.Id,
+                EditorType = TaskQuestionType.PrioritySelection,
+                Text = text,
+                Answers = new List<TaskAnswer>
+                {
+                    new TaskAnswer { Text = "1", Value = "2", Score = 1 },
+                    new TaskAnswer { Text = "2", Value = "3", Score = 1 },
+                    new TaskAnswer { Text = "3", Value = "4", Score = 1 },
+                }
+            };
+
+            var request = this.Request(questionInput, this.expertA);
+            var response = await this.manager.InputPost(request);
+
+            Assert.AreEqual(ResponseCode.ValidationError, response.Code);
+            Assert.NotNull(response.Item);
+
+            Assert.False(request.ModelState.IsValid);
+            Assert.AreEqual(1, request.ModelState.ErrorCount);
+            Assert.True(request.ModelState[String.Empty].Errors.Any(e => e.ErrorMessage == ValidationMessages.Instance.QuestionPriorityInvalidOrder));
+        }
+
+        [TestCase]
         public async Task QuestionPost_EditNonExpert()
         {
             string text = "it is a question";

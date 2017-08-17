@@ -149,6 +149,30 @@ namespace Axe.Managers
 
                 switch (questionVm.EditorType)
                 {
+                    case TaskQuestionType.PrioritySelection:
+                    if (questionVm.Answers.Count < 2)
+                    {
+                        request.ModelState.AddModelError(String.Empty, ValidationMessages.Instance.QuestionTwoChoiceOptions);
+                    }
+                    else
+                    {
+                        int number;
+                        var answerOptions = questionVm.Answers
+                            .Where(a => int.TryParse(a.Value, out number))
+                            .OrderBy(a => int.Parse(a.Value))
+                            .ToList();
+
+                        if (answerOptions.Count == 0)
+                        {
+                            request.ModelState.AddModelError(String.Empty, ValidationMessages.Instance.QuestionNeedAnswer);
+                        }
+                        else if (answerOptions.Where((a, idx) => int.Parse(a.Value) != idx + 1).Any())
+                        {
+                            request.ModelState.AddModelError(String.Empty, ValidationMessages.Instance.QuestionPriorityInvalidOrder);
+                        }
+                    }
+                    break;
+
                     case TaskQuestionType.MultiChoice:
                     if (questionVm.Answers.Count < 2)
                     {

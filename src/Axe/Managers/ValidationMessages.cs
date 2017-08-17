@@ -61,6 +61,8 @@ namespace Axe.Managers
 
         public string QuestionNeedAnswer => "Question should have an answer";
 
+        public string QuestionPriorityInvalidOrder => "Answer numbers should start from 1 and be consequtive (e.g. 1 2 3)";
+
         public string QuestionNeedScorePoints => "Answers should have positive score";
 
         public string QuestionExpertDelete(string technologyName) => $"Only expert can delete {technologyName} questions";
