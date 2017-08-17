@@ -76,9 +76,15 @@
                                         {
                                             @Html.CheckBoxFor(m => m.Questions[idx].AttemptAnswers[a].IsSelected)
                                         }
-                                        else
+                                        else if (Model.Questions[idx].TaskQuestion.Type == Axe.Models.TaskQuestionType.SingleChoice)
                                         {
                                             <input asp-for="@Model.Questions[idx].SelectedAnswerId" type="radio" value="@Model.Questions[idx].AttemptAnswers[a].TaskAnswerId" />
+                                        }
+                                        else
+                                        {
+                                            <select asp-for="@Model.Questions[idx].AttemptAnswers[a].Value" asp-items="@Model.Questions[idx].PriorityOptions">
+                                                <option>=</option>
+                                            </select>
                                         }
 
                                         <span>@Model.Questions[idx].AttemptAnswers[a].TaskAnswer.Text</span>

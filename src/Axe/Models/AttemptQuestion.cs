@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using System.ComponentModel.DataAnnotations.Schema;
+using Microsoft.AspNetCore.Mvc.Rendering;
 
 namespace Axe.Models
 {
@@ -69,5 +70,23 @@ namespace Axe.Models
         /// Gets or sets question position in exam attempt questions list
         /// </summary>
         public int SortNumber { get; set; }
+
+        /// <summary>
+        /// Gets or sets selection options for priority questions
+        /// </summary>
+        [NotMapped]
+        public IList<SelectListItem> PriorityOptions
+        {
+            get
+            {
+                if (this.AttemptAnswers != null && this.AttemptAnswers.Count > 0)
+                {
+                    return Enumerable.Range(1, this.AttemptAnswers.Count)
+                                                    .Select(i => new SelectListItem { Text = i.ToString(), Value = i.ToString() })
+                                                    .ToList();
+                }
+                return new List<SelectListItem>();
+            }
+        }
     }
 }

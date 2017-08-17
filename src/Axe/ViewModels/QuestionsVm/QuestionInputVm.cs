@@ -61,7 +61,7 @@ namespace Axe.Models.QuestionsVm
         /// <summary>
         /// Gets or sets selection options for priority questions
         /// </summary>
-        public List<SelectListItem> PriorityOptions { get; set; }
+        public IList<SelectListItem> PriorityOptions { get; set; }
 
         /// <summary>
         /// Recreates selection options for priority questions based on answers count

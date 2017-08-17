@@ -130,7 +130,7 @@
                         else if (Model.EditorType == Axe.Models.TaskQuestionType.PrioritySelection)
                         {
                             <select asp-for="@Model.Answers[i].Value" asp-items="@Model.PriorityOptions">
-                                <option>-</option>
+                                <option>=</option>
                             </select>
                         }
                     </div>
