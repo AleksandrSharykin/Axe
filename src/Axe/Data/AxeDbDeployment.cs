@@ -12,18 +12,18 @@ namespace Axe.Models
         public static async Task Deploy(UserManager<ApplicationUser> userManager, RoleManager<IdentityRole> roleManager, AxeDbContext context)
         {
             context.Database.EnsureCreated();
-            
+
             if (context.Roles.Any())
             {
                 // db has been configurated already
-                return;  
+                return;
             }
-            
-            await roleManager.CreateAsync(new IdentityRole(UserRole.Superuser));            
+
+            await roleManager.CreateAsync(new IdentityRole(UserRole.Superuser));
             await roleManager.CreateAsync(new IdentityRole(UserRole.Member));
 
             var superuser = new ApplicationUser
-            {                
+            {
                 UserName = "superuser@supermail.com",
                 Email = "superuser@supermail.com",
                 JobPosition = "admin",
@@ -50,7 +50,7 @@ C# is simple, powerful, type-safe, and object-oriented",
 
             var javascript = new Technology
             {
-                Name="JavaScript",
+                Name = "JavaScript",
                 InformationText =
 @"JavaScript is a high-level, dynamic, multi-paradigm, object-oriented, prototype-based, weakly-typed language traditionally used for client-side scripting in web browsers.",
             };
@@ -59,7 +59,7 @@ C# is simple, powerful, type-safe, and object-oriented",
             context.AddRange(csharp, javascript);
 
             #endregion
-            
+
             var task = new ExamTask
             {
                 Title = "C# demo",
@@ -70,6 +70,69 @@ C# is simple, powerful, type-safe, and object-oriented",
             };
 
             #region C# questions
+
+            var questionPriority = new TaskQuestion
+            {
+                Author = superuser,
+                Technology = csharp,
+                Type = TaskQuestionType.PrioritySelection,
+                Text = "Interface should declare Print method which accept values of any type and writes them in Console." + Environment.NewLine
+                + "Method doesn't return result." + Environment.NewLine
+                + "Construct correct method declaration using the following blocks:",
+            };
+            questionPriority.Answers = new List<TaskAnswer>
+            {
+                new TaskAnswer
+                {
+                    Question = questionPriority,
+                    Text = "public",
+                    Value = "=",
+                    Score = 0,
+                },
+                new TaskAnswer
+                {
+                    Question = questionPriority,
+                    Text = "abstract",
+                    Value = "=",
+                    Score = 0,
+                },
+                new TaskAnswer
+                {
+                    Question = questionPriority,
+                    Text = "void",
+                    Value = "1",
+                    Score = 1,
+                },
+                new TaskAnswer
+                {
+                    Question = questionPriority,
+                    Text = "object",
+                    Value = "=",
+                    Score = 0,
+                },
+                new TaskAnswer
+                {
+                    Question = questionPriority,
+                    Text = "Print",
+                    Value = "2",
+                    Score = 1,
+                },
+                new TaskAnswer
+                {
+                    Question = questionPriority,
+                    Text = "(object inputValue)",
+                    Value = "3",
+                    Score = 1,
+                },
+                new TaskAnswer
+                {
+                    Question = questionPriority,
+                    Text = "{ }",
+                    Value = "=",
+                    Score = 0,
+                },
+            };
+
 
             var questionMultiChoice = new TaskQuestion
             {
@@ -194,6 +257,7 @@ C# is simple, powerful, type-safe, and object-oriented",
                 new TaskQuestionLink { Task = task, Question = questionSingleChoice, },
                 new TaskQuestionLink { Task = task, Question = questionMultiInput, },
                 new TaskQuestionLink { Task = task, Question = questionSingleInput, },
+                new TaskQuestionLink { Task = task, Question = questionPriority, },
             };
 
             context.Add(task);
