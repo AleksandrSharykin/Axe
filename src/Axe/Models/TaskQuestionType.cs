@@ -29,5 +29,10 @@ namespace Axe.Models
         /// No options for selection; a single answer should be provided by student
         /// </summary>
         SingleLine,
+
+        /// <summary>
+        /// Multiple answer options should be sorted in correct order
+        /// </summary>
+        PrioritySelection
     }
 }

@@ -44,7 +44,7 @@
     </div>
 
     <div class="row form-group">
-        <div class="btn-group col-md-6">
+        <div class="btn-group col-md-8">
             <button class="btn btn-default" type="submit" value="0" name="etp">
                 <span class="glyphicon glyphicon-tags"></span> &nbsp; Multi Choice
             </button>
@@ -56,6 +56,9 @@
             </button>
             <button class="btn btn-default" type="submit" value="3" name="etp">
                 <span class="glyphicon glyphicon-file"></span> &nbsp; Single Line
+            </button>
+            <button class="btn btn-default" type="submit" value="4" name="etp">
+                <span class="glyphicon glyphicon-sort-by-attributes"></span> &nbsp; Priority
             </button>
         </div>
     </div>
@@ -120,11 +123,16 @@
                         {
                             <input asp-for="SelectedAnswer" type="radio" value="@i" />
                         }
-                        else
+                        else if (Model.EditorType == Axe.Models.TaskQuestionType.MultiChoice)
                         {
                             @Html.CheckBoxFor(m => m.Answers[i].IsCorrect)
                         }
-
+                        else if (Model.EditorType == Axe.Models.TaskQuestionType.PrioritySelection)
+                        {
+                            <select asp-for="@Model.Answers[i].Value" asp-items="@Model.PriorityOptions">
+                                <option>-</option>
+                            </select>
+                        }
                     </div>
 
                     <div class="col-md-1">                        

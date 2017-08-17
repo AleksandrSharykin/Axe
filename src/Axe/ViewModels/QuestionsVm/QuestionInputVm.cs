@@ -49,13 +49,31 @@ namespace Axe.Models.QuestionsVm
         public bool WithUserInput { get; set; }
 
         /// <summary>
-        /// Gets or sets correct answer number  for question with single choice
-        /// </summary>
-        public int? SelectedAnswer { get; set; }        
-
-        /// <summary>
         /// Gets or sets alternative answers
         /// </summary>
         public IList<TaskAnswer> Answers { get; set; }
+
+        /// <summary>
+        /// Gets or sets correct answer number for question with single choice
+        /// </summary>
+        public int? SelectedAnswer { get; set; }
+
+        /// <summary>
+        /// Gets or sets selection options for priority questions
+        /// </summary>
+        public List<SelectListItem> PriorityOptions { get; set; }
+
+        /// <summary>
+        /// Recreates selection options for priority questions based on answers count
+        /// </summary>
+        public void CreatePriorityOptions()
+        {
+            if (this.EditorType == TaskQuestionType.PrioritySelection)
+            {
+                this.PriorityOptions = Enumerable.Range(1, this.Answers.Count)
+                                                .Select(i => new SelectListItem { Text = i.ToString(), Value = i.ToString() })
+                                                .ToList();
+            }
+        }
     }
 }

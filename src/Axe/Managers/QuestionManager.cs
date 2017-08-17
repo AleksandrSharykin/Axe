@@ -88,6 +88,8 @@ namespace Axe.Managers
                 }
             }
 
+            questionVm.CreatePriorityOptions();
+
             return this.Response(questionVm);
         }
 
@@ -105,6 +107,9 @@ namespace Axe.Managers
             }
 
             questionVm.WithUserInput = questionVm.EditorType == TaskQuestionType.SingleLine || questionVm.EditorType == TaskQuestionType.MultiLine;
+
+
+            questionVm.CreatePriorityOptions();
 
             var user = this.context.Users
                             .Include(u => u.Technologies).ThenInclude(t => t.Technology)
@@ -149,7 +154,6 @@ namespace Axe.Managers
                     {
                         request.ModelState.AddModelError(String.Empty, ValidationMessages.Instance.QuestionTwoChoiceOptions);
                     }
-
                     break;
 
                     case TaskQuestionType.SingleChoice:
