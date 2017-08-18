@@ -104,7 +104,8 @@
         var word = '';
         var block = false;
         var normal = true;
-        var style = 'style = "text-decoration: underline;"';
+        //var style = 'style = "text-decoration: underline;"';
+        var style = '';
 
         for (var i = 0; i < content.length; i++) {
             var c = content.charAt(i);
@@ -129,7 +130,7 @@
             }
 
             // close code-block
-            html += tag(t, word, true, style);
+            html += tag(t, colorize(word), false, style);
             word = '';
             normal = true;
         }
@@ -139,11 +140,68 @@
                 html += sans(word);
             else {
                 var t = block ? 'pre' : 'span';
-                html += tag(t, word, true, style);
+                html += tag(t, colorize(word), false, style);
             }
         }
 
         return html;
+
+        function colorize(code) {
+            if (!code || !code.length)
+                return '';
+
+            var keywords =
+                [
+                    "alias", "async", "await", "dynamic", "get", "global", "nameof", "orderby", "partial",
+                    "var", "when", "yield", "abstract", "as", "base", "bool", "break", "byte", "case",
+                    "catch", "char", "checked", "class", "const", "continue", "decimal", "default", "delegate",
+                    "do", "double", "else", "enum", "event", "explicit", "extern", "false", "finally", "fixed",
+                    "float", "for", "foreach", "goto", "if", "implicit", "in", "int", "interface", "internal",
+                    "is", "lock", "long", "namespace", "new", "null", "object", "operator", "out", "override",
+                    "params", "private", "protected", "public", "readonly", "ref", "return", "sbyte", "sealed",
+                    "short", "sizeof", "stackalloc", "static", "string", "struct", "switch", "this", "throw",
+                    "true", "try", "typeof", "uint", "ulong", "unchecked", "unsafe", "ushort", "using",
+                    "virtual", "void", "volatile", "while"
+                ];
+            var separators = ' .,!?:;-+*/%^()[]<>{}&|"\'\n\r\t';
+
+            var html = '';
+            var word = '';
+            var quote = false;
+
+            for (var i = 0; i < code.length; i++) {
+                var c = code.charAt(i);
+
+                if (separators.indexOf(c) < 0) {
+                    word += c;
+                    continue;
+                }
+
+                if (c === '"') {
+                    word += c;
+
+                    if (quote) {
+                        // string closed
+                        html += tag('span', word, true, 'class="codeblock-string"');
+                        word = '';
+                        quote = false;
+                    }
+                    else quote = true;
+                }
+                else if (!quote) {
+                    if (keywords.indexOf(word) < 0) {
+                        html += sans(word)
+                    }
+                    else {
+                        html += tag('span', word, true, 'class="codeblock-keyword"');
+                    }
+                    word = '';
+                    html += sans(c);
+                }
+                else word += sans(c);
+            }
+            return html;
+        }
     }
 
     function sans(str) {

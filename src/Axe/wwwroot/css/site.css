@@ -65,6 +65,14 @@ textarea {
     white-space: pre-wrap;
 }
 
+.codeblock-keyword{
+    color: blue;
+}
+
+.codeblock-string {
+    color: brown;
+} 
+
 pre {
     margin: 0px;
 }
