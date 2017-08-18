@@ -4,13 +4,14 @@
     ViewData["Title"] = Model.Task?.Technology?.Name + " Exam";
 }
 
-@if (Model.Id > 0)
-{
+
 @section Scripts
 {
     <script src="~/js/mdParser.js"></script>
-    <script src="~/js/exams.take.js"></script>
-}
+    @if (Model.Id > 0)
+    {
+        <script src="~/js/exams.take.js"></script>
+    }
 }
 
 <br />
