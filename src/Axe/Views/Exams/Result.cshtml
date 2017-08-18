@@ -4,6 +4,11 @@
     ViewData["Title"] = "Exam Result";
 }
 
+@section Scripts
+{
+    <script src="~/js/mdParser.js"></script>
+}
+
 <div>
     <div class="jumbotron">
         <h2><kbd>@Model.Task.Title</kbd></h2>
@@ -45,6 +50,10 @@
 <div>
     @for (int q = 0; q < Model.Questions.Count; q++)
     {
+        @if (q > 0)
+        {
+            <hr />
+        }
         <div class="form-group row">
             <div class="col-md-1">
                 <span class="btn btn-default"># @(q + 1)</span>
@@ -55,7 +64,7 @@
             </div>
 
             <div class="col-md-11">
-                <p class="codeblock">@Model.Questions[q].TaskQuestion.Text</p>
+                <p class="codeblock md">@Model.Questions[q].TaskQuestion.Text</p>
 
                 @if (Model.Questions[q].TaskQuestion.WithUserInput)
                 {

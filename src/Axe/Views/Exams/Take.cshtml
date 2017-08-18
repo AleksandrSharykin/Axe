@@ -8,6 +8,7 @@
 {
 @section Scripts
 {
+    <script src="~/js/mdParser.js"></script>
     <script src="~/js/exams.take.js"></script>
 }
 }
@@ -45,7 +46,7 @@
 
                     <div id="q_@idx" class="tab-pane fade @isFirstQuestion">
 
-                        <p class="codeblock">@Model.Questions[idx].TaskQuestion.Text</p>
+                        <p class="codeblock md">@Model.Questions[idx].TaskQuestion.Text</p>
 
                         <input type="hidden" asp-for="@Model.Questions[idx].TaskQuestionId" />
                         

@@ -162,6 +162,60 @@
             return sans(code);
         }
 
+        function colorize(code, syntax) {
+            if (!code || !code.length)
+                return '';
+
+            var keywords = syntax.keywords;
+            var reserved = syntax.reserved;
+            var separators = syntax.separators;
+            var q = syntax.quoteChar;
+            var casesensitive = syntax.casesensitive;
+
+            var html = '';
+            var word = '';
+            var quote = false;
+
+            for (var i = 0; i < code.length; i++) {
+                var c = code.charAt(i);
+
+                if (separators.indexOf(c) < 0) {
+                    word += c;
+                    continue;
+                }
+
+                if (c === q) {
+                    word += c;
+
+                    if (quote) {
+                        // string closed, append and highlight string
+                        html += tag('span', word, true, 'class="codeblock-string"');
+                        word = '';
+                    }
+
+                    quote = !quote;
+                }
+                else if (!quote) {
+                    if (keywords.indexOf(word) >= 0 || !casesensitive && keywords.indexOf(word.toLowerCase()) >= 0) {
+                        // append and highlight keyword
+                        html += tag('span', word, true, 'class="codeblock-keyword"');
+                    }
+                    else if (reserved.indexOf(word) >= 0 || !casesensitive && reserved.indexOf(word.toLowerCase()) >= 0) {
+                        // append and reserved keyword
+                        html += tag('span', word, true, 'class="codeblock-reserved"');
+                    }
+                    else {
+                        // append word
+                        html += sans(word)
+                    }
+                    word = '';
+                    html += sans(c);
+                }
+                else word += sans(c);
+            }
+            return html;
+        }
+
         function tryGetSyntax(name) {
             switch (name) {
                 case '#cs': return {
@@ -259,60 +313,6 @@
 
             return null;
         }
-
-        function colorize(code, syntax) {
-            if (!code || !code.length)
-                return '';
-
-            var keywords = syntax.keywords;
-            var reserved = syntax.reserved;
-            var separators = syntax.separators;
-            var q = syntax.quoteChar;
-            var casesensitive = syntax.casesensitive;
-
-            var html = '';
-            var word = '';
-            var quote = false;
-
-            for (var i = 0; i < code.length; i++) {
-                var c = code.charAt(i);
-
-                if (separators.indexOf(c) < 0) {
-                    word += c;
-                    continue;
-                }
-
-                if (c === q) {
-                    word += c;
-
-                    if (quote) {
-                        // string closed, append and highlight string
-                        html += tag('span', word, true, 'class="codeblock-string"');
-                        word = '';
-                    }
-
-                    quote = !quote;
-                }
-                else if (!quote) {
-                    if (keywords.indexOf(word) >= 0 || !casesensitive && keywords.indexOf(word.toLowerCase()) >= 0) {
-                        // append and highlight keyword
-                        html += tag('span', word, true, 'class="codeblock-keyword"');
-                    }
-                    else if (reserved.indexOf(word) >= 0 || !casesensitive && reserved.indexOf(word.toLowerCase()) >= 0) {
-                        // append and reserved keyword
-                        html += tag('span', word, true, 'class="codeblock-reserved"');
-                    }
-                    else {
-                        // append word
-                        html += sans(word)
-                    }
-                    word = '';
-                    html += sans(c);
-                }
-                else word += sans(c);
-            }
-            return html;
-        }
     }
 
     function sans(str) {
@@ -333,4 +333,5 @@
             return entityMap[s];
         });
     }
+
 }
