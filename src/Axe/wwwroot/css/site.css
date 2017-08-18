@@ -69,6 +69,10 @@ textarea {
     color: blue;
 }
 
+.codeblock-reserved {
+    color: magenta;
+} 
+
 .codeblock-string {
     color: brown;
 } 

@@ -16,7 +16,7 @@
         var c = str.charAt(i);
 
         // detect code-block 
-        if (c === '`') {
+        if (c === '\u0060') {
             escaped = !escaped;
             text += c;
             continue;
@@ -110,7 +110,7 @@
         for (var i = 0; i < content.length; i++) {
             var c = content.charAt(i);
 
-            if (c !== '`') {
+            if (c !== '\u0060') {
                 word += c;
                 continue;
             }
@@ -130,7 +130,7 @@
             }
 
             // close code-block
-            html += tag(t, colorize(word), false, style);
+            html += tag(t, tryColorize(word), false, style);
             word = '';
             normal = true;
         }
@@ -140,30 +140,143 @@
                 html += sans(word);
             else {
                 var t = block ? 'pre' : 'span';
-                html += tag(t, colorize(word), false, style);
+                html += tag(t, tryColorize(word), false, style);
             }
         }
 
         return html;
 
-        function colorize(code) {
+        function tryColorize(code) {
+
+            if (code.charAt(0) == '#') {
+                var idx = code.indexOf(';');
+                if (idx > 0) {
+                    var syntaxName = code.substring(0, idx).trim();
+                    var syntax = tryGetSyntax(syntaxName);
+
+                    if (syntax) {
+                        code = code.substring(idx + 1);
+                        return colorize(code, syntax);
+                    }
+                }
+            }
+            return sans(code);
+        }
+
+        function tryGetSyntax(name) {
+            switch (name) {
+                case '#cs': return {
+                    separators: ' .,!?:;-+*/%^()[]<>{}&|"\'\n\r\t',
+                    quoteChar: '"',
+                    casesensitive: true,
+                    keywords:
+                    [
+                        'alias', 'async', 'await', 'dynamic', 'get', 'global', 'nameof', 'orderby', 'partial',
+                        'var', 'when', 'yield', 'abstract', 'as', 'base', 'bool', 'break', 'byte', 'case',
+                        'catch', 'char', 'checked', 'class', 'const', 'continue', 'decimal', 'default', 'delegate',
+                        'do', 'double', 'else', 'enum', 'event', 'explicit', 'extern', 'false', 'finally', 'fixed',
+                        'float', 'for', 'foreach', 'goto', 'if', 'implicit', 'in', 'int', 'interface', 'internal',
+                        'is', 'lock', 'long', 'namespace', 'new', 'null', 'object', 'operator', 'out', 'override',
+                        'params', 'private', 'protected', 'public', 'readonly', 'ref', 'return', 'sbyte', 'sealed',
+                        'short', 'sizeof', 'stackalloc', 'static', 'string', 'struct', 'switch', 'this', 'throw',
+                        'true', 'try', 'typeof', 'uint', 'ulong', 'unchecked', 'unsafe', 'ushort', 'using',
+                        'virtual', 'void', 'volatile', 'while'
+                    ],
+                    reserved: ['Main']
+                };
+                    break;
+                case '#js': return {
+                    separators: ' .,!?:;-+*/%^()[]<>{}&|"\'\n\r\t',
+                    quoteChar: '\'',
+                    casesensitive: true,
+                    keywords:
+                    [
+                        'abstract', 'alias', 'as', 'async', 'await', 'base', 'bool', 'break', 'byte', 'case', 'catch',
+                        'char', 'checked', 'class', 'const', 'continue', 'decimal', 'default', 'delegate', 'do',
+                        'double', 'dynamic', 'else', 'enum', 'event', 'explicit', 'extern', 'false', 'finally',
+                        'fixed', 'float', 'for', 'foreach', 'get', 'global', 'goto', 'if', 'implicit', 'in', 'int',
+                        'interface', 'internal', 'is', 'lock', 'long', 'nameof', 'namespace', 'new', 'null', 'object',
+                        'operator', 'orderby', 'out', 'override', 'params', 'partial', 'private', 'protected', 'public',
+                        'readonly', 'ref', 'return', 'sbyte', 'sealed', 'short', 'sizeof', 'stackalloc', 'static',
+                        'string', 'struct', 'switch', 'this', 'throw', 'true', 'try', 'typeof', 'uint', 'ulong',
+                        'unchecked', 'unsafe', 'ushort', 'using', 'var', 'virtual', 'void', 'volatile', 'when', 'while', 'yield'
+                    ],
+                    reserved: ['Array', 'Date', 'eval', 'Function', 'Infinity', 'isFinite', 'isNaN', 'NaN', 'Number', 'parseFloat', 'parseInt', 'String', 'undefined']
+                };
+                    break;
+                case '#sql': return {
+                    separators: ' .,!?:;-+*/%^()[]<>{}&|"\'\n\r\t',
+                    quoteChar: '\'',
+                    casesensitive: false,
+                    keywords:
+                    [
+                        'add', 'all', 'alter', 'and', 'any', 'as', 'asc', 'authorization', 'backup', 'begin', 'between', 'break',
+                        'browse', 'bulk', 'by', 'cascade', 'case', 'check', 'checkpoint', 'close', 'clustered', 'coalesce',
+                        'collate', 'column', 'commit', 'compute', 'constraint', 'contains', 'containstable', 'continue',
+                        'convert', 'create', 'cross', 'current', 'current_date', 'current_time', 'current_timestamp',
+                        'current_user', 'cursor', 'database', 'dbcc', 'deallocate', 'declare', 'default', 'delete',
+                        'deny', 'desc', 'disk', 'distinct', 'distributed', 'double', 'drop', 'dump', 'else', 'end',
+                        'errlvl', 'escape', 'except', 'exec', 'execute', 'exists', 'exit', 'external', 'fetch', 'file',
+                        'fillfactor', 'for', 'foreign', 'freetext', 'freetexttable', 'from', 'full', 'function', 'goto',
+                        'grant', 'group', 'having', 'holdlock', 'identity', 'identity_insert', 'identitycol', 'if', 'in',
+                        'index', 'inner', 'insert', 'intersect', 'into', 'is', 'join', 'key', 'kill', 'left', 'like', 'lineno',
+                        'load', 'merge', 'national', 'nocheck', 'nonclustered', 'not', 'null', 'nullif', 'of', 'off', 'offsets',
+                        'on', 'open', 'opendatasource', 'openquery', 'openrowset', 'openxml', 'option', 'or', 'order', 'outer',
+                        'over', 'percent', 'pivot', 'plan', 'precision', 'primary', 'print', 'proc', 'procedure', 'public',
+                        'raiserror', 'read', 'readtext', 'reconfigure', 'references', 'replication', 'restore', 'restrict',
+                        'return', 'revert', 'revoke', 'right', 'rollback', 'rowcount', 'rowguidcol', 'rule', 'save', 'schema',
+                        'securityaudit', 'select', 'semantickeyphrasetable', 'semanticsimilaritydetailstable', 'semanticsimilaritytable',
+                        'session_user', 'set', 'setuser', 'shutdown', 'some', 'statistics', 'system_user', 'table', 'tablesample',
+                        'textsize', 'then', 'to', 'top', 'tran', 'transaction', 'trigger', 'truncate', 'try_convert', 'tsequal',
+                        'union', 'unique', 'unpivot', 'update', 'updatetext', 'use', 'user', 'values', 'varying', 'view',
+                        'waitfor', 'when', 'where', 'while', 'with', 'within group', 'writetext'
+                    ],
+                    reserved:
+                    [
+                        'absolute', 'action', 'ada', 'add', 'all', 'allocate', 'alter', 'and', 'any', 'are', 'as', 'asc',
+                        'assertion', 'at', 'authorization', 'avg', 'begin', 'between', 'bit', 'bit_length', 'both', 'by',
+                        'cascade', 'cascaded', 'case', 'cast', 'catalog', 'char', 'char_length', 'character', 'character_length',
+                        'check', 'close', 'coalesce', 'collate', 'collation', 'column', 'commit', 'connect', 'connection',
+                        'constraint', 'constraints', 'continue', 'convert', 'corresponding', 'count', 'create',
+                        'cross', 'current', 'current_date', 'current_time', 'current_timestamp', 'current_user',
+                        'cursor', 'date', 'day', 'deallocate', 'dec', 'decimal', 'declare', 'default', 'deferrable',
+                        'deferred', 'delete', 'desc', 'describe', 'descriptor', 'diagnostics', 'disconnect', 'distinct',
+                        'domain', 'double', 'drop', 'else', 'end', 'end-exec', 'escape', 'except', 'exception', 'exec',
+                        'execute', 'exists', 'external', 'extract', 'false', 'fetch', 'first', 'float', 'for', 'foreign',
+                        'fortran', 'found', 'from', 'full', 'get', 'global', 'go', 'goto', 'grant', 'group', 'having', 'hour',
+                        'identity', 'immediate', 'in', 'include', 'index', 'indicator', 'initially', 'inner', 'input', 'insensitive',
+                        'insert', 'int', 'integer', 'intersect', 'interval', 'into', 'is', 'isolation', 'join', 'key', 'language',
+                        'last', 'leading', 'left', 'level', 'like', 'local', 'lower', 'match', 'max', 'min', 'minute', 'module',
+                        'month', 'names', 'national', 'natural', 'nchar', 'next', 'no', 'none', 'not', 'null', 'nullif', 'numeric',
+                        'octet_length', 'of', 'on', 'only', 'open', 'option', 'or', 'order', 'outer', 'output', 'overlaps', 'pad',
+                        'partial', 'pascal', 'position', 'precision', 'prepare', 'preserve', 'primary', 'prior', 'privileges',
+                        'procedure', 'public', 'read', 'real', 'references', 'relative', 'restrict', 'revoke', 'right', 'rollback',
+                        'rows', 'schema', 'scroll', 'second', 'section', 'select', 'session', 'session_user', 'set', 'size', 'smallint',
+                        'some', 'space', 'sql', 'sqlca', 'sqlcode', 'sqlerror', 'sqlstate', 'sqlwarning', 'substring', 'sum', 'system_user',
+                        'table', 'temporary', 'then', 'time', 'timestamp', 'timezone_hour', 'timezone_minute', 'to', 'trailing', 'transaction',
+                        'translate', 'translation', 'trim', 'true', 'union', 'unique', 'unknown', 'update', 'upper', 'usage', 'user', 'using',
+                        'value', 'values', 'varchar', 'varying', 'view', 'when', 'whenever', 'where', 'with', 'work', 'write', 'year', 'zone'
+                    ]
+                };
+                    break;
+            }
+
+            return null;
+        }
+
+        function colorize(code, syntax) {
             if (!code || !code.length)
                 return '';
 
-            var keywords =
-                [
-                    "alias", "async", "await", "dynamic", "get", "global", "nameof", "orderby", "partial",
-                    "var", "when", "yield", "abstract", "as", "base", "bool", "break", "byte", "case",
-                    "catch", "char", "checked", "class", "const", "continue", "decimal", "default", "delegate",
-                    "do", "double", "else", "enum", "event", "explicit", "extern", "false", "finally", "fixed",
-                    "float", "for", "foreach", "goto", "if", "implicit", "in", "int", "interface", "internal",
-                    "is", "lock", "long", "namespace", "new", "null", "object", "operator", "out", "override",
-                    "params", "private", "protected", "public", "readonly", "ref", "return", "sbyte", "sealed",
-                    "short", "sizeof", "stackalloc", "static", "string", "struct", "switch", "this", "throw",
-                    "true", "try", "typeof", "uint", "ulong", "unchecked", "unsafe", "ushort", "using",
-                    "virtual", "void", "volatile", "while"
-                ];
-            var separators = ' .,!?:;-+*/%^()[]<>{}&|"\'\n\r\t';
+            console.log(code);
+
+            var keywords = syntax.keywords;
+            var reserved = syntax.reserved;
+            var separators = syntax.separators;
+            var q = syntax.quoteChar;
+            var casesensitive = syntax.casesensitive;
+
+            console.log(casesensitive);
 
             var html = '';
             var word = '';
@@ -177,23 +290,29 @@
                     continue;
                 }
 
-                if (c === '"') {
+                if (c === q) {
                     word += c;
 
                     if (quote) {
-                        // string closed
+                        // string closed, append and highlight string
                         html += tag('span', word, true, 'class="codeblock-string"');
                         word = '';
-                        quote = false;
                     }
-                    else quote = true;
+
+                    quote = !quote;
                 }
                 else if (!quote) {
-                    if (keywords.indexOf(word) < 0) {
-                        html += sans(word)
+                    if (keywords.indexOf(word) >= 0 || !casesensitive && keywords.indexOf(word.toLowerCase()) >= 0) {
+                        // append and highlight keyword
+                        html += tag('span', word, true, 'class="codeblock-keyword"');
+                    }
+                    else if (reserved.indexOf(word) >= 0 || !casesensitive && reserved.indexOf(word.toLowerCase()) >= 0) {
+                        // append and highlight keyword
+                        html += tag('span', word, true, 'class="codeblock-reserved"');
                     }
                     else {
-                        html += tag('span', word, true, 'class="codeblock-keyword"');
+                        // append word
+                        html += sans(word)
                     }
                     word = '';
                     html += sans(c);
