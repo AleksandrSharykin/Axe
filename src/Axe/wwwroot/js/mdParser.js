@@ -139,8 +139,7 @@
             if (normal)
                 html += sans(word);
             else {
-                var t = block ? 'pre' : 'span';
-                html += tag(t, tryColorize(word), false, style);
+                html += tag(block ? 'pre' : 'span', tryColorize(word), false, style);
             }
         }
 
@@ -148,7 +147,7 @@
 
         function tryColorize(code) {
 
-            if (code.charAt(0) == '#') {
+            if (code.charAt(0) === '#') {
                 var idx = code.indexOf(';');
                 if (idx > 0) {
                     var syntaxName = code.substring(0, idx).trim();
@@ -184,7 +183,6 @@
                     ],
                     reserved: ['Main']
                 };
-                    break;
                 case '#js': return {
                     separators: ' .,!?:;-+*/%^()[]<>{}&|"\'\n\r\t',
                     quoteChar: '\'',
@@ -203,7 +201,6 @@
                     ],
                     reserved: ['Array', 'Date', 'eval', 'Function', 'Infinity', 'isFinite', 'isNaN', 'NaN', 'Number', 'parseFloat', 'parseInt', 'String', 'undefined']
                 };
-                    break;
                 case '#sql': return {
                     separators: ' .,!?:;-+*/%^()[]<>{}&|"\'\n\r\t',
                     quoteChar: '\'',
@@ -258,7 +255,6 @@
                         'value', 'values', 'varchar', 'varying', 'view', 'when', 'whenever', 'where', 'with', 'work', 'write', 'year', 'zone'
                     ]
                 };
-                    break;
             }
 
             return null;
@@ -268,15 +264,11 @@
             if (!code || !code.length)
                 return '';
 
-            console.log(code);
-
             var keywords = syntax.keywords;
             var reserved = syntax.reserved;
             var separators = syntax.separators;
             var q = syntax.quoteChar;
             var casesensitive = syntax.casesensitive;
-
-            console.log(casesensitive);
 
             var html = '';
             var word = '';
@@ -307,7 +299,7 @@
                         html += tag('span', word, true, 'class="codeblock-keyword"');
                     }
                     else if (reserved.indexOf(word) >= 0 || !casesensitive && reserved.indexOf(word.toLowerCase()) >= 0) {
-                        // append and highlight keyword
+                        // append and reserved keyword
                         html += tag('span', word, true, 'class="codeblock-reserved"');
                     }
                     else {
