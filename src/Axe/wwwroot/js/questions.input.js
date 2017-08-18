@@ -1,13 +1,13 @@
 ﻿$(document).ready(function () {
 
     if ($('#decoratedText')) {
+        var mdParse = function () {
+            var content = $('#rawText').val();
+            $('#decoratedText').html(md2html(content));
+        };
 
-        $('#rawText').change(function () {
-            var md = $(this).val();
-            //console.log(md);
-
-            $('#decoratedText').html(md2html(md));
-        });
+        $('#rawText').change(mdParse);
+        mdParse();
     }
 
     var summator = function () {

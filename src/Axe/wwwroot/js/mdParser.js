@@ -1,6 +1,6 @@
 ﻿function md2html(str) {
     if (!str) {
-        return "";
+        return '';
     }
 
     var html = '';
@@ -63,7 +63,7 @@
         }
     }
 
-    if (text) {
+    if (text && text.length > 0) {
         // append last piece of text
         blocks.push({ power: op, text: text });
     }
@@ -75,8 +75,11 @@
     // create normal, italic or bold blocks  
     for (var j = 0; j < blocks.length; j++) {
         var b = blocks[j];
+        b.text = highlight(b.text);
+
+
         if (b.power === 0) {
-            html += sans(b.text);
+            html += b.text;
         }
         else if (b.power === 1) {
             html += tag('em', b.text);
@@ -88,8 +91,59 @@
 
     return html;
 
-    function tag(t, content) {
-        return '<' + t + '>' + sans(content) + '</' + t + '>';
+    function tag(t, content, clear, attr) {
+        return '<' + t + (attr ? ' ' + attr + ' ' : '') + '>' +
+            (clear ? sans(content) : content) +
+            '</' + t + '>';
+    }
+
+    function highlight(content) {
+        if (!content) return '';
+
+        var html = '';
+        var word = '';
+        var block = false;
+        var normal = true;
+        var style = 'style = "text-decoration: underline;"';
+
+        for (var i = 0; i < content.length; i++) {
+            var c = content.charAt(i);
+
+            if (c !== '`') {
+                word += c;
+                continue;
+            }
+
+            // open code-block
+            if (normal) {
+                html += sans(word);
+                word = '';
+                normal = false;
+                block = content.charAt(i - 1) === '\n';
+                continue;
+            }
+
+            var t = 'span';
+            if (block && (content.charAt(i + 1) === '\n' || content.substring(i + 1, i + 3) === '\r\n')) {
+                t = 'pre';
+            }
+
+            // close code-block
+            html += tag(t, word, true, style);
+            word = '';
+            normal = true;
+        }
+
+        if (word && word.length > 0) {
+            if (normal)
+                html += sans(word);
+            else {
+                var t = block ? 'pre' : 'span';
+                html += tag(t, word, true, style);
+            }
+        }
+
+        return html;
     }
 
     function sans(str) {

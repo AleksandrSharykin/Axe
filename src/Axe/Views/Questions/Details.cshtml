@@ -4,6 +4,11 @@
     ViewData["Title"] = "Question Details";
 }
 
+@section Scripts
+{
+    <script src="~/js/mdParser.js"></script>
+}
+
 <h4>Question details</h4>
 <hr />
 
@@ -19,7 +24,7 @@
         <dd>@Html.DisplayFor(model => model.Author.UserName)</dd>
 
         <dt><label asp-for="Text" class="control-label"></label></dt>
-        <dd>@Html.DisplayFor(model => model.Text)</dd>
+        <dd><p class="codeblock md">@Model.Text</p></dd>
 
         <dt><label asp-for="Answers" class="control-label"></label></dt>
         <br />

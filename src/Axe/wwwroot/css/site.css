@@ -65,6 +65,10 @@ textarea {
     white-space: pre-wrap;
 }
 
+pre {
+    margin: 0px;
+}
+
 th {
     background: #d9edf7;        
     font-weight: normal;
