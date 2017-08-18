@@ -6,6 +6,7 @@
 
 @section Scripts
 {
+    <script src="~/js/mdParser.js"></script>
     <script src="~/js/questions.input.js"></script>
 }
 
@@ -33,11 +34,11 @@
 
         <div class="row">
             <div class="col-md-6 form-group">
-                <textarea asp-for="Text" class="form-control" rows="16"></textarea>
+                <textarea asp-for="Text" class="form-control" rows="16" id="rawText"></textarea>
                 <span asp-validation-for="Text" class="text-danger"></span>
             </div>
 
-            <div class="col-md-6 form-group">
+            <div class="col-md-6 form-group codeblock" id="decoratedText">
                 @Model.Text                
             </div>
         </div>

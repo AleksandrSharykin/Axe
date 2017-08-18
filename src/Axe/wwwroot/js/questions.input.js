@@ -1,4 +1,15 @@
 ﻿$(document).ready(function () {
+
+    if ($('#decoratedText')) {
+
+        $('#rawText').change(function () {
+            var md = $(this).val();
+            //console.log(md);
+
+            $('#decoratedText').html(md2html(md));
+        });
+    }
+
     var summator = function () {
         var score = 0;
         var txt = $('.answer-score');
