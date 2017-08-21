@@ -88,6 +88,21 @@ namespace Axe.Controllers
             return View(attempt);
         }
 
+        [HttpPost]
+        public async Task<ExamAttempt> Monitor(ExamAttempt attempt)
+        {
+            if (ModelState.IsValid)
+            {
+                var request = await CreateRequest(attempt);
+
+                attempt.IsFinished = false;
+
+                var response = await this.manager.AttemptPost(request);
+
+            }
+            return attempt;
+        }
+
         public async Task<IActionResult> Result(int id)
         {
             var request = await this.CreateRequest(id);

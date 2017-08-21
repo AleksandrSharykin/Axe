@@ -139,7 +139,7 @@
                     </div>
 
                     <div class="col-md-1">                        
-                        <input asp-for="@Model.Answers[i].Score" class="form-control answer-score" />
+                        <input asp-for="@Model.Answers[i].Score" class="form-control answer-score" min="0" max="100"/>
                         <span asp-validation-for="@Model.Answers[i].Score" class="text-danger"></span>
                     </div>
                 </div>
