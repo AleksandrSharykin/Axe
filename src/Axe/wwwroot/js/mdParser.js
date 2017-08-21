@@ -63,7 +63,7 @@
         }
     }
 
-    if (text && text.length > 0) {
+    if (text) {
         // append last piece of text
         blocks.push({ power: op, text: text });
     }
@@ -163,7 +163,7 @@
         }
 
         function colorize(code, syntax) {
-            if (!code || !code.length)
+            if (!code)
                 return '';
 
             var keywords = syntax.keywords;
@@ -219,7 +219,7 @@
         function tryGetSyntax(name) {
             switch (name) {
                 case '#cs': return {
-                    separators: ' .,!?:;-+*/%^()[]<>{}&|"\'\n\r\t',
+                    separators: ' .,!?:;-+*/%^~()[]<>{}&|"\n\r\t\u0027\u0060',
                     quoteChar: '"',
                     casesensitive: true,
                     keywords:
@@ -238,15 +238,15 @@
                     reserved: ['Main']
                 };
                 case '#js': return {
-                    separators: ' .,!?:;-+*/%^()[]<>{}&|"\'\n\r\t',
-                    quoteChar: '\'',
+                    separators: ' .,!?:;-+*/%^~()[]<>{}&|"\n\r\t\u0027\u0060',
+                    quoteChar: '\u0027',
                     casesensitive: true,
                     keywords:
                     [
                         'abstract', 'alias', 'as', 'async', 'await', 'base', 'bool', 'break', 'byte', 'case', 'catch',
                         'char', 'checked', 'class', 'const', 'continue', 'decimal', 'default', 'delegate', 'do',
                         'double', 'dynamic', 'else', 'enum', 'event', 'explicit', 'extern', 'false', 'finally',
-                        'fixed', 'float', 'for', 'foreach', 'get', 'global', 'goto', 'if', 'implicit', 'in', 'int',
+                        'fixed', 'float', 'for', 'foreach', 'function', 'get', 'global', 'goto', 'if', 'implicit', 'in', 'int',
                         'interface', 'internal', 'is', 'lock', 'long', 'nameof', 'namespace', 'new', 'null', 'object',
                         'operator', 'orderby', 'out', 'override', 'params', 'partial', 'private', 'protected', 'public',
                         'readonly', 'ref', 'return', 'sbyte', 'sealed', 'short', 'sizeof', 'stackalloc', 'static',
@@ -256,8 +256,8 @@
                     reserved: ['Array', 'Date', 'eval', 'Function', 'Infinity', 'isFinite', 'isNaN', 'NaN', 'Number', 'parseFloat', 'parseInt', 'String', 'undefined']
                 };
                 case '#sql': return {
-                    separators: ' .,!?:;-+*/%^()[]<>{}&|"\'\n\r\t',
-                    quoteChar: '\'',
+                    separators: ' .,!?:;-+*/%^~()[]<>{}&|"\n\r\t\u0027\u0060',
+                    quoteChar: '\u0027',
                     casesensitive: false,
                     keywords:
                     [
@@ -325,9 +325,9 @@
             '<': '&lt;',
             '>': '&gt;',
             '"': '&quot;',
-            "'": '&#39;',
+            '\u0027': '&#39;',
             '/': '&#x2F;',
-            '`': '&#x60;'
+            '\u0060': '&#x60;'
         };
         return String(str).replace(/[&<>"'`=\/]/g, function (s) {
             return entityMap[s];

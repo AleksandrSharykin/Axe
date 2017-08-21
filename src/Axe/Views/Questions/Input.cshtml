@@ -38,8 +38,10 @@
                 <span asp-validation-for="Text" class="text-danger"></span>
             </div>
 
-            <div class="col-md-6 form-group codeblock" id="decoratedText">
-                @Model.Text                
+            <div class="col-md-6 codeblock">
+                <div class="table-responsive" id="decoratedText">
+                    @Model.Text
+                </div>
             </div>
         </div>
     </div>
