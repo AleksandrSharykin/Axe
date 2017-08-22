@@ -23,8 +23,6 @@
             if (chk && $(chk).is(':checked')) {
                 score += parseInt($(txt[i]).text());
             }
-            if (chk)
-                console.log(chk);
         }
 
         if (!score) {

@@ -82,7 +82,9 @@ pre {
 }
 
 .dropArea{
-    min-height:80px;    
+    min-height:80px;
+    background:#eee;
+    padding:5px;
 }
 
 th {

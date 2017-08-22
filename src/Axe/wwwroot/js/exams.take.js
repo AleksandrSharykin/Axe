@@ -41,7 +41,6 @@
         var count = tabs.length;
 
         var contentHref = getTabAnchor(selectedTab);
-        console.log(contentHref);
 
         var nextTab;
         if (dir > 0 && idx < count - 1) {
@@ -107,9 +106,7 @@
 
         if (!$(target).hasClass('dropArea')) {
             var parents = $(target).parents('ol.dropArea');
-            console.log(parents);
             target = $(target).parents('ol.dropArea')[0];
-            console.log(target);
         }
 
         if (!target) return;

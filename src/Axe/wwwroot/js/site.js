@@ -44,7 +44,6 @@
         for (var c = 0; c < headers.length; c++) {
             (function (idx) {
                 var dir = -1;
-                console.log('sorting col=' + c + ' dir=' + dir);
                 headers[c].addEventListener("click", function () {
                     sortByColumn(dataTable, idx, dir = -dir);
                 });
