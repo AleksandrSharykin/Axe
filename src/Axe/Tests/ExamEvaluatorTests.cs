@@ -14,7 +14,7 @@ namespace Axe.Tests
         public static readonly string True = Boolean.TrueString;
         public static readonly string False = Boolean.FalseString;
 
-        public static readonly string None = "=";
+        public static readonly string None = null;
 
         /// <summary>
         /// Shortcut for line break sequence

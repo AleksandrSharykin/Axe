@@ -75,10 +75,14 @@ textarea {
 
 .codeblock-string {
     color: brown;
-} 
+}
 
 pre {
     margin: 0px;
+}
+
+.dropArea{
+    min-height:80px;    
 }
 
 th {

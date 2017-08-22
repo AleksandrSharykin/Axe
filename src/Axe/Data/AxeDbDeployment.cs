@@ -86,14 +86,14 @@ C# is simple, powerful, type-safe, and object-oriented",
                 {
                     Question = questionPriority,
                     Text = "public",
-                    Value = "=",
+                    Value = null,
                     Score = 0,
                 },
                 new TaskAnswer
                 {
                     Question = questionPriority,
                     Text = "abstract",
-                    Value = "=",
+                    Value = null,
                     Score = 0,
                 },
                 new TaskAnswer
@@ -107,7 +107,7 @@ C# is simple, powerful, type-safe, and object-oriented",
                 {
                     Question = questionPriority,
                     Text = "object",
-                    Value = "=",
+                    Value = null,
                     Score = 0,
                 },
                 new TaskAnswer
@@ -128,7 +128,7 @@ C# is simple, powerful, type-safe, and object-oriented",
                 {
                     Question = questionPriority,
                     Text = "{ }",
-                    Value = "=",
+                    Value = null,
                     Score = 0,
                 },
             };

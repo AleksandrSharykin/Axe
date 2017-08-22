@@ -93,18 +93,18 @@
                         {
                             var answer = @Model.Questions[q].AttemptAnswers[a];
                             string success = (answer.Value != answer.TaskAnswer.Value) ? "list-group-item-danger" :
-                                             (answer.IsSelected || answer.Value != "=" ? "list-group-item-success" : null);
+                                             (answer.IsSelected || answer.Value != null ? "list-group-item-success" : null);
 
                             <li class="list-group-item @success">
                                 @if (Model.Questions[q].TaskQuestion.Type == Axe.Models.TaskQuestionType.PrioritySelection)
                                 {
-                                    <span> @Model.Questions[q].AttemptAnswers[a].Value &#8594; [ @Model.Questions[q].AttemptAnswers[a].TaskAnswer.Value ]  &nbsp;</span>
+                                    <span> @Model.Questions[q].AttemptAnswers[a].Value &#8594; [ @Model.Questions[q].AttemptAnswers[a].TaskAnswer.Value ] &nbsp;</span>
                                 }
                                 else
                                 {
                                     @Html.CheckBoxFor(m => m.Questions[q].AttemptAnswers[a].IsSelected, new { @disabled = "disabled" })
                                 }
-                                
+
                                 @answer.TaskAnswer.Text
                             </li>
                         }

@@ -68,31 +68,62 @@
                         }
                         else
                         {
-                            <ul>
-                                @for (int a = 0; a < Model.Questions[idx].AttemptAnswers.Count; a++)
+                            <div class="form-group answersGroup">
+                                <div class="col-md-6">
+                                    <ul class="list-unstyled" >
+                                        @for (int a = 0; a < Model.Questions[idx].AttemptAnswers.Count; a++)
+                                        {
+                                            @if (Model.Questions[idx].TaskQuestion.Type == Axe.Models.TaskQuestionType.PrioritySelection &&
+                                                 Model.Questions[idx].AttemptAnswers[a].Value != null)
+                                            {
+                                                continue;
+                                            }
+
+                                            <li draggable="true" id="A_@Model.Questions[idx].AttemptAnswers[a].TaskAnswerId">
+                                                <input type="hidden" asp-for="@Model.Questions[idx].AttemptAnswers[a].TaskAnswerId" />
+
+                                                @if (Model.Questions[idx].TaskQuestion.Type == Axe.Models.TaskQuestionType.MultiChoice)
+                                                {
+                                                    @Html.CheckBoxFor(m => m.Questions[idx].AttemptAnswers[a].IsSelected)
+                                                }
+                                                else if (Model.Questions[idx].TaskQuestion.Type == Axe.Models.TaskQuestionType.SingleChoice)
+                                                {
+                                                    <input asp-for="@Model.Questions[idx].SelectedAnswerId" type="radio" value="@Model.Questions[idx].AttemptAnswers[a].TaskAnswerId" />
+                                                }
+                                                else
+                                                {
+                                                    <span style="display:none" class="glyphicon glyphicon-flash bg-danger"></span>
+
+                                                    <input type="hidden" asp-for="@Model.Questions[idx].AttemptAnswers[a].Value" class="answerNumber"/>
+                                                }
+
+                                                <span>@Model.Questions[idx].AttemptAnswers[a].TaskAnswer.Text</span>
+                                            </li>
+                                        }
+                                    </ul>
+                                </div>
+                                @if (Model.Questions[idx].TaskQuestion.Type == Axe.Models.TaskQuestionType.PrioritySelection)
                                 {
-                                    <li class="radio">
-                                        <input type="hidden" asp-for="@Model.Questions[idx].AttemptAnswers[a].TaskAnswerId" />
+                                    <div class="col-md-6">
+                                        <ol class="dropArea">
+                                            @foreach (var answer in @Model.Questions[idx].AttemptAnswers.Where(a => a.Value != null).OrderBy(a => int.Parse(a.Value)))
+                                            {
+                                                int a = @Model.Questions[idx].AttemptAnswers.IndexOf(answer);
 
-                                        @if (Model.Questions[idx].TaskQuestion.Type == Axe.Models.TaskQuestionType.MultiChoice)
-                                        {
-                                            @Html.CheckBoxFor(m => m.Questions[idx].AttemptAnswers[a].IsSelected)
-                                        }
-                                        else if (Model.Questions[idx].TaskQuestion.Type == Axe.Models.TaskQuestionType.SingleChoice)
-                                        {
-                                            <input asp-for="@Model.Questions[idx].SelectedAnswerId" type="radio" value="@Model.Questions[idx].AttemptAnswers[a].TaskAnswerId" />
-                                        }
-                                        else
-                                        {
-                                            <select asp-for="@Model.Questions[idx].AttemptAnswers[a].Value" asp-items="@Model.Questions[idx].PriorityOptions">
-                                                <option>=</option>
-                                            </select>
-                                        }
+                                                <li draggable="true" id="A_@Model.Questions[idx].AttemptAnswers[a].TaskAnswerId">
+                                                    <input type="hidden" asp-for="@Model.Questions[idx].AttemptAnswers[a].TaskAnswerId" />
 
-                                        <span>@Model.Questions[idx].AttemptAnswers[a].TaskAnswer.Text</span>
-                                    </li>
+                                                    <span class="glyphicon glyphicon-flash bg-danger"> </span>
+
+                                                    <input type="hidden" asp-for="@Model.Questions[idx].AttemptAnswers[a].Value" class="answerNumber" />
+
+                                                    <span>@Model.Questions[idx].AttemptAnswers[a].TaskAnswer.Text</span>
+                                                </li>
+                                            }
+                                        </ol>
+                                    </div>
                                 }
-                            </ul>
+                            </div>
                         }
 
                     </div>

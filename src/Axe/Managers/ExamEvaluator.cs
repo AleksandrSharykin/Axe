@@ -69,9 +69,9 @@ namespace Axe.Managers
                     {
                         var hasWrongSelection =
                             // user selected options which should not have been selected
-                            question.AttemptAnswers.Any(a => a.Value != "=" && a.TaskAnswer.Value == "=") ||
+                            question.AttemptAnswers.Any(a => a.Value != null && a.TaskAnswer.Value == null) ||
                             // user doens't know the answer and attempts to hack some points, e.g. selecting 1 for all options
-                            question.AttemptAnswers.Where(a => a.Value != "=").GroupBy(a => a.Value).Any(g => g.Count() > 1);
+                            question.AttemptAnswers.Where(a => a.Value != null).GroupBy(a => a.Value).Any(g => g.Count() > 1);
 
                         if (hasWrongSelection)
                         {
@@ -81,7 +81,7 @@ namespace Axe.Managers
                         {
                             // correctly selected options
                             var matches = question.AttemptAnswers
-                                .Where(a => a.TaskAnswer.Value != "=")
+                                .Where(a => a.TaskAnswer.Value != null)
                                 .OrderBy(a => int.Parse(a.TaskAnswer.Value))
                                 .TakeWhile(a => Normalize(a.Value) == Normalize(a.TaskAnswer.Value))
                                 .ToList();
@@ -96,7 +96,7 @@ namespace Axe.Managers
 
                                 // adding award points for all correctly not selected options only if there is correc                                
                                 score += question.AttemptAnswers
-                                    .Where(a => a.TaskAnswer.Value == "=")
+                                    .Where(a => a.TaskAnswer.Value == null)
                                     .Sum(a => a.TaskAnswer.Score);
                             }
                         }

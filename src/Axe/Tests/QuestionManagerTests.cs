@@ -12,6 +12,8 @@ namespace Axe.Tests
 {
     public class QuestionManagerTests : DbDependentTests
     {
+        private static readonly string None = null;
+
         private AxeDbContext dbManager;
         private IQuestionManager manager;
 
@@ -558,11 +560,11 @@ namespace Axe.Tests
                 Text = text,
                 Answers = new List<TaskAnswer>
                 {
-                    new TaskAnswer { Text = "0", Value = "=", Score = 1 },
+                    new TaskAnswer { Text = "0", Value = None, Score = 1 },
                     new TaskAnswer { Text = "a", Value = "3", Score = 1 },
                     new TaskAnswer { Text = "b", Value = "2", Score = 1 },
                     new TaskAnswer { Text = "c", Value = "1", Score = 1 },
-                    new TaskAnswer { Text = "?", Value = "=", Score = 1 },
+                    new TaskAnswer { Text = "?", Value = None, Score = 1 },
                 }
             };
 
@@ -617,9 +619,9 @@ namespace Axe.Tests
                 Text = text,
                 Answers = new List<TaskAnswer>
                 {
-                    new TaskAnswer { Text = "1", Value = "=", Score = 1 },
-                    new TaskAnswer { Text = "2", Value = "=", Score = 1 },
-                    new TaskAnswer { Text = "3", Value = "=", Score = 1 },
+                    new TaskAnswer { Text = "1", Value = None, Score = 1 },
+                    new TaskAnswer { Text = "2", Value = None, Score = 1 },
+                    new TaskAnswer { Text = "3", Value = None, Score = 1 },
                 }
             };
 
