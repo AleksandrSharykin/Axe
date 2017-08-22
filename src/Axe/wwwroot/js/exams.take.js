@@ -20,6 +20,62 @@
         }, 12000)
     }
 
+    $('#qNext').click(function () {
+        changeSelectedTab(1);
+    });
+
+    $('#qPrevious').click(function () {
+        changeSelectedTab(-1);
+    });
+
+    function getTabAnchor(t) {
+        return $(t).children('a').first().attr('href');
+    }
+
+    function changeSelectedTab(dir) {
+        var tabControl = $("#questionsTab");
+        var selectedTab = tabControl.children('li.active')[0];
+        var tabs = tabControl.children('li')
+        var idx = tabs.index(selectedTab);
+        var count = tabs.length;
+
+        var contentHref = getTabAnchor(selectedTab);
+        console.log(contentHref);
+
+        var nextTab;
+        if (dir > 0 && idx < count - 1) {
+            var nextTab = tabs.eq(idx + 1);
+        } else if (dir < 0 && idx > 0) {
+            //$(selectedTab).removeClass('active');
+            //tabs.eq(idx - 1).addClass('active');
+            nextTab = tabs.eq(idx - 1);
+        }
+
+        if (nextTab) {
+            $(selectedTab).removeClass('active');
+
+            //$(contentHref).removeClass('in');
+            $(contentHref).removeClass('in active');
+
+
+            nextTab.addClass('active');
+
+            var contentHref = getTabAnchor(nextTab);
+            $(contentHref).addClass('in active');
+            //$(contentHref).addClass('active');
+        }
+
+
+        console.log(idx);
+        //var tabs = $('#tabsContainer');
+        //if (dir > 0) {
+        //    tabs.se
+        //}
+
+        //var index = $('#tabs a[href="#tab_id"]').parent().index();
+        //$("#tabs").tabs("option", "active", index);
+    }
+
     $('li[draggable=true]').each(function () {
         this.addEventListener("dragstart", drag);
 
@@ -43,6 +99,7 @@
         });
     });
 
+    //https://www.w3schools.com/html/html5_draganddrop.asp
     function drag(ev) {
         // when starting drag, remember #id of moving element
         ev.dataTransfer.setData("text", ev.target.id);

@@ -27,7 +27,7 @@
     <input type="hidden" asp-for="@Model.Id" />
     <input type="hidden" asp-for="@Model.TaskId" />
 
-    <div class="row">
+    <div class="row" id="tabsContainer">
         <div class="col-sm-11">
             @*exam navigation*@
             <ul id="questionsTab" class="nav nav-tabs">
@@ -128,7 +128,7 @@
 
                     </div>
                 }
-            </div>
+            </div>            
         </div>
 
         <div class="col-sm-1">
@@ -136,7 +136,20 @@
         </div>  
     </div>
 
-  
+    <hr />
+    <div class="row">        
+        @*<div class="col-md-10">
+            <span id="qPrevious" class="btn btn-primary">Previous</span>
+        </div>
+        <div class="col-md-1 ">
+            <span id="qNext" class="btn btn-primary">&nbsp; Next &nbsp;</span>
+        </div>*@
+        <div class="btn-group">
+            <span id="qPrevious" class="btn btn-default">Previous</span>
+            <span id="qNext" class="btn btn-primary">&nbsp; Next &nbsp;</span>
+        </div>
+    </div>
+
 </form>
 
 
