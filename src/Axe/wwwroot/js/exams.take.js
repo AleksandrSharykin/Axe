@@ -33,6 +33,7 @@
     }
 
     function changeSelectedTab(dir) {
+
         var tabControl = $("#questionsTab");
         var selectedTab = tabControl.children('li.active')[0];
         var tabs = tabControl.children('li')
@@ -46,34 +47,19 @@
         if (dir > 0 && idx < count - 1) {
             var nextTab = tabs.eq(idx + 1);
         } else if (dir < 0 && idx > 0) {
-            //$(selectedTab).removeClass('active');
-            //tabs.eq(idx - 1).addClass('active');
             nextTab = tabs.eq(idx - 1);
         }
 
         if (nextTab) {
             $(selectedTab).removeClass('active');
-
-            //$(contentHref).removeClass('in');
             $(contentHref).removeClass('in active');
-
 
             nextTab.addClass('active');
 
             var contentHref = getTabAnchor(nextTab);
             $(contentHref).addClass('in active');
-            //$(contentHref).addClass('active');
+
         }
-
-
-        console.log(idx);
-        //var tabs = $('#tabsContainer');
-        //if (dir > 0) {
-        //    tabs.se
-        //}
-
-        //var index = $('#tabs a[href="#tab_id"]').parent().index();
-        //$("#tabs").tabs("option", "active", index);
     }
 
     $('li[draggable=true]').each(function () {
