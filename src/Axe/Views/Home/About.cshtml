@@ -1,7 +1,80 @@
 ﻿@{
     ViewData["Title"] = "About";
 }
-<h2>@ViewData["Title"].</h2>
-<h3>@ViewData["Message"]</h3>
 
-<p>Use this area to provide additional information.</p>
+<h2>Axe is a web-based assessment system in programming technologies.</h2>
+
+<div class="col-md-3">
+
+    <div class="form-group">
+        <span class="glyphicon glyphicon-record"> Axe</span>
+    </div>
+
+    <div class="figure">
+        <div class="figure-header">Question Types</div>
+
+        <dl class="figure-content">
+            <dt>Multi Choice</dt>
+            <dd><input type="checkbox" />option A</dd>
+            <dd><input type="checkbox" />option B</dd>
+            <dd><input type="checkbox" />option C</dd>
+            
+            <dt>Single Choice</dt>
+            <dd><input type="radio" />option A</dd>
+            <dd><input type="radio" />option B</dd>
+            <dd><input type="radio" />option C</dd>
+
+            <dt>Multi Line</dt>
+            <dd>
+                <span class="glyphicon glyphicon-text-size figure-item-pin">&nbsp;</span>
+                <textarea rows="4" placeholder="answers"></textarea>
+            </dd>
+
+            <dt>Single Line</dt>
+            <dd>
+                <span class="glyphicon glyphicon-text-size figure-item-pin">&nbsp;</span>
+                <input type="text" placeholder="answer"/> 
+            </dd>
+
+            <dt>Priority</dt>
+            <dd><span class="bg-success">[1]</span> First </dd>
+            <dd><span class="bg-success">[2]</span> Second </dd>
+            <dd><span class="bg-success">[3]</span> Third </dd>
+            <dd><span>[=]</span> not selected </dd>
+        </dl>
+
+    </div>
+</div>
+
+<div class="col-md-3">
+
+    <div class="form-group">
+        <span class="glyphicon glyphicon-record"> IEnumerable</span>
+    </div>
+
+    <div class="figure">
+        <div class="figure-header">Linq</div>
+
+        <dl class="figure-content">
+            <dt>Projecting</dt>
+
+            <dd>Select</dd>
+            <dd>SelectMany</dd>            
+
+            <dt>Filtering</dt>
+
+            <dd>Where</dd>
+            <dd>Take and Skip</dd>
+            <dd>Distinct</dd>
+
+            <dt>Aggregation</dt>
+
+            <dd>Count</dd>
+            <dd>Min and Max</dd>
+            <dd>Sum and Average</dd>
+        </dl>
+
+        <div class="figure-footer"></div>
+
+    </div>
+</div>

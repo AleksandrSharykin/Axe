@@ -22,7 +22,7 @@ footer {
     bottom: 10px;
     left: 5%;
     right: 5%;
-    height: 64px;    
+    height: 64px;
     overflow: hidden;
     text-align: center;
 }
@@ -50,7 +50,7 @@ a:hover {
 
 .label {
     border-radius: 0;
-    padding: 5px 10px;    
+    padding: 5px 10px;
 }
 
 /* Set widths on the form inputs since otherwise they're 100% wide */
@@ -58,20 +58,20 @@ input,
 select,
 textarea {
     /*max-width: 810px;*/
-    white-space: pre-wrap;    
+    white-space: pre-wrap;
 }
 
 .codeblock {
     white-space: pre-wrap;
 }
 
-.codeblock-keyword{
+.codeblock-keyword {
     color: blue;
 }
 
 .codeblock-reserved {
     color: magenta;
-} 
+}
 
 .codeblock-string {
     color: brown;
@@ -81,14 +81,14 @@ pre {
     margin: 0px;
 }
 
-.dropArea{
-    min-height:80px;
-    background:#eee;
-    padding:5px;
+.dropArea {
+    min-height: 80px;
+    background: #eee;
+    padding: 5px;
 }
 
 th {
-    background: #d9edf7;        
+    background: #d9edf7;
     font-weight: normal;
 }
 
@@ -113,14 +113,14 @@ th {
     text-align: center;
 }
 
-.techCard:hover {
-    background-color: #039;
-    color: white;
-}
+    .techCard:hover {
+        background-color: #039;
+        color: white;
+    }
 
 .techTitle {
     margin-bottom: 8px;
-    padding: 4px 28px;    
+    padding: 4px 28px;
     border: solid 1px gray;
     font-size: 20px;
     color: black;
@@ -132,18 +132,72 @@ th {
     margin: 4px;
     padding: 4px;
     font-size: 14px;
-    color: black;    
+    color: black;
 }
 
-.userCard:hover {
-    background-color: #039;
-    color: white;
-}
+    .userCard:hover {
+        background-color: #039;
+        color: white;
+    }
 
 /* Hide/rearrange for smaller screens */
 @media screen and (max-width: 767px) {
     /* Hide captions */
     .carousel-caption {
-    display: none
-  }
+        display: none
+    }
+}
+
+.figure {
+    min-height: 40px;
+    /*background: #d6e0f5;*/
+    border-radius: 8px;
+    border: 1px solid #d6e0f5;
+}
+
+.figure-header {
+    font-size: 18px;
+    background: #4673d2;
+    color: white;
+    padding: 12px;
+    border-top-left-radius: 8px;
+    border-top-right-radius: 8px;
+}
+
+.figure-header-toggle {
+    float: right;
+}
+
+.figure-content {
+    margin-bottom: 0px;
+}
+
+    .figure-content > dt {
+        padding: 4px 4px;
+        font-size: 14px;
+        font-weight: normal;
+        /*background: #99ccff;*/
+        background: #d6e0f5;
+        border-top: 1px solid white;
+        border-bottom: 1px solid white;
+    }
+
+    .figure-content > dd {
+        margin-left: 24px;
+        padding: 2px;
+        font-size: 14px;
+    }
+
+.figure-group-toggle {
+    float: left;
+    margin: 2px 4px;
+}
+
+.figure-item-pin {
+    float: left;
+    vertical-align: top;
+}
+
+.figure-footer {
+    min-height: 16px;
 }

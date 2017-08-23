@@ -71,4 +71,84 @@
             return item(a, column).localeCompare(item(b, column))
         }
     }
+
+    $('.figure').figure();
 });
+
+(function ($) {
+    $.fn.figure = function (action) {
+
+        return this.each(function () {
+            var self = $(this);
+            var header;
+            var headerToggle;
+            var content;
+            var footer;
+
+            var isContentExpanded = true;
+
+            if (action === null || action === undefined || action === "init") {
+                init();
+            }
+
+            function init() {
+                header = self.children('.figure-header').first();
+
+                if (header.length) {
+                    headerToggle = header.children('.figure-header-toggle').first()
+                    if (!headerToggle.length) {
+                        headerToggle = $('<span class="glyphicon glyphicon-chevron-up figure-header-toggle"></span>');
+                        header.append(headerToggle);
+                    }
+
+                    headerToggle.click(toggleContent);
+                }
+
+                content = self.children('.figure-content').first();
+
+                if (content.length) {
+                    content.children('dt').each(function () {
+                        var dt = $(this);
+
+                        var isItemExpanded = true;
+                        var itemToggle = $(this).children('.figure-group-toggle');
+                        if (!itemToggle.length) {
+                            itemToggle = $('<span class="glyphicon glyphicon-triangle-top figure-group-toggle"></span> ');
+                            dt.prepend(itemToggle);
+                        }
+
+                        itemToggle.click(function () {
+                            dt.nextUntil('dt').toggle();
+                            isItemExpanded = !isItemExpanded;
+                            if (isItemExpanded)
+                                itemToggle.addClass('glyphicon-triangle-top').removeClass('glyphicon-triangle-bottom');
+                            else
+                                itemToggle.addClass('glyphicon-triangle-bottom').removeClass('glyphicon-triangle-top');
+                        });
+
+                        dt.nextUntil('dt', 'dd').each(function () {
+                            var pin = $(this).children('.figure-item-pin').first();
+                            if (!pin.length)
+                                $(this).prepend($('<span class="glyphicon glyphicon-paperclip figure-item-pin">&nbsp;</span>'));
+                        });
+                    });
+                }
+
+                footer = self.children('.figure-footer').first();
+                if (!footer.length) {
+                    footer = $('<div class="figure-footer"></div>');
+                    self.append(footer);
+                }
+            }
+
+            function toggleContent() {
+                content.toggle();
+                isContentExpanded = !isContentExpanded;
+                if (isContentExpanded)
+                    headerToggle.addClass('glyphicon-chevron-up').removeClass('glyphicon-chevron-down');
+                else
+                    headerToggle.addClass('glyphicon-chevron-down').removeClass('glyphicon-chevron-up');
+            }
+        });
+    };
+}(jQuery));

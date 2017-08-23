@@ -44,7 +44,7 @@
 
         var nextTab;
         if (dir > 0 && idx < count - 1) {
-            var nextTab = tabs.eq(idx + 1);
+            nextTab = tabs.eq(idx + 1);
         } else if (dir < 0 && idx > 0) {
             nextTab = tabs.eq(idx - 1);
         }
@@ -55,7 +55,7 @@
 
             nextTab.addClass('active');
 
-            var contentHref = getTabAnchor(nextTab);
+            contentHref = getTabAnchor(nextTab);
             $(contentHref).addClass('in active');
 
         }
@@ -121,7 +121,7 @@
         }
         else {
             var current = ev.target;
-            if (current.tagName != item.tagName) {
+            if (current.tagName !== item.tagName) {
                 current = $(current).parents('li')[0];
             }
             target.insertBefore(item, current);
