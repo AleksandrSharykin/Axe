@@ -92,7 +92,7 @@
             }
 
             function init() {
-                header = self.children('.figure-header').first();
+                header = self.find('.figure-header').first();
 
                 if (header.length) {
                     headerToggle = header.children('.figure-header-toggle').first()
@@ -104,7 +104,7 @@
                     headerToggle.click(toggleContent);
                 }
 
-                content = self.children('.figure-content').first();
+                content = self.find('.figure-content').first();
 
                 if (content.length) {
                     content.children('dt').each(function () {
@@ -134,7 +134,7 @@
                     });
                 }
 
-                footer = self.children('.figure-footer').first();
+                footer = self.find('.figure-footer').first();
                 if (!footer.length) {
                     footer = $('<div class="figure-footer"></div>');
                     self.append(footer);
