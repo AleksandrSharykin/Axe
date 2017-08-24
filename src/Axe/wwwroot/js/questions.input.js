@@ -1,9 +1,10 @@
 ﻿$(document).ready(function () {
 
     if ($('#decoratedText')) {
+        var self = $(this);
         var mdParse = function () {
             var content = $('#rawText').val();
-            $('#decoratedText').html(md2html(content));
+            $('#decoratedText').html(self.markdown2html(content));
         };
 
         $('#rawText').change(mdParse);
