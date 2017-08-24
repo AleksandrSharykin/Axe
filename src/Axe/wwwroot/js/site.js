@@ -33,8 +33,6 @@
         $(this).html($(this).markdown2html(content));
     });
 
-    //$('p.md').markdown2html();
-
     // https://stackoverflow.com/questions/14267781/sorting-html-table-with-javascript    
     var tables = document.getElementsByTagName('table');
     for (var i = 0; i < tables.length; i++)

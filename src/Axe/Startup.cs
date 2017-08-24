@@ -34,7 +34,8 @@ namespace Axe
         public void ConfigureServices(IServiceCollection services)
         {
             // Add framework services.
-            services.AddMvc();
+            services.AddMvc().AddJsonOptions(o => { o.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore; });
+
 
             services.AddDbContext<AxeDbContext>(options =>
                     options.UseSqlServer(Configuration.GetConnectionString("AxeDbContext")));

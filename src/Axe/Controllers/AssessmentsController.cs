@@ -5,7 +5,6 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.EntityFrameworkCore;
 using Axe.Models;
 using Axe.Models.AssessmentsVm;
 using Axe.Managers;
@@ -86,6 +85,39 @@ namespace Axe.Controllers
             }
 
             return View(response.Item);
+        }
+
+        /// <summary>
+        /// Return information about skill assessment for ajax details request
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
+        [HttpGet]
+        public async Task<JsonResult> Item(int? id)
+        {
+            var request = await this.CreateRequest(id ?? 0);
+
+            var response = await this.manager.DetailsGet(request);
+
+            var details = response.Item;
+            if (details == null)
+            {
+                return Json(null);
+            }
+
+            var result = new
+            {
+                ExaminerName = details.Examiner?.UserName,
+                TechnologyName = details.Technology?.Name,
+                ExamDate = details.ExamDate?.ToString(),
+                details.ExamScore,
+                details.ExamComment,
+                details.IsPassed,
+                details.CanEdit,
+                details.CanMark,
+                details.CanDelete,
+            };
+            return Json(result);
         }
 
         /// <summary>
