@@ -72,11 +72,11 @@
         }
     }
 
-    $('.figure').figure();
+    $('.figure').figure('init', { isExpanded: true });
 });
 
 (function ($) {
-    $.fn.figure = function (action) {
+    $.fn.figure = function (action, options) {
 
         return this.each(function () {
             var self = $(this);
@@ -85,6 +85,7 @@
             var content;
             var footer;
 
+            var settings = $.fn.extend({}, $.fn.figure.defaults, options);
             var isContentExpanded = true;
 
             if (action === null || action === undefined || action === "init") {
@@ -132,12 +133,15 @@
                                 $(this).prepend($('<span class="glyphicon glyphicon-paperclip figure-item-pin">&nbsp;</span>'));
                         });
                     });
+
+                    if (settings.isExpanded != $.fn.figure.defaults.isExpanded)
+                        toggleContent();
                 }
 
                 footer = self.find('.figure-footer').first();
                 if (!footer.length) {
                     footer = $('<div class="figure-footer"></div>');
-                    self.append(footer);
+                    self.children('.figure-main').append(footer);
                 }
             }
 
@@ -151,4 +155,6 @@
             }
         });
     };
+
+    $.fn.figure.defaults = { isExpanded: true };
 }(jQuery));
