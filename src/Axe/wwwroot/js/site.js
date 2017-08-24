@@ -75,93 +75,103 @@
         }
     }
 
-    $('.figure').figure('init', { isExpanded: true });
+    // decorate diagram figures    
+    $('.figure').figure();
+    $('.figure').eq(1).figure('toggleContent');
+
 });
 
-(function ($) {
-    $.fn.figure = function (action, options) {
+// https://learn.jquery.com/plugins/stateful-plugins-with-widget-factory/
+// https://learn.jquery.com/jquery-ui/how-jquery-ui-works/
+// https://learn.jquery.com/jquery-ui/widget-factory/widget-method-invocation/
+$.widget("axe.figure", {
 
-        return this.each(function () {
-            var self = $(this);
-            var header;
-            var headerToggle;
-            var content;
-            var footer;
+    // default options
+    options: {
+        value: 10,
+        isContentExpanded: true,
+        header: null,
+        headerToggle: null,
+        content: null,
+        footer: null,
+    },
 
-            var settings = $.fn.extend({}, $.fn.figure.defaults, options);
-            var isContentExpanded = true;
+    // .ctor
+    _create: function () {
+        var header;
+        var headerToggle;
+        var content;
+        var footer;
 
-            if (action === null || action === undefined || action === "init") {
-                init();
+        header = this.element.find('.figure-header').first();
+
+        if (header.length) {
+            headerToggle = header.children('.figure-header-toggle').first()
+            if (!headerToggle.length) {
+                headerToggle = $('<span class="glyphicon glyphicon-chevron-up figure-header-toggle"></span>');
+                header.append(headerToggle);
             }
 
-            function init() {
-                header = self.find('.figure-header').first();
+            var self = this;
+            headerToggle.click(function () { self.toggleContent(); });
+        }
 
-                if (header.length) {
-                    headerToggle = header.children('.figure-header-toggle').first()
-                    if (!headerToggle.length) {
-                        headerToggle = $('<span class="glyphicon glyphicon-chevron-up figure-header-toggle"></span>');
-                        header.append(headerToggle);
-                    }
+        content = this.element.find('.figure-content').first();
 
-                    headerToggle.click(toggleContent);
+        if (content.length) {
+            content.children('dt').each(function () {
+                var dt = $(this);
+
+                var isItemExpanded = true;
+                var itemToggle = $(this).children('.figure-group-toggle');
+                if (!itemToggle.length) {
+                    itemToggle = $('<span class="glyphicon glyphicon-triangle-top figure-group-toggle"></span> ');
+                    dt.prepend(itemToggle);
                 }
 
-                content = self.find('.figure-content').first();
+                itemToggle.click(function () {
+                    dt.nextUntil('dt').toggle();
+                    isItemExpanded = !isItemExpanded;
+                    if (isItemExpanded)
+                        itemToggle.addClass('glyphicon-triangle-top').removeClass('glyphicon-triangle-bottom');
+                    else
+                        itemToggle.addClass('glyphicon-triangle-bottom').removeClass('glyphicon-triangle-top');
+                });
 
-                if (content.length) {
-                    content.children('dt').each(function () {
-                        var dt = $(this);
+                dt.nextUntil('dt', 'dd').each(function () {
+                    var pin = $(this).children('.figure-item-pin').first();
+                    if (!pin.length)
+                        $(this).prepend($('<span class="glyphicon glyphicon-paperclip figure-item-pin">&nbsp;</span>'));
+                });
+            });
+        }
 
-                        var isItemExpanded = true;
-                        var itemToggle = $(this).children('.figure-group-toggle');
-                        if (!itemToggle.length) {
-                            itemToggle = $('<span class="glyphicon glyphicon-triangle-top figure-group-toggle"></span> ');
-                            dt.prepend(itemToggle);
-                        }
+        footer = this.element.find('.figure-footer').first();
+        if (!footer.length) {
+            footer = $('<div class="figure-footer"></div>');
+            this.element.children('.figure-main').append(footer);
+        }
 
-                        itemToggle.click(function () {
-                            dt.nextUntil('dt').toggle();
-                            isItemExpanded = !isItemExpanded;
-                            if (isItemExpanded)
-                                itemToggle.addClass('glyphicon-triangle-top').removeClass('glyphicon-triangle-bottom');
-                            else
-                                itemToggle.addClass('glyphicon-triangle-bottom').removeClass('glyphicon-triangle-top');
-                        });
+        this.options.header = header;
+        this.options.headerToggle = headerToggle;
+        this.options.content = content;
+        this.options.footer = footer;
+    },
 
-                        dt.nextUntil('dt', 'dd').each(function () {
-                            var pin = $(this).children('.figure-item-pin').first();
-                            if (!pin.length)
-                                $(this).prepend($('<span class="glyphicon glyphicon-paperclip figure-item-pin">&nbsp;</span>'));
-                        });
-                    });
+    // public method to toggle figure
+    toggleContent: function (flag) {
+        this.options.content.toggle();
+        this.options.isContentExpanded = !this.options.isContentExpanded;
+        if (this.options.isContentExpanded)
+            this.options.headerToggle.addClass('glyphicon-chevron-up').removeClass('glyphicon-chevron-down');
+        else
+            this.options.headerToggle.addClass('glyphicon-chevron-down').removeClass('glyphicon-chevron-up');
+        console.log('flag = ', flag)
+    }
+});
 
-                    if (settings.isExpanded !== $.fn.figure.defaults.isExpanded)
-                        toggleContent();
-                }
-
-                footer = self.find('.figure-footer').first();
-                if (!footer.length) {
-                    footer = $('<div class="figure-footer"></div>');
-                    self.children('.figure-main').append(footer);
-                }
-            }
-
-            function toggleContent() {
-                content.toggle();
-                isContentExpanded = !isContentExpanded;
-                if (isContentExpanded)
-                    headerToggle.addClass('glyphicon-chevron-up').removeClass('glyphicon-chevron-down');
-                else
-                    headerToggle.addClass('glyphicon-chevron-down').removeClass('glyphicon-chevron-up');
-            }
-        });
-    };
-
-    $.fn.figure.defaults = { isExpanded: true };
-}(jQuery));
-
+// https://learn.jquery.com/plugins/basic-plugin-creation/
+// https://learn.jquery.com/plugins/advanced-plugin-concepts/
 (function ($) {
     $.fn.markdown2html = function (content) {
         return md2html(content);
