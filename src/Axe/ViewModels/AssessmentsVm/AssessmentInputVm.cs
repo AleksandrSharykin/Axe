@@ -56,8 +56,11 @@ namespace Axe.Models.AssessmentsVm
         /// Get or sets assessment date
         /// </summary>
         [Required]
-        [DataType(DataType.Date)]
+        [Display(Prompt = "yyyy-MM-dd")]
+        [DisplayFormat(DataFormatString = "{0:yyyy-MM-dd}", ApplyFormatInEditMode = true)]
         public DateTime? ExamDate { get; set; }
+
+        public string MyDate { get; set; }
 
         /// <summary>
         /// Get or sets assessment time

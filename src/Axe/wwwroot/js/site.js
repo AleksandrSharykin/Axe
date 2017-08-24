@@ -1,4 +1,6 @@
 ﻿$(document).ready(function () {
+
+    $('input[type=datetime]').datepicker();
     // https://stackoverflow.com/questions/18999501/bootstrap-3-keep-selected-tab-on-page-refresh
     // find tabs groups on page
     var tabs = $('ul.nav-tabs');
@@ -134,7 +136,7 @@
                         });
                     });
 
-                    if (settings.isExpanded != $.fn.figure.defaults.isExpanded)
+                    if (settings.isExpanded !== $.fn.figure.defaults.isExpanded)
                         toggleContent();
                 }
 
