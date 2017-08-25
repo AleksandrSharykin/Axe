@@ -22,19 +22,16 @@ namespace Axe.Managers
         {
             IList<object> items = null;
 
-            items = await this.context.Users.Include(t => t.AssessmentsAsExaminer).ThenInclude(a => a.Technology)
-                .Select(u => new
+            items = await this.context.Users.Include(u => u.AssessmentsAsExaminer).ThenInclude(a => a.Technology)
+                .Where(u => u.AssessmentsAsExaminer.Any(a => a.IsPassed != null))
+                .SelectMany(u => u.AssessmentsAsExaminer.GroupBy(a => a.Technology.Name),
+                (u, gr) => new
                 {
                     u.Id,
                     u.UserName,
-                    Techs = u.AssessmentsAsExaminer
-                            .GroupBy(a => a.Technology.Name)
-                            .Select(g => new
-                            {
-                                Name = g.Key,
-                                Count = g.Count(),
-                            })
-                            .ToList()
+                    Tech = gr.Key,
+                    Successful = gr.Count(a => a.IsPassed == true),
+                    Failed = gr.Count(a => a.IsPassed == false)
                 })
                 .ToListAsync<object>();
 

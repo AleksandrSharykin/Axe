@@ -17,7 +17,9 @@
                 .map(function (o) {
                     return {
                         link: '<a href="/profiles/visit/' + o.id + '">' + o.userName + '</a>',
-                        techs: o.techs.map(function (t) { return t.name + ': ' + t.count; }).join('<br>')
+                        tech: o.tech,
+                        success: o.successful ? '<span class="label label-success">' + o.successful + '</span>' : '-',
+                        failure: o.failed ? '<span class="label label-danger">' + o.failed + '</span>' : '-'
                     }
                 })
                 .map(function (o) { return toTr(o); })
