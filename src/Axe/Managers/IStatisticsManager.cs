@@ -10,5 +10,7 @@ namespace Axe.Managers
         int MembersCount { get; }
 
         Task<IList<object>> GetExams(DateTime periodStart, DateTime periodEnd);
+
+        Task<IList<object>> GetComplexQuestions();
     }
 }

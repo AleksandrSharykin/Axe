@@ -9,6 +9,28 @@
         };
     $.ajax(memberscount);
 
+    var questions = {
+        url: '/api/statistics/getcomplexquestions',
+        method: 'get',
+        success: function (data) {
+            var formatter = function (item, prop) {
+                var value = item[prop];
+                if (prop === 'id')
+                    return '<a href="/questions/details/' + value + '">' + value + '</a>';
+
+                if (prop === 'preview')
+                    return '<span class="codeblock">' + value + '</span>';
+
+                return value;
+            };
+            var rows = data.map(function (o) { return toTr(o, formatter); }).join('');
+
+            $('#questions').html(rows);
+        },
+        error: function (e) { console.log(e) }
+    };
+    $.ajax(questions);
+
     var d = new Date();
     $('#periodEnd').val($.datepicker.formatDate('mm/dd/yy', d))
     d.setDate(d.getDate() - 7);
@@ -30,8 +52,6 @@
         else
             return;
 
-        console.log(firstDay + ' ' + lastDay);
-
         if (!firstDay || !lastDay)
             return;
 
@@ -43,7 +63,7 @@
 
         var exams =
             {
-                url: '/api/statistics/GetExams',
+                url: '/api/statistics/getexams',
                 method: 'get',
                 data: { periodStart: firstDay.toISOString(), periodEnd: lastDay.toISOString() },
                 dataType: 'json',
@@ -56,4 +76,13 @@
             };
         $.ajax(exams);
     };
+
+    function toTr(item, formatter) {
+        return '<tr>'
+            + Object.getOwnPropertyNames(item)
+                .map(function (prop) { return '<td>' + formatter(item, prop) + '</td>'; })
+                .join('')
+            + '</tr>';
+    }
+
 });

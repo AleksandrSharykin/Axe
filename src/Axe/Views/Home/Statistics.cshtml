@@ -6,27 +6,26 @@
     <script src="~/js/home.statistics.js"></script>
 }
 
-<h2>Statistics</h2>
+<h2 class="text-primary">Statistics</h2>
 
-<h3 id="total"></h3>
-
-<div class="form-group">
-
-</div>
+<h3><span  class="text-primary">Total User:</span> <span id="total"></span></h3>
 
 <hr />
+
+<h3 class="text-primary">Attempts Per Day</h3>
+
 <div class="form-group">
     <div class="row">
-        <div class="col-md-3">
+        <div class="col-md-2">
             <div class="input-group">
-                <span class="input-group-addon">Period Start</span>
+                <span class="input-group-addon">From</span>
                 <input id="periodStart" type="datetime" class="form-control" />
             </div>
         </div>
 
-        <div class="col-md-3">
+        <div class="col-md-2">
             <div class="input-group">
-                <span class="input-group-addon">Period End</span>
+                <span class="input-group-addon">To</span>
                 <input id="periodEnd" type="datetime" class="form-control" />
             </div>
         </div>
@@ -35,7 +34,7 @@
     </div>
     <br />
     <div class="row">
-        <div class="col-md-7 table-responsive">
+        <div class="col-md-6 table-responsive">
             <table class="table table-striped">
                 <thead>
                     <tr>
@@ -51,3 +50,24 @@
 
 <hr />
 
+<h3 class="text-primary">Difficult Questions</h3>
+
+<div>
+    <div class="row">
+        <div class="col-md-6 table-responsive">
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th><span class="glyphicon glyphicon-th"></span></th>
+                        <th>Technology</th>
+                        <th>%</th>
+                        <th>Successful</th>
+                        <th>Attempted</th>
+                        <th>Text</th>
+                    </tr>
+                </thead>
+                <tbody id="questions"></tbody>
+            </table>
+        </div>
+    </div>
+</div>

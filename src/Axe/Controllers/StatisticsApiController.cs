@@ -29,5 +29,10 @@ namespace Axe.Controllers
         {
             return await this.manager.GetExams(periodStart, periodEnd);
         }
+
+        public async Task<IList<object>> GetComplexQuestions()
+        {
+            return await this.manager.GetComplexQuestions();
+        }
     }
 }

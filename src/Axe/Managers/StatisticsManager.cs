@@ -31,5 +31,32 @@ namespace Axe.Managers
                 .ToListAsync<object>();
             return exams;
         }
+
+        public async Task<IList<object>> GetComplexQuestions()
+        {
+            var items = await this.context.AttemptQuestion.Include(q => q.TaskQuestion).ThenInclude(q => q.Technology)
+                .Where(q => q.Attempt.IsFinished)
+                .GroupBy(q => q.TaskQuestion)
+                .Select(g => new
+                {
+                    Key = g.Key,
+                    Total = g.Count(),
+                    Successful = g.Where(q => q.IsAccepted == true).Count(),
+                })
+                .ToAsyncEnumerable()
+                .Select(g => new
+                {
+                    Id = g.Key.Id,
+                    TechnologyName = g.Key.Technology.Name,
+                    Percentage = g.Successful * 100 / g.Total,
+                    g.Successful,
+                    g.Total,
+                    g.Key.Preview,
+                })
+                .OrderBy(q => q.Successful * 100.0 / q.Total)
+                .ToList<object>();
+
+            return items;
+        }
     }
 }

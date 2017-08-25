@@ -77,7 +77,7 @@
 
     // decorate diagram figures    
     $('.figure').figure()//.each(function () { $(this).addClass('bg-danger') });
-    $('.figure').eq(1).figure('toggleContent');
+    //$('.figure').eq(1).figure('toggleContent');
 
 });
 
@@ -143,6 +143,8 @@ $.widget("axe.figure", {
                     if (!pin.length)
                         $(this).prepend($('<span class="glyphicon glyphicon-paperclip figure-item-pin">&nbsp;</span>'));
                 });
+
+                itemToggle.click()
             });
         }
 
