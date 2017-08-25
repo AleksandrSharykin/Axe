@@ -39,5 +39,10 @@ namespace Axe.Controllers
         {
             return await this.manager.GetTechnologiesDifficulty();
         }
+
+        public async Task<IList<object>> GetExaminers()
+        {
+            return await this.manager.GetExaminers();
+        }
     }
 }

@@ -18,6 +18,29 @@ namespace Axe.Managers
             get { return this.context.Users.Count(); }
         }
 
+        public async Task<IList<object>> GetExaminers()
+        {
+            IList<object> items = null;
+
+            items = await this.context.Users.Include(t => t.AssessmentsAsExaminer).ThenInclude(a => a.Technology)
+                .Select(u => new
+                {
+                    u.Id,
+                    u.UserName,
+                    Techs = u.AssessmentsAsExaminer
+                            .GroupBy(a => a.Technology.Name)
+                            .Select(g => new
+                            {
+                                Name = g.Key,
+                                Count = g.Count(),
+                            })
+                            .ToList()
+                })
+                .ToListAsync<object>();
+
+            return items;
+        }
+
         public async Task<IList<object>> GetExams(DateTime periodStart, DateTime periodEnd)
         {
             periodStart = periodStart.Date;

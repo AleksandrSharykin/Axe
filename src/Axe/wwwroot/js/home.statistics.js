@@ -9,6 +9,26 @@
         };
     $.ajax(memberscount);
 
+    var experts = {
+        url: '/api/statistics/GetExaminers',
+        method: 'get',
+        success: function (data) {
+            var rows = data
+                .map(function (o) {
+                    return {
+                        link: '<a href="/profiles/visit/' + o.id + '">' + o.userName + '</a>',
+                        techs: o.techs.map(function (t) { return t.name + ': ' + t.count; }).join('<br>')
+                    }
+                })
+                .map(function (o) { return toTr(o); })
+                .join('');
+
+            $('#experts').html(rows);
+        },
+        error: function (e) { console.log(e) }
+    };
+    $.ajax(experts);
+
     var techs = {
         url: '/api/statistics/GetTechnologiesDifficulty',
         method: 'get',

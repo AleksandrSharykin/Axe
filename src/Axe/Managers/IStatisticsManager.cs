@@ -14,5 +14,7 @@ namespace Axe.Managers
         Task<IList<object>> GetQuestionsDifficulty();
 
         Task<IList<object>> GetTechnologiesDifficulty();
+
+        Task<IList<object>> GetExaminers();
     }
 }
