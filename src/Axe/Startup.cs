@@ -46,6 +46,8 @@ namespace Axe
 
             services.AddScoped<IHomeManager, HomeManager>();
 
+            services.AddScoped<IStatisticsManager, StatisticsManager>();
+
             services.AddScoped<ITechnologyManager, TechnologyManager>();
 
             services.AddScoped<IAssessmentManager, AssessmentManager>();

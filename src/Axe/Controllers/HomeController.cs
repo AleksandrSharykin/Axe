@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Identity;
 using Axe.Models;
 using Axe.Managers;
+using Microsoft.AspNetCore.Authorization;
 
 namespace Axe.Controllers
 {
@@ -26,8 +27,6 @@ namespace Axe.Controllers
 
         public IActionResult About()
         {
-            ViewData["Message"] = "Your application description page.";
-
             return View();
         }
 
@@ -35,6 +34,12 @@ namespace Axe.Controllers
         {
             ViewData["Message"] = "Your contact page.";
 
+            return View();
+        }
+
+        [Authorize(Roles = "superuser")]
+        public IActionResult Statistics()
+        {
             return View();
         }
 

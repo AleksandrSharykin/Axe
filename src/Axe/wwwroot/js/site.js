@@ -76,7 +76,7 @@
     }
 
     // decorate diagram figures    
-    $('.figure').figure();
+    $('.figure').figure()//.each(function () { $(this).addClass('bg-danger') });
     $('.figure').eq(1).figure('toggleContent');
 
 });
