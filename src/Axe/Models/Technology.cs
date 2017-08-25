@@ -20,7 +20,7 @@ namespace Axe.Models
         /// Gets or sets technology name
         /// </summary>
         [Required]
-        [MaxLength(1024)]        
+        [MaxLength(1024)]
         public string Name { get; set; }
 
         /// <summary>
@@ -34,5 +34,15 @@ namespace Axe.Models
         /// Gets or sets list of experts
         /// </summary>
         public ICollection<ExpertTechnologyLink> Experts { get; set; }
+
+        /// <summary>
+        /// Gets or sets list of exam attempts made by users in this technology
+        /// </summary>
+        public ICollection<ExamAttempt> Attempts { get; set; }
+
+        /// <summary>
+        /// Gets or sets list of skill assessments in this technology
+        /// </summary>
+        public ICollection<SkillAssessment> Assessments { get; set; }
     }
 }

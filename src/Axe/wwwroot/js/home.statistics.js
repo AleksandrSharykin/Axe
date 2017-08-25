@@ -9,8 +9,21 @@
         };
     $.ajax(memberscount);
 
+    var techs = {
+        url: '/api/statistics/GetTechnologiesDifficulty',
+        method: 'get',
+        success: function (data) {
+            var rows = data.map(function (o) { return toTr(o); })
+                .join('');
+
+            $('#techs').html(rows);
+        },
+        error: function (e) { console.log(e) }
+    };
+    $.ajax(techs);
+
     var questions = {
-        url: '/api/statistics/getcomplexquestions',
+        url: '/api/statistics/getquestionsdifficulty',
         method: 'get',
         success: function (data) {
             var formatter = function (item, prop) {
@@ -78,6 +91,11 @@
     };
 
     function toTr(item, formatter) {
+        if (!formatter)
+            formatter = function (item, prop) {
+                return item[prop]
+            };
+
         return '<tr>'
             + Object.getOwnPropertyNames(item)
                 .map(function (prop) { return '<td>' + formatter(item, prop) + '</td>'; })

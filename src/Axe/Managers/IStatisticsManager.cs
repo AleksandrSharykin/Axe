@@ -11,6 +11,8 @@ namespace Axe.Managers
 
         Task<IList<object>> GetExams(DateTime periodStart, DateTime periodEnd);
 
-        Task<IList<object>> GetComplexQuestions();
+        Task<IList<object>> GetQuestionsDifficulty();
+
+        Task<IList<object>> GetTechnologiesDifficulty();
     }
 }

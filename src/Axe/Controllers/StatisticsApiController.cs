@@ -30,9 +30,14 @@ namespace Axe.Controllers
             return await this.manager.GetExams(periodStart, periodEnd);
         }
 
-        public async Task<IList<object>> GetComplexQuestions()
+        public async Task<IList<object>> GetQuestionsDifficulty()
         {
-            return await this.manager.GetComplexQuestions();
+            return await this.manager.GetQuestionsDifficulty();
+        }
+
+        public async Task<IList<object>> GetTechnologiesDifficulty()
+        {
+            return await this.manager.GetTechnologiesDifficulty();
         }
     }
 }

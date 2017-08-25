@@ -32,21 +32,21 @@ namespace Axe.Managers
             return exams;
         }
 
-        public async Task<IList<object>> GetComplexQuestions()
+        public async Task<IList<object>> GetQuestionsDifficulty()
         {
             var items = await this.context.AttemptQuestion.Include(q => q.TaskQuestion).ThenInclude(q => q.Technology)
                 .Where(q => q.Attempt.IsFinished)
                 .GroupBy(q => q.TaskQuestion)
                 .Select(g => new
                 {
-                    Key = g.Key,
+                    g.Key,
                     Total = g.Count(),
                     Successful = g.Where(q => q.IsAccepted == true).Count(),
                 })
                 .ToAsyncEnumerable()
                 .Select(g => new
                 {
-                    Id = g.Key.Id,
+                    g.Key.Id,
                     TechnologyName = g.Key.Technology.Name,
                     Percentage = g.Successful * 100 / g.Total,
                     g.Successful,
@@ -57,6 +57,22 @@ namespace Axe.Managers
                 .ToList<object>();
 
             return items;
+        }
+
+        public async Task<IList<object>> GetTechnologiesDifficulty()
+        {
+            var items = await this.context.Technology.Include(t => t.Assessments).Include(t => t.Attempts).ToListAsync();
+            return items.Select(t => new
+            {
+                t.Id,
+                t.Name,
+                AttemptsCount = t.Attempts.Where(a => a.IsFinished).Count(),
+                AvgAttemptScore = t.Attempts.Where(a => a.IsFinished).Average(a => a.ExamScore * 100 / a.MaxScore)?.ToString("N2") ?? string.Empty,
+
+                AssessmentsCount = t.Assessments.Count,
+                AvgAssessmentScore = t.Assessments.Where(a => a.IsPassed == true).Average(a => a.ExamScore)?.ToString("N2") ?? string.Empty,
+            })
+            .ToList<object>();
         }
     }
 }
