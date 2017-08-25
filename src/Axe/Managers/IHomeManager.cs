@@ -12,5 +12,7 @@ namespace Axe.Managers
     public interface IHomeManager
     {
         Task<Response<IList<Technology>>> Index();
+
+        Task<Response<IList<ApplicationUser>>> GetAdministrators(Request<int> request);
     }
 }

@@ -1,9 +1,31 @@
-﻿@{
+﻿@using Axe.Models
+@{
     ViewData["Title"] = "Contact";
 }
-<h2>@ViewData["Title"]</h2>
-<h3>@ViewData["Message"]</h3>
 
-<address>
-    <strong>Support:</strong> <a href="mailto:Support@example.com">Support@example.com</a><br />    
-</address>
+<div class="col-md-6">
+    <h2>If thers are any</h2>
+    <ul class="list-unstyled">
+        <li><span class="bg-primary">suggestions</span> or</li>
+        <li><span class="bg-success">feature requests</span> or</li>
+        <li><span class="bg-danger">bug reports</span></li>
+    </ul>
+
+    @if (ViewData["Admins"] != null)
+    {
+        <h3>write to administrators supporting Axe system: </h3>
+
+        <ul class="list-group">
+            @foreach (var user in ViewData["Admins"] as IEnumerable<ApplicationUser>)
+            {
+                <li class="list-group-item">
+                    @Html.ActionLink(user.UserName, "Visit", "Profiles", new { id = user.Id })
+                </li>
+            }
+        </ul>
+    }
+    else
+    {
+        <h3>write to <a href="https://github.com/AleksandrSharykin/Axe/issues">developer</a></h3>
+    }
+</div>

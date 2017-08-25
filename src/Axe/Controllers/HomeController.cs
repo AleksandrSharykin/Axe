@@ -30,9 +30,15 @@ namespace Axe.Controllers
             return View();
         }
 
-        public IActionResult Contact()
+        public async Task<IActionResult> Contact()
         {
-            ViewData["Message"] = "Your contact page.";
+            var request = await this.CreateRequest(0);
+
+            var response = await this.manager.GetAdministrators(request);
+            if (response.Item.Count > 0)
+            {
+                ViewData["Admins"] = response.Item;
+            }
 
             return View();
         }
