@@ -25,10 +25,9 @@ namespace Axe.Controllers
             return this.manager.MembersCount;
         }
 
-        public IList<string> GetExams(DateTime periodStart, DateTime periodEnd)
+        public async Task<IList<object>> GetExams(DateTime periodStart, DateTime periodEnd)
         {
-            var days = (periodEnd - periodStart).Days;
-            return Enumerable.Range(1, days).Select(d => String.Format("{0} - {1}", periodStart.AddDays(d).ToString("dd.MM.yyyy"), d)).ToList();
+            return await this.manager.GetExams(periodStart, periodEnd);
         }
     }
 }

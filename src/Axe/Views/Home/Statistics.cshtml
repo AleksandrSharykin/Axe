@@ -10,5 +10,44 @@
 
 <h3 id="total"></h3>
 
-<h3 id="exams"></h3>
+<div class="form-group">
+
+</div>
+
+<hr />
+<div class="form-group">
+    <div class="row">
+        <div class="col-md-3">
+            <div class="input-group">
+                <span class="input-group-addon">Period Start</span>
+                <input id="periodStart" type="datetime" class="form-control" />
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="input-group">
+                <span class="input-group-addon">Period End</span>
+                <input id="periodEnd" type="datetime" class="form-control" />
+            </div>
+        </div>
+
+        <button id="showExams" class="btn btn-primary">Show</button>
+    </div>
+    <br />
+    <div class="row">
+        <div class="col-md-7 table-responsive">
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Attempts</th>
+                    </tr>
+                </thead>
+                <tbody id="exams"></tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<hr />
 

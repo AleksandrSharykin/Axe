@@ -8,5 +8,7 @@ namespace Axe.Managers
     public interface IStatisticsManager
     {
         int MembersCount { get; }
+
+        Task<IList<object>> GetExams(DateTime periodStart, DateTime periodEnd);
     }
 }
