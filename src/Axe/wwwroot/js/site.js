@@ -286,7 +286,6 @@ $.widget("axe.figure", {
                 var word = '';
                 var block = false;
                 var normal = true;
-                //var style = 'style = "text-decoration: underline;"';
                 var style = '';
 
                 for (var i = 0; i < content.length; i++) {
@@ -317,7 +316,7 @@ $.widget("axe.figure", {
                     normal = true;
                 }
 
-                if (word && word.length > 0) {
+                if (word) {
                     if (normal)
                         html += sans(word);
                     else {
@@ -358,7 +357,8 @@ $.widget("axe.figure", {
                     var word = '';
                     var quote = false;
 
-                    for (var i = 0; i < code.length; i++) {
+                    // length + 1 is a hack to append last word without additional check after finsihing a loop
+                    for (var i = 0, len = code.length + 1; i < len; i++) {
                         var c = code.charAt(i);
 
                         if (separators.indexOf(c) < 0) {
@@ -366,7 +366,7 @@ $.widget("axe.figure", {
                             continue;
                         }
 
-                        if (c === q) {
+                        if (c === q || quote && !c) {
                             word += c;
 
                             if (quote) {
@@ -417,7 +417,7 @@ $.widget("axe.figure", {
                                 'true', 'try', 'typeof', 'uint', 'ulong', 'unchecked', 'unsafe', 'ushort', 'using',
                                 'virtual', 'void', 'volatile', 'while'
                             ],
-                            reserved: ['Main']
+                            reserved: ['Main', 'Math']
                         };
                         case '#js': return {
                             separators: ' .,!?:;-+*/%^~()[]<>{}&|"\n\r\t\u0027\u0060',
