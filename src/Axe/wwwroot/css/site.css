@@ -202,20 +202,25 @@ th {
     min-height: 16px;
 }
 
-.timeinput table {
+
+div.timesetter {
+    float: left;
+}
+
+.timesetter table {
     margin: 0px 4px;
 }
 
-.timeinput tr {
+.timesetter tr {
     line-height: normal;
 }
 
-    .timeinput tr.active > td {
+    .timesetter tr.active > td {
         font-size: 16px;
         padding: 5px;
     }
 
-.timeinput td {
+.timesetter td {
     padding: 2px 5px;
     text-align: center;
     font-size: 12px;

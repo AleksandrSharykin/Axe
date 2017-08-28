@@ -3,22 +3,20 @@
     $('input[type=datetime]').datepicker();
     $('#ext').datepicker();
 
-    $('[class^=timesetter').click(function () {
+    $('[class^=timesetter-').click(function () {
         var timeClass = Array.prototype.filter.call(this.classList, function (c) { return c.indexOf('timesetter') >= 0; })[0];
         if (!timeClass)
             return;
+
         var parts = timeClass.split('-');
         var datepart = parts[1];
         var op = parts[2];
-        //console.log(datepart + '->' + op);
 
-        var current = timesetter($(this).parents('.timeinput')[0], datepart, op, getElementIndex(this))
-        //console.log(current);
-        $(clock).text(current);
+        var currentTime = timesetter($(this).parents('.timesetter')[0], datepart, op, getElementIndex(this))
+        $('#clock').text(currentTime);
     })
 
     function timesetter(clock, timepart, op, idx) {
-
         var delta = op === 'increment' ? 1 : (op === 'decrement' ? -1 : 0);
         if (!delta)
             return;
