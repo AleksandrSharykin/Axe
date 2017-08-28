@@ -1,62 +1,8 @@
 ﻿$(document).ready(function () {
 
     $('input[type=datetime]').datepicker();
-    $('#ext').datepicker();
 
-    $('[class^=timesetter-').click(function () {
-        var timeClass = Array.prototype.filter.call(this.classList, function (c) { return c.indexOf('timesetter') >= 0; })[0];
-        if (!timeClass)
-            return;
-
-        var parts = timeClass.split('-');
-        var datepart = parts[1];
-        var op = parts[2];
-
-        var currentTime = timesetter($(this).parents('.timesetter')[0], datepart, op, getElementIndex(this))
-        $('#clock').text(currentTime);
-    })
-
-    function timesetter(clock, timepart, op, idx) {
-        var delta = op === 'increment' ? 1 : (op === 'decrement' ? -1 : 0);
-        if (!delta)
-            return;
-
-        var central = $(clock).find('tr.active');
-
-        var tdCentral = central.children('td').eq(idx);
-        var value = +tdCentral.text();
-
-        var max = (timepart === 'hours') ? 23 : 59;
-
-        var value = getCircularValue(value + delta, max);
-
-        tdCentral.text(value);
-
-        central.prev().children('td').eq(idx).text(getCircularValue(+value - 1, max));
-        central.next().children('td').eq(idx).text(getCircularValue(+value + 1, max));
-
-        return Array.prototype.map.call(central.children('td'), function (td) { return $(td).text(); }).join(':');
-
-        function getCircularValue(int, max) {
-            if (int > max)
-                int = 0;
-            if (int < 0)
-                int = max;
-            if (int < 10)
-                int = '0' + int;
-            return int;
-        }
-    }
-
-    // https://stackoverflow.com/questions/11761881/javascript-dom-find-element-index-in-container
-    // https://stackoverflow.com/a/11762035/1506454
-    function getElementIndex(node) {
-        var index = 0;
-        while ((node = node.previousElementSibling)) {
-            index++;
-        }
-        return index;
-    }
+    $('input[type=time]').timesetter();
 
     // https://stackoverflow.com/questions/18999501/bootstrap-3-keep-selected-tab-on-page-refresh
     // find tabs groups on page
@@ -573,3 +519,118 @@ $.widget("axe.figure", {
         }
     };
 }(jQuery));
+
+
+(function ($) {
+    $.fn.timesetter = function () {
+        return this.each(function () {
+            var self = $(this);
+
+            // determine initial time value
+            var hours, minutes;
+
+            var date = $(this).val();
+            if (date) {
+                date = date.split(':');
+                hours = date[0];
+                minutes = date[1];
+            }
+            else {
+                var d = new Date();
+                hours = getCircularValue(d.getHours(), 23);
+                minutes = getCircularValue(d.getMinutes(), 59);
+            }
+
+            var nl = '\n';
+
+            // inserting time selector into html
+            var clockHtml =
+                '<table><tbody>' + nl +
+
+                '<tr>' + nl +
+                '<td class="timesetter-hours-decrement" > <span class="glyphicon glyphicon-chevron-up"></span></td >' + nl +
+                '<td class="timesetter-minutes-decrement"><span class="glyphicon glyphicon-chevron-up"></span></td>' + nl +
+                '</tr >' +
+                '<tr>' +
+
+                '<tr>' + nl +
+                '<td>' + getCircularValue(+hours - 1, 23) + '</td><td>' + getCircularValue(+minutes - 1, 59) + '</td>' + nl +
+                '</tr>' + nl +
+
+                '<tr class="active bg-primary">' + nl +
+                '<td>' + hours + '</td><td>' + minutes + '</td>' + nl +
+                '</tr>' + nl +
+
+                '<tr>' + nl +
+                '<td>' + getCircularValue(+hours + 1, 23) + '</td><td>' + getCircularValue(+minutes + 1, 59) + '</td>' + nl +
+                '</tr>' + nl +
+
+                '</tr>' +
+                '<tr>' + nl +
+                '<td class="timesetter-hours-increment" > <span class="glyphicon glyphicon-chevron-down"></span></td >' + nl +
+                '<td class="timesetter-minutes-increment"><span class="glyphicon glyphicon-chevron-down"></span></td>' + nl +
+                '</tr >' +
+
+                '</tbody></table>';
+
+            var clockDiv = $('<div class="timesetter"></div>').html(clockHtml);
+            $(this).parent().append(clockDiv);
+
+            // function to update date input after up/down clicked
+            clockDiv.find('[class^=timesetter-]').click(function () {
+                var timeClass = Array.prototype.filter.call(this.classList, function (c) { return c.indexOf('timesetter') >= 0; })[0];
+                if (!timeClass)
+                    return;
+
+                var parts = timeClass.split('-');
+                var datepart = parts[1];
+                var op = parts[2];
+
+                var currentTime = timesetter(clockDiv, datepart, op, getElementIndex(this))
+                self.val(currentTime);
+            });
+
+            function timesetter(clock, timepart, op, idx) {
+                var delta = op === 'increment' ? 1 : (op === 'decrement' ? -1 : 0);
+                if (!delta)
+                    return;
+
+                var central = $(clock).find('tr.active');
+
+                var tdCentral = central.children('td').eq(idx);
+                var value = +tdCentral.text();
+
+                var max = (timepart === 'hours') ? 23 : 59;
+
+                var value = getCircularValue(value + delta, max);
+
+                tdCentral.text(value);
+
+                central.prev().children('td').eq(idx).text(getCircularValue(+value - 1, max));
+                central.next().children('td').eq(idx).text(getCircularValue(+value + 1, max));
+
+                return Array.prototype.map.call(central.children('td'), function (td) { return $(td).text(); }).join(':');
+            }
+
+            function getCircularValue(int, max) {
+                if (int > max)
+                    int = 0;
+                if (int < 0)
+                    int = max;
+                if (int < 10)
+                    int = '0' + int;
+                return int;
+            }
+
+            // https://stackoverflow.com/questions/11761881/javascript-dom-find-element-index-in-container
+            // https://stackoverflow.com/a/11762035/1506454
+            function getElementIndex(node) {
+                var index = 0;
+                while ((node = node.previousElementSibling)) {
+                    index++;
+                }
+                return index;
+            }
+        });
+    };
+}(jQuery))
