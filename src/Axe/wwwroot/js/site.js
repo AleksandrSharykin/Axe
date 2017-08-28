@@ -1,6 +1,64 @@
 ﻿$(document).ready(function () {
 
     $('input[type=datetime]').datepicker();
+    $('#ext').datepicker();
+
+    $('[class^=timesetter').click(function () {
+        var timeClass = Array.prototype.filter.call(this.classList, function (c) { return c.indexOf('timesetter') >= 0; })[0];
+        if (!timeClass)
+            return;
+        var parts = timeClass.split('-');
+        var datepart = parts[1];
+        var op = parts[2];
+        //console.log(datepart + '->' + op);
+
+        var current = timesetter($(this).parents('.timeinput')[0], datepart, op, getElementIndex(this))
+        //console.log(current);
+        $(clock).text(current);
+    })
+
+    function timesetter(clock, timepart, op, idx) {
+
+        var delta = op === 'increment' ? 1 : (op === 'decrement' ? -1 : 0);
+        if (!delta)
+            return;
+
+        var central = $(clock).find('tr.active');
+
+        var tdCentral = central.children('td').eq(idx);
+        var value = +tdCentral.text();
+
+        var max = (timepart === 'hours') ? 23 : 59;
+
+        var value = getCircularValue(value + delta, max);
+
+        tdCentral.text(value);
+
+        central.prev().children('td').eq(idx).text(getCircularValue(+value - 1, max));
+        central.next().children('td').eq(idx).text(getCircularValue(+value + 1, max));
+
+        return Array.prototype.map.call(central.children('td'), function (td) { return $(td).text(); }).join(':');
+
+        function getCircularValue(int, max) {
+            if (int > max)
+                int = 0;
+            if (int < 0)
+                int = max;
+            if (int < 10)
+                int = '0' + int;
+            return int;
+        }
+    }
+
+    // https://stackoverflow.com/questions/11761881/javascript-dom-find-element-index-in-container
+    // https://stackoverflow.com/a/11762035/1506454
+    function getElementIndex(node) {
+        var index = 0;
+        while ((node = node.previousElementSibling)) {
+            index++;
+        }
+        return index;
+    }
 
     // https://stackoverflow.com/questions/18999501/bootstrap-3-keep-selected-tab-on-page-refresh
     // find tabs groups on page
@@ -162,13 +220,13 @@ $.widget("axe.figure", {
 
     // public method to toggle figure
     toggleContent: function (flag) {
-        this.options.content.toggle();
-        this.options.isContentExpanded = !this.options.isContentExpanded;
-        if (this.options.isContentExpanded)
-            this.options.headerToggle.addClass('glyphicon-chevron-up').removeClass('glyphicon-chevron-down');
+        var o = this.options;
+        o.content.toggle();
+        o.isContentExpanded = !o.isContentExpanded;
+        if (o.isContentExpanded)
+            o.headerToggle.addClass('glyphicon-chevron-up').removeClass('glyphicon-chevron-down');
         else
-            this.options.headerToggle.addClass('glyphicon-chevron-down').removeClass('glyphicon-chevron-up');
-        console.log('flag = ', flag)
+            o.headerToggle.addClass('glyphicon-chevron-down').removeClass('glyphicon-chevron-up');
     }
 });
 

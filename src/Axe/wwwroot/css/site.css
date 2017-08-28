@@ -201,3 +201,22 @@ th {
 .figure-footer {
     min-height: 16px;
 }
+
+.timeinput table {
+    margin: 0px 4px;
+}
+
+.timeinput tr {
+    line-height: normal;
+}
+
+    .timeinput tr.active > td {
+        font-size: 16px;
+        padding: 5px;
+    }
+
+.timeinput td {
+    padding: 2px 5px;
+    text-align: center;
+    font-size: 12px;
+}
