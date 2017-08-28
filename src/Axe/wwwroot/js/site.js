@@ -525,21 +525,7 @@ $.widget("axe.figure", {
     $.fn.timesetter = function () {
         return this.each(function () {
             var self = $(this);
-
-            // determine initial time value
-            var hours, minutes;
-
-            var date = $(this).val();
-            if (date) {
-                date = date.split(':');
-                hours = date[0];
-                minutes = date[1];
-            }
-            else {
-                var d = new Date();
-                hours = getCircularValue(d.getHours(), 23);
-                minutes = getCircularValue(d.getMinutes(), 59);
-            }
+            self.change(displayCurrentTime)
 
             var nl = '\n';
 
@@ -552,20 +538,10 @@ $.widget("axe.figure", {
                 '<td class="timesetter-minutes-decrement"><span class="glyphicon glyphicon-chevron-up"></span></td>' + nl +
                 '</tr >' +
                 '<tr>' +
+                '<tr><td></td><td></td></tr>' + nl +
+                '<tr class="active bg-primary"><td></td><td></td></tr>' + nl +
+                '<tr><td></td><td></td></tr>' + nl +
 
-                '<tr>' + nl +
-                '<td>' + getCircularValue(+hours - 1, 23) + '</td><td>' + getCircularValue(+minutes - 1, 59) + '</td>' + nl +
-                '</tr>' + nl +
-
-                '<tr class="active bg-primary">' + nl +
-                '<td>' + hours + '</td><td>' + minutes + '</td>' + nl +
-                '</tr>' + nl +
-
-                '<tr>' + nl +
-                '<td>' + getCircularValue(+hours + 1, 23) + '</td><td>' + getCircularValue(+minutes + 1, 59) + '</td>' + nl +
-                '</tr>' + nl +
-
-                '</tr>' +
                 '<tr>' + nl +
                 '<td class="timesetter-hours-increment" > <span class="glyphicon glyphicon-chevron-down"></span></td >' + nl +
                 '<td class="timesetter-minutes-increment"><span class="glyphicon glyphicon-chevron-down"></span></td>' + nl +
@@ -574,7 +550,9 @@ $.widget("axe.figure", {
                 '</tbody></table>';
 
             var clockDiv = $('<div class="timesetter"></div>').html(clockHtml);
-            $(this).parent().append(clockDiv);
+            self.parent().append(clockDiv);
+
+            displayCurrentTime();
 
             // function to update date input after up/down clicked
             clockDiv.find('[class^=timesetter-]').click(function () {
@@ -590,15 +568,35 @@ $.widget("axe.figure", {
                 self.val(currentTime);
             });
 
-            function timesetter(clock, timepart, op, idx) {
+            function displayCurrentTime() {
+                // determine initial time value
+                var hours, minutes;
+
+                var date = self.val();
+                if (date) {
+                    date = date.split(':');
+                    hours = date[0];
+                    minutes = date[1];
+                }
+                else {
+                    var d = new Date();
+                    hours = getCircularValue(d.getHours(), 23);
+                    minutes = getCircularValue(d.getMinutes(), 59);
+                }
+
+                timesetter(clockDiv, "hours", "set", 0, +hours);
+                timesetter(clockDiv, "minutes", "set", 1, +minutes);
+            }
+
+            function timesetter(clock, timepart, op, idx, initialValue) {
                 var delta = op === 'increment' ? 1 : (op === 'decrement' ? -1 : 0);
-                if (!delta)
-                    return;
+                //if (!delta)
+                //    return;
 
                 var central = $(clock).find('tr.active');
 
                 var tdCentral = central.children('td').eq(idx);
-                var value = +tdCentral.text();
+                var value = +initialValue || +tdCentral.text();
 
                 var max = (timepart === 'hours') ? 23 : 59;
 

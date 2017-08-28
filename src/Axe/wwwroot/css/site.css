@@ -205,6 +205,9 @@ th {
 
 div.timesetter {
     float: left;
+    border: 1px solid gray;
+    border-radius: 8px;
+    margin: 2px;
 }
 
 .timesetter table {
