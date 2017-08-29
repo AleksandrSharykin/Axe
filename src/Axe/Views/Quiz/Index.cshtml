@@ -1,0 +1,36 @@
+@model IEnumerable<Axe.Models.RealtimeQuiz>
+
+@{
+    ViewData["Title"] = "Quiz";
+}
+
+<h2>Select a quiz and click to join</h2>
+
+<ul class="list-group">
+    @foreach (var q in Model)
+    {
+        string itemClass;
+        string action;
+        if (Equals(q.JudgeId, ViewData["UserId"]))
+        {
+            itemClass = "list-group-item-success";
+            action = "Ask";
+        }
+        else
+        {
+            itemClass = "";
+            action = "Answer";
+        }
+
+        
+            <li class="list-group-item @itemClass">
+                <a href="@Url.Action(action,"Quiz", new { id = q.Id})">
+                    @*@Html.ActionLink(q.Title, action, "Quiz", new { id = q.Id })*@
+                    <p>by @q.Judge.UserName</p>
+                </a>
+</li>
+        
+    }
+</ul>
+
+

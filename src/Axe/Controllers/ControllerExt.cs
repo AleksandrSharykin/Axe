@@ -16,11 +16,12 @@ namespace Axe.Controllers
         public ControllerExt(UserManager<ApplicationUser> userManager, AxeDbContext context)
         {
             this.userManager = userManager;
-            this.context = context;            
+            this.context = context;
         }
 
         protected Task<ApplicationUser> GetCurrentUserAsync()
         {
+
             return this.userManager.GetUserAsync(HttpContext.User);
         }
 

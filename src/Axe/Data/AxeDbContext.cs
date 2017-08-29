@@ -26,22 +26,28 @@ namespace Axe.Models
 
         public DbSet<AttemptQuestion> AttemptQuestion { get; set; }
 
-        public DbSet<AttemptAnswer> AttemptAnswer { get; set; }        
+        public DbSet<AttemptAnswer> AttemptAnswer { get; set; }
 
-        public AxeDbContext (DbContextOptions<AxeDbContext> options)
+        public DbSet<RealtimeQuiz> RealtimeQuiz { get; set; }
+
+        public AxeDbContext(DbContextOptions<AxeDbContext> options)
             : base(options)
         {
         }
 
         protected override void OnModelCreating(ModelBuilder builder)
         {
-            builder.Entity<TaskQuestionLink>().HasKey(t => new { t.TaskId , t.QuestionId });
+            builder.Entity<TaskQuestionLink>().HasKey(t => new { t.TaskId, t.QuestionId });
             builder.Entity<TaskQuestionLink>().HasOne(pt => pt.Task).WithMany(t => t.Questions);
             builder.Entity<TaskQuestionLink>().HasOne(pt => pt.Question).WithMany(t => t.Tasks);
 
             builder.Entity<ExpertTechnologyLink>().HasKey(t => new { t.UserId, t.TechnologyId });
             builder.Entity<ExpertTechnologyLink>().HasOne(t => t.User).WithMany(u => u.Technologies);
             builder.Entity<ExpertTechnologyLink>().HasOne(t => t.Technology).WithMany(u => u.Experts);
+
+            builder.Entity<QuizParticipant>().HasKey(q => new { q.UserId, q.QuizId });
+            builder.Entity<QuizParticipant>().HasOne(q => q.Quiz).WithMany(q => q.Participants);
+            //builder.Entity<QuizParticipant>().HasOne(pt => pt.Question).WithMany(t => t.Tasks);
 
             builder.Entity<SkillAssessment>().HasOne(a => a.Student).WithMany(u => u.AssessmentsAsStudent);
             builder.Entity<SkillAssessment>().HasOne(a => a.Examiner).WithMany(u => u.AssessmentsAsExaminer);

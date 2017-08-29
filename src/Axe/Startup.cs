@@ -12,6 +12,9 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Axe.Models;
 using Axe.Managers;
+using System.Net.WebSockets;
+using Microsoft.AspNetCore.Http;
+using System.Threading;
 
 namespace Axe
 {
@@ -103,6 +106,8 @@ namespace Axe
 
             app.UseIdentity();
 
+            app.UseWebSockets();
+
             app.UseStatusCodePagesWithRedirects("/Home/Error/{0}");
 
             app.UseMvc(routes =>
@@ -117,6 +122,40 @@ namespace Axe
             var roleManager = serviceProvider.GetRequiredService<RoleManager<IdentityRole>>();
 
             await AxeDbDeployment.Deploy(userManager, roleManager, dbContext);
+
+            app.Use(async (context, next) =>
+            {
+                if (context.Request.Path == "/ws")
+                {
+                    if (context.WebSockets.IsWebSocketRequest)
+                    {
+                        WebSocket webSocket = await context.WebSockets.AcceptWebSocketAsync();
+                        await Echo(context, webSocket);
+                    }
+                    else
+                    {
+                        context.Response.StatusCode = 400;
+                    }
+                }
+                else
+                {
+                    await next();
+                }
+
+            });
+        }
+
+        private async Task Echo(HttpContext context, WebSocket webSocket)
+        {
+            var buffer = new byte[1024 * 4];
+            WebSocketReceiveResult result = await webSocket.ReceiveAsync(new ArraySegment<byte>(buffer), CancellationToken.None);
+            while (!result.CloseStatus.HasValue)
+            {
+                await webSocket.SendAsync(new ArraySegment<byte>(buffer, 0, result.Count), result.MessageType, result.EndOfMessage, CancellationToken.None);
+
+                result = await webSocket.ReceiveAsync(new ArraySegment<byte>(buffer), CancellationToken.None);
+            }
+            await webSocket.CloseAsync(result.CloseStatus.Value, result.CloseStatusDescription, CancellationToken.None);
         }
     }
 }

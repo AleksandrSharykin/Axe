@@ -17,8 +17,10 @@
 
   <ItemGroup>
     <Content Include="wwwroot\js\exams.take.js" />
+    <Content Include="wwwroot\js\qiuz.index.js" />
     <Content Include="wwwroot\js\home.statistics.js" />
     <Content Include="wwwroot\js\profiles.visit.js" />
+    <Content Include="wwwroot\js\qiuz.participate.js" />
     <Content Include="wwwroot\js\questions.input.js" />
     <Content Include="wwwroot\js\tasks.input.js" />
   </ItemGroup>
@@ -37,6 +39,7 @@
     <PackageReference Include="Microsoft.AspNetCore.Server.IISIntegration" Version="1.0.2" />
     <PackageReference Include="Microsoft.AspNetCore.Server.Kestrel" Version="1.0.3" />
     <PackageReference Include="Microsoft.AspNetCore.StaticFiles" Version="1.0.3" />
+    <PackageReference Include="Microsoft.AspNetCore.WebSockets.Server" Version="0.1.0" />
     <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="2.2.0" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="1.0.4" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" Version="1.0.2" />

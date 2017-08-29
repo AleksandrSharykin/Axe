@@ -301,7 +301,7 @@ $.widget("axe.figure", {
                         html += sans(word);
                         word = '';
                         normal = false;
-                        block = content.charAt(i - 1) === '\n';
+                        block = !i || content.charAt(i - 1) === '\n';
                         continue;
                     }
 
@@ -600,7 +600,7 @@ $.widget("axe.figure", {
 
                 var max = (timepart === 'hours') ? 23 : 59;
 
-                var value = getCircularValue(value + delta, max);
+                value = getCircularValue(value + delta, max);
 
                 tdCentral.text(value);
 
