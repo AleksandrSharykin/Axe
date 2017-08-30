@@ -15,6 +15,7 @@ using Axe.Managers;
 using System.Net.WebSockets;
 using Microsoft.AspNetCore.Http;
 using System.Threading;
+using Newtonsoft.Json.Serialization;
 
 namespace Axe
 {
@@ -37,7 +38,11 @@ namespace Axe
         public void ConfigureServices(IServiceCollection services)
         {
             // Add framework services.
-            services.AddMvc().AddJsonOptions(o => { o.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore; });
+            services.AddMvc().AddJsonOptions(o =>
+            {
+                o.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore;
+                o.SerializerSettings.ContractResolver = new CamelCasePropertyNamesContractResolver();
+            });
 
 
             services.AddDbContext<AxeDbContext>(options =>

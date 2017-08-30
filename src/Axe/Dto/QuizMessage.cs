@@ -1,4 +1,6 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using Newtonsoft.Json.Converters;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -11,9 +13,12 @@ namespace Axe.Dto
 
         public int QuizId { get; set; }
 
+        [JsonConverter(typeof(StringEnumConverter))]
         public QuizMessageType MessageType { get; set; }
 
-        public string Content { get; set; }
+        public object Content { get; set; }
+
+        public string Text { get; set; }
     }
 
     public enum QuizMessageType

@@ -12,5 +12,11 @@ namespace Axe.Models
 
         public int QuizId { get; set; }
         public RealtimeQuiz Quiz { get; set; }
+
+        public int Score { get; set; }
+
+        public string LastAnswer { get; set; }
+
+        public bool IsEvaluated { get; set; }
     }
 }

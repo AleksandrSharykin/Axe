@@ -15,6 +15,8 @@ namespace Axe.Models
 
         public ApplicationUser Judge { get; set; }
 
-        public IList<QuizParticipant> Participants { get; set; }
+        public ICollection<QuizParticipant> Participants { get; set; }
+
+        public string LastQuestion { get; set; }
     }
 }

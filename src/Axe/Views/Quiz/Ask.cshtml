@@ -17,18 +17,56 @@
 
 <div class="row">
     <div class="col-md-6 form-group">
-        <pre id="question"></pre>
+        <pre id="question">@Model.LastQuestion</pre>
     </div>
 </div>
 
 <div class="row">
     <div class="col-md-6 form-group">
-        <pre id="inbox"></pre>
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>User</th>
+                    <th>Answer</th>
+                    <th></th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody id="inbox">
+                @foreach (var p in Model.Participants.Where(u => false == u.IsEvaluated))
+                {
+                    <tr value="@p.UserId">
+                        <td>@p.User?.UserName</td>
+                        <td>@p.LastAnswer</td>
+                        <td><span class="glyphicon glyphicon-check"></span></td>
+                    </tr>
+
+                }
+            </tbody>
+        </table>
+    </div>
+
+    <div class="col-md-6">
+        <table class="table">
+            <thead>
+                <tr><th>User</th><th>Score</th></tr>
+            </thead>
+            <tbody id="scores">
+                @foreach(var p in Model.Participants.OrderByDescending(u => u.Score))
+                {
+                    <tr>
+                        <td>@p.User?.UserName</td>
+                        <td>@p.Score</td>
+                    </tr>
+
+                }
+            </tbody>
+        </table>
     </div>
 </div>
 
 <br />
-<h3>Ask a question</h3>
+<h3>Ask a new question</h3>
 <div class="row">
     <div class="col-md-6 form-group">
         <textarea id="msg" rows="8" class="form-control"></textarea>

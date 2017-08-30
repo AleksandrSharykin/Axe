@@ -1,13 +1,38 @@
 ﻿$(document).ready(function () {
     var types = {
-        entry: 'entry',
-        question: 'question',
-        answer: 'answer',
-        scores: 'scores'
+        entry: 'Entry',
+        question: 'Question',
+        answer: 'Answer',
+        scores: 'Scores',
+        exit: 'Exit',
     };
+
+    var mode;
+    if ($('#send_answer').length)
+        mode = types.answer;
+
+    if ($('#send_question').length)
+        mode = types.question;
 
     var uid = $('#userId').val();
     var quizId = +$('#quizId').val();
+
+    $('#inbox').find('tr').each(function () {
+        var tr = $(this);
+        var participant = tr.attr('value');
+        var span = tr.find('span');
+
+        span.click(function () {
+            span.hide();
+            mark({
+                userId: uid,
+                quizId: quizId,
+                text: participant,
+                messageType: types.entry
+            });
+        });
+
+    });
 
     var scheme = document.location.protocol === 'https:' ? 'wss' : 'ws';
     var port = document.location.port ? (':' + document.location.port) : '';
@@ -25,37 +50,75 @@
     socket.onerror = function (e) { console.log('error' + e); }
     socket.onmessage = function (response) {
         var data = response.data;
-        //console.log(data)
-        //console.log(typeof data)
 
         var msg = JSON.parse(data);
+        console.log('received: ' + data)
 
-        var p = $('<p class="codeblock md"></p>');
-        p.html(p.markdown2html(msg.content));
-
-        if (msg.messageType === types.question) {
+        if (msg.messageType === types.exit) {
+            socket.close();
+        }
+        else if (msg.messageType === types.question) {
+            // participants received new question
+            var p = $('<p class="codeblock md"></p>');
+            p.html(p.markdown2html(msg.content));
             $('#question').html(p);
+
+        }
+        else if (msg.messageType === types.answer) {
+            // judge received new answer from participant                    
+            var participant = msg.userId;
+
+            var m = $('<span class="glyphicon glyphicon-check"></span>');
+            m.click(function () {
+                $(this).hide();
+                mark({
+                    userId: uid,
+                    quizId: quizId,
+                    text: participant,
+                    messageType: types.entry
+                })
+            });
+
+            var c = msg.content;
+            var td = concatTd([c.userName, c.answer]);
+
+            var tr = $('tr[value=' + msg.userId + ']').first();
+
+            if (!tr.length) {
+                tr = $('<tr value="' + msg.userId + '"></tr>');
+                tr.html(td);
+                $('#inbox').append(tr);
+            }
+            else {
+                tr.html(td)
+            }
+            tr.append($('<td></td>').append(m));
         }
         else {
-            $('#inbox').append(p);
+            // something else
+            console.log('entry: ' + msg.content)
+            $('body').append($('<p>' + data + '</p>'))
         }
-
     }
+
     var post;
-    if ($('#send_answer').length) {
+    // attach send method to Answer button
+    if (mode === types.answer) {
         post = answer;
         $('#send_answer').click(function () {
             answer();
         });
     }
 
-    if ($('#send_question').length) {
+    // attach send method to Question button
+    if (mode === types.question) {
         post = question;
         $('#send_question').click(function () {
             question();
         });
     }
 
+    // send current input on Ctrl+Enter hotkey
     if (post)
         $('#msg').keydown(function (e) {
             if (e.ctrlKey && (e.keyCode == 13 || e.keyCode == 10)) {
@@ -63,6 +126,13 @@
             }
         });
 
+    function concatTd(arr) {
+        return arr.map(function (s) {
+            return '<td>' + s + '</td>'
+        });
+    }
+
+    // creates message body (json) and sends to quiz controller
     function send(type, text) {
         if (socket.readyState !== 1)
             return;
@@ -102,5 +172,16 @@
     function answer(text) {
         console.log('answering')
         send(types.answer, text);
+    }
+
+    function mark(msg) {
+        console.log('marking: ', JSON.stringify(msg));
+        $.ajax({
+            url: '/quiz/mark',
+            method: 'get',
+            data: msg,
+            success: function (data) { console.log('marked: ', JSON.stringify(data)); },
+            error: function (e) { console.log('mark error: ', e); }
+        })
     }
 })
