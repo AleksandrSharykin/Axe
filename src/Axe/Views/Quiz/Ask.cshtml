@@ -1,7 +1,42 @@
+@model Axe.Models.RealtimeQuiz
 
 @{
     ViewData["Title"] = "Ask";
 }
 
-<h2>Ask</h2>
+@section Scripts
+{
+    <script src="~/js/qiuz.participate.js"></script>
+}
 
+<input type="hidden" id="userId" value="@ViewData["UserId"]" />
+<input type="hidden" id="quizId" value="@Model.Id" />
+
+<h2><kbd>@Model.Title</kbd> quiz</h2>
+<hr />
+
+<div class="row">
+    <div class="col-md-6 form-group">
+        <pre id="question"></pre>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-6 form-group">
+        <pre id="inbox"></pre>
+    </div>
+</div>
+
+<br />
+<h3>Ask a question</h3>
+<div class="row">
+    <div class="col-md-6 form-group">
+        <textarea id="msg" rows="8" class="form-control"></textarea>
+    </div>
+</div>
+
+<br />
+
+<div class="form-group">
+    <span id="send_question" class="btn btn-primary">Send</span>
+</div>

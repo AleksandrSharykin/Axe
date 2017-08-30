@@ -17,7 +17,6 @@
 
   <ItemGroup>
     <Content Include="wwwroot\js\exams.take.js" />
-    <Content Include="wwwroot\js\qiuz.index.js" />
     <Content Include="wwwroot\js\home.statistics.js" />
     <Content Include="wwwroot\js\profiles.visit.js" />
     <Content Include="wwwroot\js\qiuz.participate.js" />
@@ -54,6 +53,7 @@
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="15.3.0" />
     <PackageReference Include="Microsoft.VisualStudio.Web.BrowserLink" Version="1.0.1" />
     <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="1.0.1" />
+    <PackageReference Include="Newtonsoft.Json" Version="10.0.3" />
     <PackageReference Include="NUnit" Version="3.7.1" />
     <PackageReference Include="NUnit3TestAdapter" Version="3.8.0" />
   </ItemGroup>

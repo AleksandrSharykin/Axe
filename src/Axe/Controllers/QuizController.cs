@@ -9,6 +9,8 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
 using System.Net.WebSockets;
 using System.Threading;
+using Newtonsoft.Json;
+using Axe.Dto;
 
 namespace Axe.Controllers
 {
@@ -29,14 +31,22 @@ namespace Axe.Controllers
             return View(list);
         }
 
-        public async Task<IActionResult> Ask()
+        public async Task<IActionResult> Ask(int id)
         {
-            return View();
+            var request = await this.CreateRequest(id);
+            ViewData["UserId"] = request.CurrentUser.Id;
+
+            var quiz = this.context.RealtimeQuiz.Include(q => q.Judge).First(q => q.Id == id);
+            return View(quiz);
         }
 
-        public async Task<IActionResult> Answer()
+        public async Task<IActionResult> Answer(int id)
         {
-            return View();
+            var request = await this.CreateRequest(id);
+            ViewData["UserId"] = request.CurrentUser.Id;
+
+            var quiz = this.context.RealtimeQuiz.Include(q => q.Judge).First(q => q.Id == id);
+            return View(quiz);
         }
 
         public async Task<JsonResult> Participate()
@@ -46,30 +56,48 @@ namespace Axe.Controllers
             if (HttpContext.WebSockets.IsWebSocketRequest)
             {
                 WebSocket webSocket = await HttpContext.WebSockets.AcceptWebSocketAsync();
-                sockets.Add(request.CurrentUser.Id, webSocket);
+
+
                 await Echo(request.CurrentUser.Id, webSocket);
             }
 
             return Json(new { request.CurrentUser.Id });
         }
 
-        private async Task Echo(string id, WebSocket webSocket)
+        /// <summary>
+        /// Broadcasts quiz messages to all participants
+        /// </summary>
+        /// <param name="uid"></param>
+        /// <param name="webSocket"></param>
+        /// <returns></returns>
+        private async Task Echo(string uid, WebSocket webSocket)
         {
             var buffer = new byte[1024 * 4];
             WebSocketReceiveResult result = await webSocket.ReceiveAsync(new ArraySegment<byte>(buffer), CancellationToken.None);
+
             while (!result.CloseStatus.HasValue)
             {
-                foreach (var s in sockets)
+                var json = System.Text.Encoding.UTF8.GetString(buffer, 0, result.Count);
+                var msg = JsonConvert.DeserializeObject<QuizMessage>(json);
+
+                if (msg.MessageType == QuizMessageType.Entry)
                 {
-                    //if (s.Key == id)
-                    //    continue;
-                    await s.Value.SendAsync(new ArraySegment<byte>(buffer, 0, result.Count), result.MessageType, result.EndOfMessage, CancellationToken.None);
+                    sockets.Add(uid, webSocket);
+                }
+                else
+                {
+                    foreach (var s in sockets)
+                    {
+                        //if (s.Key == id)
+                        //    continue;
+                        await s.Value.SendAsync(new ArraySegment<byte>(buffer, 0, result.Count), result.MessageType, result.EndOfMessage, CancellationToken.None);
+                    }
                 }
                 //await webSocket.SendAsync(new ArraySegment<byte>(buffer, 0, result.Count), result.MessageType, result.EndOfMessage, CancellationToken.None);
 
                 result = await webSocket.ReceiveAsync(new ArraySegment<byte>(buffer), CancellationToken.None);
             }
-            sockets.Remove(id);
+            sockets.Remove(uid);
             await webSocket.CloseAsync(result.CloseStatus.Value, result.CloseStatusDescription, CancellationToken.None);
         }
     }
