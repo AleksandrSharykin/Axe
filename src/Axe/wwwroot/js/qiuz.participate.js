@@ -4,9 +4,11 @@
         question: 'Question',
         answer: 'Answer',
         mark: 'Mark',
-        scores: 'Scores',
         exit: 'Exit'
     };
+
+    var markCorrect = '<label class="label label-success"><span class="glyphicon glyphicon-ok"></span></label>';
+    var markWrong = '<label class="label label-danger"><span class="glyphicon glyphicon-remove"></span></label>'
 
     var mode;
     if ($('#send_answer').length)
@@ -18,23 +20,8 @@
     var uid = $('#userId').val();
     var quizId = +$('#quizId').val();
 
-    $('#inbox').find('tr').each(function () {
-        var tr = $(this);
-        var participant = tr.attr('value');
-        var ok = tr.find('.label-success');
-
-        ok.click(function () {
-            mark(participant, true);
-            tr.remove();
-        });
-
-        var wrong = tr.find('.label-danger');
-
-        wrong.click(function () {
-            mark(participant, false);
-            tr.remove();
-        });
-
+    $('#inbox tr').each(function () {
+        attachMark($(this));
     });
 
     var scheme = document.location.protocol === 'https:' ? 'wss' : 'ws';
@@ -60,6 +47,13 @@
         if (msg.messageType === types.exit) {
             socket.close();
         }
+        else if (msg.messageType === types.entry) {
+            var tr = $('#scores tr[value="' + msg.userId + '"]');
+            if (tr.length)
+                return;
+            var content = JSON.parse(msg.content);
+            $('#scores').append($('<tr></tr>').attr('value', msg.userId).append([cell(content.userName), cell(content.score)]));
+        }
         else if (msg.messageType === types.question) {
             // participants received new question
             var p = $('<p class="codeblock md"></p>');
@@ -68,16 +62,13 @@
 
             $('#mark').text('');
             $('#inbox').text('');
-
         }
         else if (msg.messageType === types.answer) {
-            // judge received new answer from participant                    
-            var participant = msg.userId;
+            // judge received new answer from participant
+            var content = JSON.parse(msg.content);
+            var td = select([content.userName, content.answer], cell);
 
-            var c = JSON.parse(msg.content);
-            var td = concatTd([c.userName, c.answer]);
-
-            var tr = $('#inbox').children('tr[value=' + msg.userId + ']').first();
+            var tr = $('#inbox tr[value=' + msg.userId + ']').first();
 
             if (!tr.length) {
                 tr = $('<tr value="' + msg.userId + '"></tr>');
@@ -88,34 +79,17 @@
                 tr.html(td);
             }
 
-            var m = $('<label class="label label-success"><span class="glyphicon glyphicon-ok"></span></label>');
-            m.click(function () {
-                mark(participant, true);
-                tr.remove();
-            });
-            tr.append($('<td></td>').append(m));
-
-            m = $('<label class="label label-danger"><span class="glyphicon glyphicon-remove"></span></label>');
-            m.click(function () {
-                mark(participant, false);
-                tr.remove();
-            });
-
-            tr.append($('<td></td>').append(m));
+            tr.append(cell(markCorrect)).append(cell(markWrong));
+            attachMark(tr);
         }
         else if (msg.messageType === types.mark) {
-            if (msg.content === 'True') {
-                $('#mark').removeClass('label-danger').addClass('label-success').html('<span class="glyphicon glyphicon-ok"></span>');
-            }
-            else {
-                $('#mark').removeClass('label-success').addClass('label-danger').html('<span class="glyphicon glyphicon-remove"></span>');
-            }
+            // participant received mark for an answer
+            $('#mark').html(msg.content === 'True' ? markCorrect : markWrong);
             $('#score').text(msg.text);
         }
         else {
             // something else
-            console.log('entry: ' + msg.content)
-            $('body').append($('<p>' + data + '</p>'));
+            console.log('received: ' + msg.content)
         }
     }
 
@@ -133,7 +107,12 @@
 
     // attach send method to Question button
     if (mode === types.question) {
-        post = question;
+        post = function () {
+            var message = question();
+            if (message) {
+                $('#question').text(message);
+            }
+        };
         $('#send_question').click(post);
     }
 
@@ -145,9 +124,31 @@
             }
         });
 
-    function concatTd(arr) {
+    // creates tbale td element
+    function cell(markup) {
+        return $('<td></td>').html(markup);
+    }
+
+    // applies function to elements of array
+    function select(arr, formatter) {
         return arr.map(function (s) {
-            return '<td>' + s + '</td>';
+            return formatter ? formatter(s) : s;
+        });
+    }
+
+    function attachMark(tr) {
+        var participant = tr.attr('value');
+        if (!participant)
+            return;
+
+        tr.find('.label-success').click(function () {
+            mark(participant, true);
+            tr.remove();
+        });
+
+        tr.find('.label-danger').click(function () {
+            mark(participant, false);
+            tr.remove();
         });
     }
 
@@ -204,22 +205,14 @@
             content: success
         };
 
-        console.log('ajax: ' + JSON.stringify(msg));
         $.ajax({
             url: '/quiz/mark',
             method: 'get',
             data: msg,
             dataType: 'json',
             success: function (data) {
-                console.log('ajax feedback: ', JSON.stringify(data));
-                var userid = data.text;
                 var content = JSON.parse(data.content);
-                var score = content.score;
-                console.log(userid);
-                console.log(score);
-                var td = $('#scores').children('tr[value="' + userid + '"]').children('td').eq(1);
-                console.log(td);
-                td.text(score);
+                $('#scores tr[value="' + data.text + '"] td').eq(1).text(content.score);
             },
             error: function (e) { console.log('mark error: ', e); }
         })

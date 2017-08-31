@@ -33,7 +33,7 @@
                 </tr>
             </thead>
             <tbody id="inbox">
-                @foreach (var p in Model.Participants.Where(u => null == u.IsEvaluated))
+                @foreach (var p in Model.Participants.Where(u => null == u.IsEvaluated && u.LastAnswer != null))
                 {
                     <tr value="@p.UserId">
                         <td>@p.User?.UserName</td>
@@ -70,7 +70,7 @@
 <h3>Ask a new question</h3>
 <div class="row">
     <div class="col-md-6 form-group">
-        <textarea id="msg" rows="8" class="form-control"></textarea>
+        <textarea id="msg" rows="4" class="form-control"></textarea>
     </div>
 </div>
 

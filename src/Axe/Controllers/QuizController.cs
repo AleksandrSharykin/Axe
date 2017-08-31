@@ -99,7 +99,6 @@ namespace Axe.Controllers
                 this.context.Update(entry);
                 await this.context.SaveChangesAsync();
 
-
                 msg.Content = ToJson(new { UserName = entry.User.UserName, Score = entry.Score });
 
                 WebSocket socket;
@@ -120,12 +119,8 @@ namespace Axe.Controllers
             return Json(msg);
         }
 
-        RealtimeQuiz _q;
-        QuizParticipant _p;
-
-
         /// <summary>
-        /// Broadcasts quiz messages to all participants
+        /// Broadcasts messages to quiz participants
         /// </summary>
         /// <param name="uid"></param>
         /// <param name="webSocket"></param>
@@ -135,36 +130,25 @@ namespace Axe.Controllers
             var buffer = new byte[1024 * 4];
             WebSocketReceiveResult result = await webSocket.ReceiveAsync(new ArraySegment<byte>(buffer), CancellationToken.None);
 
-            while (!result.CloseStatus.HasValue)
+            while (false == result.CloseStatus.HasValue)
             {
+                //  deserialize received message
                 var json = Encoding.UTF8.GetString(buffer, 0, result.Count);
                 var msg = JsonConvert.DeserializeObject<QuizMessage>(json);
 
-                // bug need to recreate context                
                 var quiz = this.context.RealtimeQuiz.AsNoTracking()
-                    .Include(q => q.Participants).ThenInclude(p => p.User)
+                                .Include(q => q.Participants).ThenInclude(p => p.User)
                                 .First(q => q.Id == msg.QuizId);
-
-                if (ReferenceEquals(_q, quiz))
-                {
-
-                }
-                _q = quiz;
 
                 if (msg.MessageType == QuizMessageType.Entry)
                 {
                     if (msg.UserId != quiz.JudgeId)
                     {
+                        // register a new participant
                         QuizParticipant entry = quiz.Participants.FirstOrDefault(p => p.UserId == msg.UserId);
-
-                        if (ReferenceEquals(_p, entry))
-                        {
-
-                        }
                         if (entry == null)
                         {
                             entry = new QuizParticipant { UserId = msg.UserId, QuizId = quiz.Id };
-                            _p = entry;
                             this.context.Add(entry);
                             this.context.SaveChanges();
                         }
@@ -178,6 +162,8 @@ namespace Axe.Controllers
                             await SendObject(judgeSocket, msg);
                         }
                     }
+
+                    // add participant socket to chat
                     if (sockets.ContainsKey(uid))
                         sockets[uid] = webSocket;
                     else
@@ -185,27 +171,22 @@ namespace Axe.Controllers
                 }
                 else if (msg.MessageType == QuizMessageType.Answer)
                 {
+                    // accept answer from participant
                     QuizParticipant entry = quiz.Participants.FirstOrDefault(p => p.UserId == msg.UserId);
-
-                    if (ReferenceEquals(_p, entry))
-                    {
-
-                    }
-
                     if (entry == null)
                     {
                         entry = new QuizParticipant { UserId = msg.UserId, QuizId = quiz.Id };
+                        entry.LastAnswer = msg.Content;
                         this.context.Add(entry);
                         this.context.SaveChanges();
                     }
                     else if (entry.IsEvaluated == null)
                     {
-                        entry.LastAnswer = msg.Content.ToString();
+                        entry.LastAnswer = msg.Content;
                         this.context.Update(entry);
                         this.context.SaveChanges();
                     }
                     this.context.Entry(entry).State = EntityState.Detached;
-                    _p = entry;
 
                     if (entry.IsEvaluated == null)
                     {
@@ -213,7 +194,8 @@ namespace Axe.Controllers
                         WebSocket judgeSocket;
                         if (sockets.TryGetValue(quiz.JudgeId, out judgeSocket))
                         {
-                            msg.Content = ToJson(new { UserName = msg.UserId.ToString(), Answer = msg.Content.ToString() });
+                            var user = this.context.Users.Single(u => u.Id == msg.UserId);
+                            msg.Content = ToJson(new { UserName = user.UserName.ToString(), Answer = msg.Content });
                             await SendObject(judgeSocket, msg);
                         }
                     }
@@ -222,10 +204,11 @@ namespace Axe.Controllers
                 {
                     if (quiz.JudgeId == msg.UserId)
                     {
-                        quiz.LastQuestion = msg.Content.ToString();
+                        quiz.LastQuestion = msg.Content;
                         foreach (var p in quiz.Participants)
                         {
                             p.IsEvaluated = null;
+                            p.LastAnswer = null;
                         }
                         this.context.Update(quiz);
                         this.context.SaveChanges();
@@ -237,10 +220,11 @@ namespace Axe.Controllers
                         }
                     }
 
+                    // broadcast new Question to all participants
                     foreach (var s in sockets)
                     {
-                        //if (s.Key == id)
-                        //    continue;
+                        if (s.Key == quiz.JudgeId)
+                            continue;
                         await SendResult(s.Value, buffer, result);
                     }
                 }
@@ -260,20 +244,38 @@ namespace Axe.Controllers
             await webSocket.CloseAsync(result.CloseStatus.Value, result.CloseStatusDescription, CancellationToken.None);
         }
 
-        private string ToJson(object o)
+        /// <summary>
+        /// Shortcut for 
+        /// </summary>
+        /// <param name="dto"></param>
+        /// <returns>Returns json representation of object</returns>
+        private string ToJson(object dto)
         {
-            return JsonConvert.SerializeObject(o, options);
+            return JsonConvert.SerializeObject(dto, options);
         }
 
+        /// <summary>
+        /// Sends object via WebSocket in json format
+        /// </summary>
+        /// <param name="socket">Socket</param>
+        /// <param name="dto">Object</param>
+        /// <returns></returns>
         private async Task SendObject(WebSocket socket, object dto)
         {
             var bytes = Encoding.UTF8.GetBytes(ToJson(dto));
             await socket.SendAsync(new ArraySegment<byte>(bytes, 0, bytes.Length), WebSocketMessageType.Text, true, CancellationToken.None);
         }
 
-        private async Task SendResult(WebSocket s, byte[] buffer, WebSocketReceiveResult result)
+        /// <summary>
+        /// Sends bytes via WebSocket
+        /// </summary>
+        /// <param name="socket">Socket</param>
+        /// <param name="buffer">Bytes array</param>
+        /// <param name="result"></param>
+        /// <returns></returns>
+        private async Task SendResult(WebSocket socket, byte[] buffer, WebSocketReceiveResult result)
         {
-            await s.SendAsync(new ArraySegment<byte>(buffer, 0, result.Count), result.MessageType, result.EndOfMessage, CancellationToken.None);
+            await socket.SendAsync(new ArraySegment<byte>(buffer, 0, result.Count), result.MessageType, result.EndOfMessage, CancellationToken.None);
         }
     }
 }
