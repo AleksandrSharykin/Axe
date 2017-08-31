@@ -3,6 +3,7 @@
         entry: 'Entry',
         question: 'Question',
         answer: 'Answer',
+        mark: 'Mark',
         scores: 'Scores',
         exit: 'Exit',
     };
@@ -23,13 +24,13 @@
         var span = tr.find('span');
 
         span.click(function () {
-            span.hide();
             mark({
                 userId: uid,
                 quizId: quizId,
                 text: participant,
                 messageType: types.entry
             });
+            tr.remove();
         });
 
     });
@@ -63,21 +64,13 @@
             p.html(p.markdown2html(msg.content));
             $('#question').html(p);
 
+            $('#mark').text('');
+            $('#inbox').text('');
+
         }
         else if (msg.messageType === types.answer) {
             // judge received new answer from participant                    
             var participant = msg.userId;
-
-            var m = $('<span class="glyphicon glyphicon-check"></span>');
-            m.click(function () {
-                $(this).hide();
-                mark({
-                    userId: uid,
-                    quizId: quizId,
-                    text: participant,
-                    messageType: types.entry
-                })
-            });
 
             var c = msg.content;
             var td = concatTd([c.userName, c.answer]);
@@ -92,7 +85,28 @@
             else {
                 tr.html(td)
             }
+
+            var m = $('<span class="glyphicon glyphicon-check"></span>');
+            m.click(function () {
+                mark({
+                    userId: uid,
+                    quizId: quizId,
+                    text: participant,
+                    messageType: types.entry
+                })
+                tr.remove();
+            });
+
             tr.append($('<td></td>').append(m));
+        }
+        else if (msg.messageType === types.mark) {
+            if (msg.content === true) {
+                $('#mark').removeClass('label-danger').addClass('label-success').text('+');
+            }
+            else {
+                $('#mark').removeClass('label-success').addClass('label-danger').text('-');
+            }
+            $('#score').text(msg.text);
         }
         else {
             // something else
@@ -178,7 +192,6 @@
     }
 
     function mark(msg) {
-        console.log('marking: ', JSON.stringify(msg));
         $.ajax({
             url: '/quiz/mark',
             method: 'get',

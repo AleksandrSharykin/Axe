@@ -33,7 +33,7 @@
                 </tr>
             </thead>
             <tbody id="inbox">
-                @foreach (var p in Model.Participants.Where(u => false == u.IsEvaluated))
+                @foreach (var p in Model.Participants.Where(u => null == u.IsEvaluated))
                 {
                     <tr value="@p.UserId">
                         <td>@p.User?.UserName</td>

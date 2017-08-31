@@ -21,6 +21,8 @@ namespace Axe.Controllers
     {
         private static Dictionary<string, WebSocket> sockets = new Dictionary<string, WebSocket>();
 
+        private JsonSerializerSettings options = new JsonSerializerSettings { ContractResolver = new CamelCasePropertyNamesContractResolver() };
+
         public QuizController(UserManager<ApplicationUser> userManager, AxeDbContext context) : base(userManager, context)
         {
         }
@@ -29,7 +31,9 @@ namespace Axe.Controllers
         {
             var request = await this.CreateRequest(0);
             ViewData["UserId"] = request.CurrentUser.Id;
-            var list = this.context.RealtimeQuiz.AsNoTracking().Include(q => q.Judge).ToList();
+            var list = this.context.RealtimeQuiz
+                            .Include(q => q.Judge)
+                            .ToList();
             return View(list);
         }
 
@@ -39,7 +43,6 @@ namespace Axe.Controllers
             ViewData["UserId"] = request.CurrentUser.Id;
 
             var quiz = this.context.RealtimeQuiz
-                            .AsNoTracking()
                             .Include(q => q.Judge)
                             .Include(q => q.Participants).ThenInclude(x => x.User)
                             .First(q => q.Id == id);
@@ -51,9 +54,12 @@ namespace Axe.Controllers
             var request = await this.CreateRequest(id);
             ViewData["UserId"] = request.CurrentUser.Id;
 
-            var quiz = this.context.RealtimeQuiz.AsNoTracking()
-                .Include(q => q.Judge)
-                .First(q => q.Id == id);
+            var quiz = this.context.RealtimeQuiz
+                            .Include(q => q.Judge)
+                            .Include(q => q.Participants)
+                            .First(q => q.Id == id);
+
+            quiz.Participants = quiz.Participants.Where(p => p.UserId == request.CurrentUser.Id).Take(1).ToList();
             return View(quiz);
         }
 
@@ -73,20 +79,34 @@ namespace Axe.Controllers
 
         public async Task<IActionResult> Mark(QuizMessage msg)
         {
-            var quiz = await this.context.RealtimeQuiz.AsNoTracking()
-                .Include(q => q.Participants).ThenInclude(p => p.User)
-                .FirstAsync(q => q.Id == msg.QuizId);
+            var quiz = await this.context.RealtimeQuiz
+                                .Include(q => q.Participants).ThenInclude(p => p.User)
+                                .FirstAsync(q => q.Id == msg.QuizId);
 
             var participantId = msg.Text.ToString();
             var entry = quiz.Participants.FirstOrDefault(p => p.UserId == participantId);
 
-            if (entry != null && false == entry.IsEvaluated)
+            if (entry != null && null == entry.IsEvaluated)
             {
                 entry.Score++;
                 entry.IsEvaluated = true;
                 this.context.Update(entry);
                 await this.context.SaveChangesAsync();
                 msg.Content = new { UserName = entry.User.UserName, Score = entry.Score };
+
+                WebSocket socket;
+                if (sockets.TryGetValue(participantId, out socket))
+                {
+                    var response = new QuizMessage
+                    {
+                        QuizId = quiz.Id,
+                        UserId = quiz.JudgeId,
+                        Content = true,
+                        Text = entry.Score.ToString(),
+                        MessageType = QuizMessageType.Mark,
+                    };
+                    await SendObject(socket, response);
+                }
             }
 
             return Json(msg);
@@ -94,7 +114,7 @@ namespace Axe.Controllers
 
         RealtimeQuiz _q;
         QuizParticipant _p;
-        JsonSerializerSettings serializerSettings = new JsonSerializerSettings { ContractResolver = new CamelCasePropertyNamesContractResolver() };
+
 
         /// <summary>
         /// Broadcasts quiz messages to all participants
@@ -140,19 +160,20 @@ namespace Axe.Controllers
                             this.context.Add(entry);
                             this.context.SaveChanges();
                         }
+                        this.context.Entry(entry).State = EntityState.Detached;
 
                         // broadcast new entry to judge
                         WebSocket judgeSocket;
                         if (sockets.TryGetValue(quiz.JudgeId, out judgeSocket))
                         {
-                            //await Send(judgeSocket, buffer, result);
                             msg.Content = new { UserName = entry.User.UserName, Score = entry.Score };
-                            var response = JsonConvert.SerializeObject(msg, serializerSettings);
-                            var bytes = Encoding.UTF8.GetBytes(response);
-                            await judgeSocket.SendAsync(new ArraySegment<byte>(bytes, 0, bytes.Length), WebSocketMessageType.Text, true, CancellationToken.None);
+                            await SendObject(judgeSocket, msg);
                         }
                     }
-                    sockets.Add(uid, webSocket);
+                    if (sockets.ContainsKey(uid))
+                        sockets[uid] = webSocket;
+                    else
+                        sockets.Add(uid, webSocket);
                 }
                 else if (msg.MessageType == QuizMessageType.Answer)
                 {
@@ -168,28 +189,24 @@ namespace Axe.Controllers
                         entry = new QuizParticipant { UserId = msg.UserId, QuizId = quiz.Id };
                         this.context.Add(entry);
                         this.context.SaveChanges();
-                        this.context.Entry(entry).State = EntityState.Detached;
                     }
-                    else if (entry.IsEvaluated == false)
+                    else if (entry.IsEvaluated == null)
                     {
                         entry.LastAnswer = msg.Content.ToString();
                         this.context.Update(entry);
                         this.context.SaveChanges();
-                        this.context.Entry(entry).State = EntityState.Detached;
                     }
+                    this.context.Entry(entry).State = EntityState.Detached;
                     _p = entry;
 
-                    if (entry.IsEvaluated == false)
+                    if (entry.IsEvaluated == null)
                     {
                         // broadcast new/updated answer to judge
                         WebSocket judgeSocket;
                         if (sockets.TryGetValue(quiz.JudgeId, out judgeSocket))
                         {
-                            //await Send(judgeSocket, buffer, result);
                             msg.Content = new { UserName = msg.UserId.ToString(), Answer = msg.Content.ToString() };
-                            var response = JsonConvert.SerializeObject(msg, serializerSettings);
-                            var bytes = Encoding.UTF8.GetBytes(response);
-                            await judgeSocket.SendAsync(new ArraySegment<byte>(bytes, 0, bytes.Length), WebSocketMessageType.Text, true, CancellationToken.None);
+                            await SendObject(judgeSocket, msg);
                         }
                     }
                 }
@@ -200,17 +217,23 @@ namespace Axe.Controllers
                         quiz.LastQuestion = msg.Content.ToString();
                         foreach (var p in quiz.Participants)
                         {
-                            p.IsEvaluated = false;
+                            p.IsEvaluated = null;
                         }
                         this.context.Update(quiz);
                         this.context.SaveChanges();
+
+                        this.context.Entry(quiz).State = EntityState.Detached;
+                        foreach (var p in quiz.Participants)
+                        {
+                            this.context.Entry(p).State = EntityState.Detached;
+                        }
                     }
 
                     foreach (var s in sockets)
                     {
                         //if (s.Key == id)
                         //    continue;
-                        await Send(s.Value, buffer, result);
+                        await SendResult(s.Value, buffer, result);
                     }
                 }
                 else
@@ -219,7 +242,7 @@ namespace Axe.Controllers
                     {
                         //if (s.Key == id)
                         //    continue;
-                        await Send(s.Value, buffer, result);
+                        await SendResult(s.Value, buffer, result);
                     }
                 }
 
@@ -229,7 +252,14 @@ namespace Axe.Controllers
             await webSocket.CloseAsync(result.CloseStatus.Value, result.CloseStatusDescription, CancellationToken.None);
         }
 
-        private async Task Send(WebSocket s, byte[] buffer, WebSocketReceiveResult result)
+        private async Task SendObject(WebSocket socket, object dto)
+        {
+            var response = JsonConvert.SerializeObject(dto, options);
+            var bytes = Encoding.UTF8.GetBytes(response);
+            await socket.SendAsync(new ArraySegment<byte>(bytes, 0, bytes.Length), WebSocketMessageType.Text, true, CancellationToken.None);
+        }
+
+        private async Task SendResult(WebSocket s, byte[] buffer, WebSocketReceiveResult result)
         {
             await s.SendAsync(new ArraySegment<byte>(buffer, 0, result.Count), result.MessageType, result.EndOfMessage, CancellationToken.None);
         }

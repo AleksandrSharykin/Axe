@@ -17,6 +17,6 @@ namespace Axe.Models
 
         public string LastAnswer { get; set; }
 
-        public bool IsEvaluated { get; set; }
+        public bool? IsEvaluated { get; set; }
     }
 }

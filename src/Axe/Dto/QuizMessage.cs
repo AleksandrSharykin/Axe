@@ -26,6 +26,7 @@ namespace Axe.Dto
         Entry,
         Question,
         Answer,
+        Mark,
         Score,
         Exit,
     }

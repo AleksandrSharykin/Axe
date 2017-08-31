@@ -26,8 +26,45 @@
 <div class="row form-group">
     <label class="control-label col-md-12">Answer</label>    
     <div class="col-md-6 form-group">
-        <pre id="inbox"></pre>
+        @{
+            string answer = "";
+            if (Model.Participants.Count > 0)
+            {
+                answer = Model.Participants.First().LastAnswer;
+            }
+            <pre id="inbox">@answer</pre>
+        }
     </div>
+    <div class="col-md-1">
+        @{
+            var item = Model.Participants.FirstOrDefault();
+
+            string mark = "";
+            string text = "";
+
+            if (item != null && item.IsEvaluated.HasValue)
+            {
+                if (item.IsEvaluated == true)
+                {
+                    mark = "label-success";
+                    text = "+";
+                }
+                else
+                {
+                    mark = "label-danger";
+                    text = "-";
+
+                }
+            }
+
+            <span id="mark" class="label @mark">@text</span>
+        }
+    </div>
+</div>
+
+<div class="row form-group">
+    <label class="control-label col-md-1">Score</label>
+    <span id="score" class="control-label col-md-1">@item?.Score</span>
 </div>
 
 <br />
