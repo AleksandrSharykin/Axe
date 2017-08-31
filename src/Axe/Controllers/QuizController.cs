@@ -29,7 +29,7 @@ namespace Axe.Controllers
         {
             var request = await this.CreateRequest(0);
             ViewData["UserId"] = request.CurrentUser.Id;
-            var list = this.context.RealtimeQuiz.Include(q => q.Judge).ToList();
+            var list = this.context.RealtimeQuiz.AsNoTracking().Include(q => q.Judge).ToList();
             return View(list);
         }
 
@@ -39,6 +39,7 @@ namespace Axe.Controllers
             ViewData["UserId"] = request.CurrentUser.Id;
 
             var quiz = this.context.RealtimeQuiz
+                            .AsNoTracking()
                             .Include(q => q.Judge)
                             .Include(q => q.Participants).ThenInclude(x => x.User)
                             .First(q => q.Id == id);
@@ -50,7 +51,9 @@ namespace Axe.Controllers
             var request = await this.CreateRequest(id);
             ViewData["UserId"] = request.CurrentUser.Id;
 
-            var quiz = this.context.RealtimeQuiz.Include(q => q.Judge).First(q => q.Id == id);
+            var quiz = this.context.RealtimeQuiz.AsNoTracking()
+                .Include(q => q.Judge)
+                .First(q => q.Id == id);
             return View(quiz);
         }
 
@@ -70,7 +73,8 @@ namespace Axe.Controllers
 
         public async Task<IActionResult> Mark(QuizMessage msg)
         {
-            var quiz = await this.context.RealtimeQuiz.Include(q => q.Participants).ThenInclude(p => p.User)
+            var quiz = await this.context.RealtimeQuiz.AsNoTracking()
+                .Include(q => q.Participants).ThenInclude(p => p.User)
                 .FirstAsync(q => q.Id == msg.QuizId);
 
             var participantId = msg.Text.ToString();
@@ -88,7 +92,8 @@ namespace Axe.Controllers
             return Json(msg);
         }
 
-
+        RealtimeQuiz _q;
+        QuizParticipant _p;
         JsonSerializerSettings serializerSettings = new JsonSerializerSettings { ContractResolver = new CamelCasePropertyNamesContractResolver() };
 
         /// <summary>
@@ -107,17 +112,31 @@ namespace Axe.Controllers
                 var json = Encoding.UTF8.GetString(buffer, 0, result.Count);
                 var msg = JsonConvert.DeserializeObject<QuizMessage>(json);
 
-                var quiz = this.context.RealtimeQuiz.Include(q => q.Participants).ThenInclude(p => p.User)
+                // bug need to recreate context                
+                var quiz = this.context.RealtimeQuiz.AsNoTracking()
+                    .Include(q => q.Participants).ThenInclude(p => p.User)
                                 .First(q => q.Id == msg.QuizId);
+
+                if (ReferenceEquals(_q, quiz))
+                {
+
+                }
+                _q = quiz;
 
                 if (msg.MessageType == QuizMessageType.Entry)
                 {
                     if (msg.UserId != quiz.JudgeId)
                     {
                         QuizParticipant entry = quiz.Participants.FirstOrDefault(p => p.UserId == msg.UserId);
+
+                        if (ReferenceEquals(_p, entry))
+                        {
+
+                        }
                         if (entry == null)
                         {
                             entry = new QuizParticipant { UserId = msg.UserId, QuizId = quiz.Id };
+                            _p = entry;
                             this.context.Add(entry);
                             this.context.SaveChanges();
                         }
@@ -138,6 +157,12 @@ namespace Axe.Controllers
                 else if (msg.MessageType == QuizMessageType.Answer)
                 {
                     QuizParticipant entry = quiz.Participants.FirstOrDefault(p => p.UserId == msg.UserId);
+
+                    if (ReferenceEquals(_p, entry))
+                    {
+
+                    }
+
                     if (entry == null)
                     {
                         entry = new QuizParticipant { UserId = msg.UserId, QuizId = quiz.Id };
@@ -149,7 +174,9 @@ namespace Axe.Controllers
                         entry.IsEvaluated = false;
                         this.context.Update(entry);
                     }
+                    _p = entry;
                     this.context.SaveChanges();
+                    this.context.Entry(entry).State = EntityState.Detached;
 
                     // broadcast answer to judge
                     WebSocket judgeSocket;

@@ -104,18 +104,19 @@
     var post;
     // attach send method to Answer button
     if (mode === types.answer) {
-        post = answer;
-        $('#send_answer').click(function () {
-            answer();
-        });
+        post = function () {
+            var message = answer();
+            if (message) {
+                $('#inbox').text(message);
+            }
+        };
+        $('#send_answer').click(post);
     }
 
     // attach send method to Question button
     if (mode === types.question) {
         post = question;
-        $('#send_question').click(function () {
-            question();
-        });
+        $('#send_question').click(post);
     }
 
     // send current input on Ctrl+Enter hotkey
@@ -158,20 +159,22 @@
         if (clear) {
             $('#msg').val(null);
         }
+
+        return text;
     }
 
     function entry(text) {
-        send(types.entry, text);
+        return send(types.entry, text);
     }
 
     function question(text) {
         console.log('asking')
-        send(types.question, text);
+        return send(types.question, text);
     }
 
     function answer(text) {
         console.log('answering')
-        send(types.answer, text);
+        return send(types.answer, text);
     }
 
     function mark(msg) {
