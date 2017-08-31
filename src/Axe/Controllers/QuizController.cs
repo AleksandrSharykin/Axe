@@ -167,26 +167,30 @@ namespace Axe.Controllers
                     {
                         entry = new QuizParticipant { UserId = msg.UserId, QuizId = quiz.Id };
                         this.context.Add(entry);
+                        this.context.SaveChanges();
+                        this.context.Entry(entry).State = EntityState.Detached;
                     }
-                    else
+                    else if (entry.IsEvaluated == false)
                     {
                         entry.LastAnswer = msg.Content.ToString();
-                        entry.IsEvaluated = false;
                         this.context.Update(entry);
+                        this.context.SaveChanges();
+                        this.context.Entry(entry).State = EntityState.Detached;
                     }
                     _p = entry;
-                    this.context.SaveChanges();
-                    this.context.Entry(entry).State = EntityState.Detached;
 
-                    // broadcast answer to judge
-                    WebSocket judgeSocket;
-                    if (sockets.TryGetValue(quiz.JudgeId, out judgeSocket))
+                    if (entry.IsEvaluated == false)
                     {
-                        //await Send(judgeSocket, buffer, result);
-                        msg.Content = new { UserName = msg.UserId.ToString(), Answer = msg.Content.ToString() };
-                        var response = JsonConvert.SerializeObject(msg, serializerSettings);
-                        var bytes = Encoding.UTF8.GetBytes(response);
-                        await judgeSocket.SendAsync(new ArraySegment<byte>(bytes, 0, bytes.Length), WebSocketMessageType.Text, true, CancellationToken.None);
+                        // broadcast new/updated answer to judge
+                        WebSocket judgeSocket;
+                        if (sockets.TryGetValue(quiz.JudgeId, out judgeSocket))
+                        {
+                            //await Send(judgeSocket, buffer, result);
+                            msg.Content = new { UserName = msg.UserId.ToString(), Answer = msg.Content.ToString() };
+                            var response = JsonConvert.SerializeObject(msg, serializerSettings);
+                            var bytes = Encoding.UTF8.GetBytes(response);
+                            await judgeSocket.SendAsync(new ArraySegment<byte>(bytes, 0, bytes.Length), WebSocketMessageType.Text, true, CancellationToken.None);
+                        }
                     }
                 }
                 else if (msg.MessageType == QuizMessageType.Question)
@@ -194,6 +198,10 @@ namespace Axe.Controllers
                     if (quiz.JudgeId == msg.UserId)
                     {
                         quiz.LastQuestion = msg.Content.ToString();
+                        foreach (var p in quiz.Participants)
+                        {
+                            p.IsEvaluated = false;
+                        }
                         this.context.Update(quiz);
                         this.context.SaveChanges();
                     }
