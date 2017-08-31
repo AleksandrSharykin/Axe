@@ -33,6 +33,9 @@ namespace Axe.Dto
         /// </summary>
         public string Content { get; set; }
 
+        /// <summary>
+        /// Gets or sets message content
+        /// </summary>
         public string Text { get; set; }
     }
 }

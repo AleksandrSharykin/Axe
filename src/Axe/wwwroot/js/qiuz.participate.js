@@ -48,8 +48,7 @@
             socket.close();
         }
         else if (msg.messageType === types.entry) {
-            var tr = $('#scores tr[value="' + msg.userId + '"]');
-            if (tr.length)
+            if ($('#scores tr[value="' + msg.userId + '"]').length)
                 return;
             var content = JSON.parse(msg.content);
             $('#scores').append($('<tr></tr>').attr('value', msg.userId).append([cell(content.userName), cell(content.score)]));
@@ -65,8 +64,8 @@
         }
         else if (msg.messageType === types.answer) {
             // judge received new answer from participant
-            var content = JSON.parse(msg.content);
-            var td = select([content.userName, content.answer], cell);
+            var a = JSON.parse(msg.content);
+            var td = select([a.userName, a.answer], cell);
 
             var tr = $('#inbox tr[value=' + msg.userId + ']').first();
 
