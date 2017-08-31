@@ -88,11 +88,19 @@ namespace Axe.Controllers
 
             if (entry != null && null == entry.IsEvaluated)
             {
-                entry.Score++;
+                bool success = Boolean.TrueString.Equals(msg.Content, StringComparison.OrdinalIgnoreCase);
+
+                if (success)
+                {
+                    entry.Score++;
+                }
+
                 entry.IsEvaluated = true;
                 this.context.Update(entry);
                 await this.context.SaveChangesAsync();
-                msg.Content = new { UserName = entry.User.UserName, Score = entry.Score };
+
+
+                msg.Content = ToJson(new { UserName = entry.User.UserName, Score = entry.Score });
 
                 WebSocket socket;
                 if (sockets.TryGetValue(participantId, out socket))
@@ -101,7 +109,7 @@ namespace Axe.Controllers
                     {
                         QuizId = quiz.Id,
                         UserId = quiz.JudgeId,
-                        Content = true,
+                        Content = success.ToString(),
                         Text = entry.Score.ToString(),
                         MessageType = QuizMessageType.Mark,
                     };
@@ -166,7 +174,7 @@ namespace Axe.Controllers
                         WebSocket judgeSocket;
                         if (sockets.TryGetValue(quiz.JudgeId, out judgeSocket))
                         {
-                            msg.Content = new { UserName = entry.User.UserName, Score = entry.Score };
+                            msg.Content = ToJson(new { UserName = entry.User.UserName, Score = entry.Score });
                             await SendObject(judgeSocket, msg);
                         }
                     }
@@ -205,7 +213,7 @@ namespace Axe.Controllers
                         WebSocket judgeSocket;
                         if (sockets.TryGetValue(quiz.JudgeId, out judgeSocket))
                         {
-                            msg.Content = new { UserName = msg.UserId.ToString(), Answer = msg.Content.ToString() };
+                            msg.Content = ToJson(new { UserName = msg.UserId.ToString(), Answer = msg.Content.ToString() });
                             await SendObject(judgeSocket, msg);
                         }
                     }
@@ -252,10 +260,14 @@ namespace Axe.Controllers
             await webSocket.CloseAsync(result.CloseStatus.Value, result.CloseStatusDescription, CancellationToken.None);
         }
 
+        private string ToJson(object o)
+        {
+            return JsonConvert.SerializeObject(o, options);
+        }
+
         private async Task SendObject(WebSocket socket, object dto)
         {
-            var response = JsonConvert.SerializeObject(dto, options);
-            var bytes = Encoding.UTF8.GetBytes(response);
+            var bytes = Encoding.UTF8.GetBytes(ToJson(dto));
             await socket.SendAsync(new ArraySegment<byte>(bytes, 0, bytes.Length), WebSocketMessageType.Text, true, CancellationToken.None);
         }
 

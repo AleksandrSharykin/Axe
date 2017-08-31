@@ -16,7 +16,7 @@ namespace Axe.Dto
         [JsonConverter(typeof(StringEnumConverter))]
         public QuizMessageType MessageType { get; set; }
 
-        public object Content { get; set; }
+        public string Content { get; set; }
 
         public string Text { get; set; }
     }

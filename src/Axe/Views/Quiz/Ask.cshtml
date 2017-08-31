@@ -38,7 +38,8 @@
                     <tr value="@p.UserId">
                         <td>@p.User?.UserName</td>
                         <td>@p.LastAnswer</td>
-                        <td><span class="glyphicon glyphicon-check"></span></td>
+                        <td><label class="label label-success"><span class="glyphicon glyphicon-ok"></span></label></td>
+                        <td><label class="label label-danger"><span class="glyphicon glyphicon-remove"></span></label></td>
                     </tr>
 
                 }
@@ -54,7 +55,7 @@
             <tbody id="scores">
                 @foreach(var p in Model.Participants.OrderByDescending(u => u.Score))
                 {
-                    <tr>
+                    <tr value="@p.UserId">
                         <td>@p.User?.UserName</td>
                         <td>@p.Score</td>
                     </tr>

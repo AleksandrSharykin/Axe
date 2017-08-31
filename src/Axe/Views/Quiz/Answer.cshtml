@@ -47,17 +47,16 @@
                 if (item.IsEvaluated == true)
                 {
                     mark = "label-success";
-                    text = "+";
+                    text = "glyphicon-ok";
                 }
                 else
                 {
                     mark = "label-danger";
-                    text = "-";
-
+                    text = "glyphicon-remove";
                 }
             }
 
-            <span id="mark" class="label @mark">@text</span>
+            <label id="mark" class="label @mark"><span class="glyphicon @text"></span></label>
         }
     </div>
 </div>

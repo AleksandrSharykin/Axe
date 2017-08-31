@@ -5,7 +5,7 @@
         answer: 'Answer',
         mark: 'Mark',
         scores: 'Scores',
-        exit: 'Exit',
+        exit: 'Exit'
     };
 
     var mode;
@@ -21,15 +21,17 @@
     $('#inbox').find('tr').each(function () {
         var tr = $(this);
         var participant = tr.attr('value');
-        var span = tr.find('span');
+        var ok = tr.find('.label-success');
 
-        span.click(function () {
-            mark({
-                userId: uid,
-                quizId: quizId,
-                text: participant,
-                messageType: types.entry
-            });
+        ok.click(function () {
+            mark(participant, true);
+            tr.remove();
+        });
+
+        var wrong = tr.find('.label-danger');
+
+        wrong.click(function () {
+            mark(participant, false);
             tr.remove();
         });
 
@@ -41,7 +43,7 @@
     // for echo test in Startup
     // var connectionUrl = scheme + '://' + document.location.hostname + port + '/ws';
 
-    var connectionUrl = scheme + '://' + document.location.hostname + port + '/quiz/Participate'
+    var connectionUrl = scheme + '://' + document.location.hostname + port + '/quiz/Participate';
 
     console.log(connectionUrl);
 
@@ -72,10 +74,10 @@
             // judge received new answer from participant                    
             var participant = msg.userId;
 
-            var c = msg.content;
+            var c = JSON.parse(msg.content);
             var td = concatTd([c.userName, c.answer]);
 
-            var tr = $('tr[value=' + msg.userId + ']').first();
+            var tr = $('#inbox').children('tr[value=' + msg.userId + ']').first();
 
             if (!tr.length) {
                 tr = $('<tr value="' + msg.userId + '"></tr>');
@@ -83,35 +85,37 @@
                 $('#inbox').append(tr);
             }
             else {
-                tr.html(td)
+                tr.html(td);
             }
 
-            var m = $('<span class="glyphicon glyphicon-check"></span>');
+            var m = $('<label class="label label-success"><span class="glyphicon glyphicon-ok"></span></label>');
             m.click(function () {
-                mark({
-                    userId: uid,
-                    quizId: quizId,
-                    text: participant,
-                    messageType: types.entry
-                })
+                mark(participant, true);
+                tr.remove();
+            });
+            tr.append($('<td></td>').append(m));
+
+            m = $('<label class="label label-danger"><span class="glyphicon glyphicon-remove"></span></label>');
+            m.click(function () {
+                mark(participant, false);
                 tr.remove();
             });
 
             tr.append($('<td></td>').append(m));
         }
         else if (msg.messageType === types.mark) {
-            if (msg.content === true) {
-                $('#mark').removeClass('label-danger').addClass('label-success').text('+');
+            if (msg.content === 'True') {
+                $('#mark').removeClass('label-danger').addClass('label-success').html('<span class="glyphicon glyphicon-ok"></span>');
             }
             else {
-                $('#mark').removeClass('label-success').addClass('label-danger').text('-');
+                $('#mark').removeClass('label-success').addClass('label-danger').html('<span class="glyphicon glyphicon-remove"></span>');
             }
             $('#score').text(msg.text);
         }
         else {
             // something else
             console.log('entry: ' + msg.content)
-            $('body').append($('<p>' + data + '</p>'))
+            $('body').append($('<p>' + data + '</p>'));
         }
     }
 
@@ -136,14 +140,14 @@
     // send current input on Ctrl+Enter hotkey
     if (post)
         $('#msg').keydown(function (e) {
-            if (e.ctrlKey && (e.keyCode == 13 || e.keyCode == 10)) {
+            if (e.ctrlKey && (e.keyCode === 13 || e.keyCode === 10)) {
                 post();
             }
         });
 
     function concatTd(arr) {
         return arr.map(function (s) {
-            return '<td>' + s + '</td>'
+            return '<td>' + s + '</td>';
         });
     }
 
@@ -191,12 +195,32 @@
         return send(types.answer, text);
     }
 
-    function mark(msg) {
+    function mark(participant, success) {
+        var msg = {
+            userId: uid,
+            quizId: quizId,
+            messageType: types.mark,
+            text: participant,
+            content: success
+        };
+
+        console.log('ajax: ' + JSON.stringify(msg));
         $.ajax({
             url: '/quiz/mark',
             method: 'get',
             data: msg,
-            success: function (data) { console.log('marked: ', JSON.stringify(data)); },
+            dataType: 'json',
+            success: function (data) {
+                console.log('ajax feedback: ', JSON.stringify(data));
+                var userid = data.text;
+                var content = JSON.parse(data.content);
+                var score = content.score;
+                console.log(userid);
+                console.log(score);
+                var td = $('#scores').children('tr[value="' + userid + '"]').children('td').eq(1);
+                console.log(td);
+                td.text(score);
+            },
             error: function (e) { console.log('mark error: ', e); }
         })
     }
