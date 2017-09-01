@@ -73,5 +73,8 @@ namespace Axe.Managers
         public string TechnologyDuplicate(string technologyName) => $"{technologyName} technology is already exists";
 
         public string TechnologyExpertDelete => "Only expert can delete technology";
+
+
+        public string QuizInput => "Only judge can change a quiz";
     }
 }

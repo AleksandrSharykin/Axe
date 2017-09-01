@@ -1,8 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
-using Axe.Models;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Mvc;
@@ -10,9 +10,9 @@ using Microsoft.AspNetCore.Authorization;
 using System.Net.WebSockets;
 using System.Threading;
 using Newtonsoft.Json;
-using Axe.Dto;
-using System.Text;
 using Newtonsoft.Json.Serialization;
+using Axe.Dto;
+using Axe.Models;
 
 namespace Axe.Controllers
 {
@@ -28,7 +28,7 @@ namespace Axe.Controllers
         }
 
         /// <summary>
-        /// Get socket associated with a quiz message
+        /// Gets socket associated with a quiz message
         /// </summary>
         /// <param name="msg"></param>
         /// <returns></returns>
@@ -38,7 +38,7 @@ namespace Axe.Controllers
         }
 
         /// <summary>
-        /// Get socket key for certain participant in a specified quiz
+        /// Gets socket key for certain participant in a specified quiz
         /// </summary>
         /// <param name="uid">Participant identifier</param>
         /// <param name="quizId">Quiz identifier</param>
@@ -121,6 +121,10 @@ namespace Axe.Controllers
             return Json(data);
         }
 
+        /// <summary>
+        /// Returns quiz instance for edit
+        /// </summary>
+        /// <param name="id"></param>        
         [HttpGet]
         public async Task<IActionResult> Input(int? id = null)
         {
@@ -135,14 +139,56 @@ namespace Axe.Controllers
             return View(quiz);
         }
 
+        /// <summary>
+        /// Validates and saves quiz edits
+        /// </summary>
+        /// <param name="id"></param>        
         [HttpPost]
-        public async Task<IActionResult> Input(int? id, RealtimeQuiz quiz)
+        public async Task<IActionResult> Input(int? id, RealtimeQuiz quizInput)
         {
+            var request = await this.CreateRequest(id);
+
+            RealtimeQuiz quiz = null;
+
+            if (quizInput.Id > 0)
+            {
+                quiz = await this.context.RealtimeQuiz
+                    .FirstOrDefaultAsync(q => q.Id == id);
+
+                if (quiz == null)
+                {
+                    return NotFound();
+                }
+
+                if (quiz.JudgeId != request.CurrentUser.Id)
+                {
+                    ModelState.AddModelError(String.Empty, Axe.Managers.ValidationMessages.Instance.QuizInput);
+                }
+            }
+            else
+            {
+                quiz = quizInput;
+                quiz.JudgeId = request.CurrentUser.Id;
+            }
+
             if (ModelState.IsValid)
             {
+                quiz.Title = quizInput.Title;
+
+                if (quiz.Id > 0)
+                {
+                    this.context.Update(quiz);
+                }
+                else
+                {
+                    this.context.Add(quiz);
+                }
+
+                this.context.SaveChanges();
+
                 return RedirectToAction(nameof(Index));
             }
-            return View(quiz);
+            return View(quizInput);
         }
 
         /// <summary>
