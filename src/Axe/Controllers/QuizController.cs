@@ -96,8 +96,15 @@ namespace Axe.Controllers
             return View(list);
         }
 
+        /// <summary>
+        /// Returns information about quiz participants
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
         public async Task<IActionResult> Details(int id)
         {
+            var request = await this.CreateRequest(id);
+
             var quiz = await this.context.RealtimeQuiz
                 .Include(q => q.Judge)
                 .Include(q => q.Participants).ThenInclude(x => x.User)
@@ -108,9 +115,34 @@ namespace Axe.Controllers
                 Title = quiz.Title,
                 Judge = quiz.Judge.UserName,
                 Scores = quiz.Participants.ToDictionary(p => p.User.UserName, p => p.Score),
+                CanEdit = quiz.JudgeId == request.CurrentUser.Id
             };
 
             return Json(data);
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> Input(int? id = null)
+        {
+            var request = await this.CreateRequest(id);
+            var quiz = await this.context.RealtimeQuiz
+                                .FirstOrDefaultAsync(q => q.Id == id);
+
+            if (quiz == null || quiz.JudgeId != request.CurrentUser.Id)
+            {
+                quiz = new RealtimeQuiz();
+            }
+            return View(quiz);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> Input(int? id, RealtimeQuiz quiz)
+        {
+            if (ModelState.IsValid)
+            {
+                return RedirectToAction(nameof(Index));
+            }
+            return View(quiz);
         }
 
         /// <summary>

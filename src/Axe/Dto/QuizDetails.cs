@@ -24,5 +24,10 @@ namespace Axe.Dto
         /// Gets or sets list of participants wiht their scores
         /// </summary>
         public Dictionary<string, int> Scores { get; set; }
+
+        /// <summary>
+        /// Gets or sets indication that Edit operation is allowed
+        /// </summary>
+        public bool CanEdit { get; set; }
     }
 }
