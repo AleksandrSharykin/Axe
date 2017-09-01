@@ -28,6 +28,62 @@ namespace Axe.Controllers
         }
 
         /// <summary>
+        /// Get socket associated with a quiz message
+        /// </summary>
+        /// <param name="msg"></param>
+        /// <returns></returns>
+        private string GetChatKey(QuizMessage msg)
+        {
+            return GetChatKey(msg.UserId, msg.QuizId);
+        }
+
+        /// <summary>
+        /// Get socket key for certain participant in a specified quiz
+        /// </summary>
+        /// <param name="uid">Participant identifier</param>
+        /// <param name="quizId">Quiz identifier</param>
+        /// <returns></returns>
+        private string GetChatKey(string uid, int quizId)
+        {
+            return String.Format("{0}+{1}", uid, quizId);
+        }
+
+        /// <summary>
+        /// Get socket for certain participant in a specified quiz
+        /// </summary>
+        /// <param name="uid">Participant identifier</param>
+        /// <param name="quizId">Quiz identifier</param>
+        /// <returns></returns>
+        private WebSocket TryGetChat(string uid, int quizId)
+        {
+            var key = GetChatKey(uid, quizId);
+            WebSocket socket;
+            sockets.TryGetValue(key, out socket);
+            return socket;
+        }
+
+        /// <summary>
+        /// Checks if specified chat key belongs to a certain participant
+        /// </summary>
+        /// <param name="chatKey">Chat key</param>
+        /// <param name="uid">Participant identifier</param>
+        /// <returns></returns>
+        private bool IsChatBelongsToUser(string chatKey, string uid)
+        {
+            return chatKey.StartsWith(uid + "+");
+        }
+
+        /// <summary>
+        /// Checks if specified chat key belongs is associated with a certain participant
+        /// </summary>
+        /// <param name="chatKey">Chat key</param>
+        /// <param name="quizId">Quiz identifier</param>
+        private bool IsChatBelongsToQuiz(string chatKey, int quizId)
+        {
+            return chatKey.EndsWith("+" + quizId);
+        }
+
+        /// <summary>
         /// Returns a list of available quizes 
         /// </summary>
         public async Task<IActionResult> Index()
@@ -38,6 +94,23 @@ namespace Axe.Controllers
                             .Include(q => q.Judge)
                             .ToList();
             return View(list);
+        }
+
+        public async Task<IActionResult> Details(int id)
+        {
+            var quiz = await this.context.RealtimeQuiz
+                .Include(q => q.Judge)
+                .Include(q => q.Participants).ThenInclude(x => x.User)
+                .FirstOrDefaultAsync(q => q.Id == id);
+
+            var data = new QuizDetails
+            {
+                Title = quiz.Title,
+                Judge = quiz.Judge.UserName,
+                Scores = quiz.Participants.ToDictionary(p => p.User.UserName, p => p.Score),
+            };
+
+            return Json(data);
         }
 
         /// <summary>
@@ -98,35 +171,6 @@ namespace Axe.Controllers
             }
 
             return Json(new { request.CurrentUser.Id });
-        }
-
-
-        private string GetChatKey(QuizMessage msg)
-        {
-            return GetChatKey(msg.UserId, msg.QuizId);
-        }
-
-        private string GetChatKey(string uid, int quizId)
-        {
-            return String.Format("{0}+{1}", uid, quizId);
-        }
-
-        private WebSocket TryGetChat(string uid, int quizId)
-        {
-            var key = GetChatKey(uid, quizId);
-            WebSocket socket;
-            sockets.TryGetValue(key, out socket);
-            return socket;
-        }
-
-        private bool IsChatBelongsToUser(string chatKey, string uid)
-        {
-            return chatKey.StartsWith(uid + "+");
-        }
-
-        private bool IsChatBelongsToQuiz(string chatKey, int quizId)
-        {
-            return chatKey.EndsWith("+" + quizId);
         }
 
         /// <summary>

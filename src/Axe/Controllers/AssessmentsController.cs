@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Authorization;
 using Axe.Models;
 using Axe.Models.AssessmentsVm;
 using Axe.Managers;
+using Axe.Dto;
 
 namespace Axe.Controllers
 {
@@ -105,17 +106,17 @@ namespace Axe.Controllers
                 return Json(null);
             }
 
-            var result = new
+            var result = new AssessmentDetails
             {
                 ExaminerName = details.Examiner?.UserName,
                 TechnologyName = details.Technology?.Name,
                 ExamDate = details.ExamDate?.ToString(),
-                details.ExamScore,
-                details.ExamComment,
-                details.IsPassed,
-                details.CanEdit,
-                details.CanMark,
-                details.CanDelete,
+                ExamScore = details.ExamScore,
+                ExamComment = details.ExamComment,
+                IsPassed = details.IsPassed,
+                CanEdit = details.CanEdit,
+                CanMark = details.CanMark,
+                CanDelete = details.CanDelete,
             };
             return Json(result);
         }

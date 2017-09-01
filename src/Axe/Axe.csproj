@@ -21,6 +21,7 @@
     <Content Include="wwwroot\js\profiles.visit.js" />
     <Content Include="wwwroot\js\qiuz.participate.js" />
     <Content Include="wwwroot\js\questions.input.js" />
+    <Content Include="wwwroot\js\quiz.index.js" />
     <Content Include="wwwroot\js\tasks.input.js" />
   </ItemGroup>
 

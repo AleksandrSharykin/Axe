@@ -4,33 +4,73 @@
     ViewData["Title"] = "Quiz";
 }
 
+@section Scripts
+{
+    <script src="~/js/quiz.index.js"></script>
+}
+
 <h2>Select a quiz and click to join</h2>
 
-<ul class="list-group">
-    @foreach (var q in Model)
-    {
-        string itemClass;
-        string action;
-        if (Equals(q.JudgeId, ViewData["UserId"]))
-        {
-            itemClass = "list-group-item-success";
-            action = "Ask";
-        }
-        else
-        {
-            itemClass = "";
-            action = "Answer";
-        }
+<div>
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Title</th>
+                <th>Judge</th>
+                <th>Pariticipants</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach(var q in Model)
+            {
+                bool judge = Equals(q.JudgeId, ViewData["UserId"]);
+                string color = judge ? "bg-success" : "";
+                <tr class="@color" value="@q.Id">
+                    <td>@q.Title</td>
+                    <td>@q.Judge?.UserName</td>                                            
+                    <td><span class="btn btn-default" data-toggle="modal" data-target="#detailsModal">Details</span></td>
+                    <td>
+                        <a href="@Url.Action(judge ? "Ask" : "Answer" , "Quiz", new { id = q.Id})">
+                            <span class="btn btn-primary">JOIN</span>
+                        </a>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
 
-        
-            <li class="list-group-item @itemClass">
-                <a href="@Url.Action(action,"Quiz", new { id = q.Id})">
-                    @*@Html.ActionLink(q.Title, action, "Quiz", new { id = q.Id })*@
-                    <p>by @q.Judge.UserName</p>
-                </a>
-</li>
-        
-    }
-</ul>
 
+<!-- Modal -->
+<div id="detailsModal" class="modal fade" role="dialog">
+    <div class="modal-dialog">
 
+        <!-- Modal content-->
+        <div class="modal-content">
+            <div class="modal-header">                
+                <h3 class="modal-title" id="quizTitle">Quiz Title</h3>
+                <h4 class="modal-title" id="quizJudge">Quiz Judge</h4>
+            </div>
+
+            <div class="modal-body">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>User</th>
+                            <th>Score</th>
+                        </tr>
+                    </thead>
+                    <tbody id="quizParticipants">
+
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+
+    </div>
+</div>
