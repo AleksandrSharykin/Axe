@@ -27,6 +27,9 @@ namespace Axe.Controllers
         {
         }
 
+        /// <summary>
+        /// Returns a list of available quizes 
+        /// </summary>
         public async Task<IActionResult> Index()
         {
             var request = await this.CreateRequest(0);
@@ -37,18 +40,34 @@ namespace Axe.Controllers
             return View(list);
         }
 
+        /// <summary>
+        /// Open a page for a judge to ask questions
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
         public async Task<IActionResult> Ask(int id)
         {
             var request = await this.CreateRequest(id);
-            ViewData["UserId"] = request.CurrentUser.Id;
 
             var quiz = this.context.RealtimeQuiz
                             .Include(q => q.Judge)
                             .Include(q => q.Participants).ThenInclude(x => x.User)
                             .First(q => q.Id == id);
+
+            if (quiz.JudgeId != request.CurrentUser.Id)
+            {
+                return RedirectToAction(nameof(Answer), new { id });
+            }
+
+            ViewData["UserId"] = request.CurrentUser.Id;
             return View(quiz);
         }
 
+        /// <summary>
+        /// Open page for participant to answer questions
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
         public async Task<IActionResult> Answer(int id)
         {
             var request = await this.CreateRequest(id);
@@ -63,6 +82,10 @@ namespace Axe.Controllers
             return View(quiz);
         }
 
+        /// <summary>
+        /// Accepts WebSocket commucation requests
+        /// </summary>
+        /// <returns></returns>
         public async Task<JsonResult> Participate()
         {
             var request = await this.CreateRequest(0);
@@ -77,17 +100,25 @@ namespace Axe.Controllers
             return Json(new { request.CurrentUser.Id });
         }
 
+
+        /// <summary>
+        /// Marks an answer from participant
+        /// </summary>
+        /// <param name="msg"></param>
+        /// <returns></returns>
         public async Task<IActionResult> Mark(QuizMessage msg)
         {
             var quiz = await this.context.RealtimeQuiz
                                 .Include(q => q.Participants).ThenInclude(p => p.User)
                                 .FirstAsync(q => q.Id == msg.QuizId);
 
+            // get participant statistics
             var participantId = msg.Text.ToString();
             var entry = quiz.Participants.FirstOrDefault(p => p.UserId == participantId);
 
             if (entry != null && null == entry.IsEvaluated)
             {
+                // mark latest answer and save changes
                 bool success = Boolean.TrueString.Equals(msg.Content, StringComparison.OrdinalIgnoreCase);
 
                 if (success)
@@ -99,11 +130,13 @@ namespace Axe.Controllers
                 this.context.Update(entry);
                 await this.context.SaveChangesAsync();
 
+                // prepare feedback message to judge with updated score
                 msg.Content = ToJson(new { UserName = entry.User.UserName, Score = entry.Score });
 
                 WebSocket socket;
                 if (sockets.TryGetValue(participantId, out socket))
                 {
+                    // send notification to participant about mark result
                     var response = new QuizMessage
                     {
                         QuizId = quiz.Id,
@@ -245,7 +278,7 @@ namespace Axe.Controllers
         }
 
         /// <summary>
-        /// Shortcut for 
+        /// Shortcut for json serialization
         /// </summary>
         /// <param name="dto"></param>
         /// <returns>Returns json representation of object</returns>
