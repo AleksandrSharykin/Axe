@@ -101,6 +101,34 @@ namespace Axe.Controllers
         }
 
 
+        private string GetChatKey(QuizMessage msg)
+        {
+            return GetChatKey(msg.UserId, msg.QuizId);
+        }
+
+        private string GetChatKey(string uid, int quizId)
+        {
+            return String.Format("{0}+{1}", uid, quizId);
+        }
+
+        private WebSocket TryGetChat(string uid, int quizId)
+        {
+            var key = GetChatKey(uid, quizId);
+            WebSocket socket;
+            sockets.TryGetValue(key, out socket);
+            return socket;
+        }
+
+        private bool IsChatBelongsToUser(string chatKey, string uid)
+        {
+            return chatKey.StartsWith(uid + "+");
+        }
+
+        private bool IsChatBelongsToQuiz(string chatKey, int quizId)
+        {
+            return chatKey.EndsWith("+" + quizId);
+        }
+
         /// <summary>
         /// Marks an answer from participant
         /// </summary>
@@ -126,15 +154,15 @@ namespace Axe.Controllers
                     entry.Score++;
                 }
 
-                entry.IsEvaluated = true;
+                entry.IsEvaluated = success;
                 this.context.Update(entry);
                 await this.context.SaveChangesAsync();
 
                 // prepare feedback message to judge with updated score
                 msg.Content = ToJson(new { UserName = entry.User.UserName, Score = entry.Score });
 
-                WebSocket socket;
-                if (sockets.TryGetValue(participantId, out socket))
+                WebSocket socket = TryGetChat(participantId, quiz.Id);
+                if (socket != null)
                 {
                     // send notification to participant about mark result
                     var response = new QuizMessage
@@ -163,11 +191,14 @@ namespace Axe.Controllers
             var buffer = new byte[1024 * 4];
             WebSocketReceiveResult result = await webSocket.ReceiveAsync(new ArraySegment<byte>(buffer), CancellationToken.None);
 
+            string chatKey = null;
             while (false == result.CloseStatus.HasValue)
             {
                 //  deserialize received message
                 var json = Encoding.UTF8.GetString(buffer, 0, result.Count);
                 var msg = JsonConvert.DeserializeObject<QuizMessage>(json);
+
+                chatKey = this.GetChatKey(msg);
 
                 var quiz = this.context.RealtimeQuiz.AsNoTracking()
                                 .Include(q => q.Participants).ThenInclude(p => p.User)
@@ -188,19 +219,19 @@ namespace Axe.Controllers
                         this.context.Entry(entry).State = EntityState.Detached;
 
                         // broadcast new entry to judge
-                        WebSocket judgeSocket;
-                        if (sockets.TryGetValue(quiz.JudgeId, out judgeSocket))
+                        WebSocket judge = TryGetChat(quiz.JudgeId, quiz.Id);
+                        if (judge != null)
                         {
                             msg.Content = ToJson(new { UserName = entry.User.UserName, Score = entry.Score });
-                            await SendObject(judgeSocket, msg);
+                            await SendObject(judge, msg);
                         }
                     }
 
                     // add participant socket to chat
-                    if (sockets.ContainsKey(uid))
-                        sockets[uid] = webSocket;
+                    if (sockets.ContainsKey(chatKey))
+                        sockets[chatKey] = webSocket;
                     else
-                        sockets.Add(uid, webSocket);
+                        sockets.Add(chatKey, webSocket);
                 }
                 else if (msg.MessageType == QuizMessageType.Answer)
                 {
@@ -224,12 +255,12 @@ namespace Axe.Controllers
                     if (entry.IsEvaluated == null)
                     {
                         // broadcast new/updated answer to judge
-                        WebSocket judgeSocket;
-                        if (sockets.TryGetValue(quiz.JudgeId, out judgeSocket))
+                        WebSocket judge = TryGetChat(quiz.JudgeId, quiz.Id);
+                        if (judge != null)
                         {
                             var user = this.context.Users.Single(u => u.Id == msg.UserId);
                             msg.Content = ToJson(new { UserName = user.UserName.ToString(), Answer = msg.Content });
-                            await SendObject(judgeSocket, msg);
+                            await SendObject(judge, msg);
                         }
                     }
                 }
@@ -256,7 +287,10 @@ namespace Axe.Controllers
                     // broadcast new Question to all participants
                     foreach (var s in sockets)
                     {
-                        if (s.Key == quiz.JudgeId)
+                        if (IsChatBelongsToUser(s.Key, quiz.JudgeId))
+                            continue;
+
+                        if (false == IsChatBelongsToQuiz(s.Key, quiz.Id))
                             continue;
                         await SendResult(s.Value, buffer, result);
                     }
@@ -265,15 +299,18 @@ namespace Axe.Controllers
                 {
                     foreach (var s in sockets)
                     {
-                        //if (s.Key == id)
-                        //    continue;
+                        if (false == IsChatBelongsToQuiz(s.Key, quiz.Id))
+                            continue;
                         await SendResult(s.Value, buffer, result);
                     }
                 }
 
                 result = await webSocket.ReceiveAsync(new ArraySegment<byte>(buffer), CancellationToken.None);
             }
-            sockets.Remove(uid);
+            if (chatKey != null)
+            {
+                sockets.Remove(chatKey);
+            }
             await webSocket.CloseAsync(result.CloseStatus.Value, result.CloseStatusDescription, CancellationToken.None);
         }
 
