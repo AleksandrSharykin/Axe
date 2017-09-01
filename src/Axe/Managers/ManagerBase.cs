@@ -53,7 +53,7 @@ namespace Axe.Managers
         /// </summary>
         /// <typeparam name="Tout"></typeparam>
         /// <returns></returns>
-        protected Response<Tout> New<Tout>() where Tout: new()
+        protected Response<Tout> New<Tout>() where Tout : new()
         {
             return new Response<Tout> { Item = new Tout() };
         }
