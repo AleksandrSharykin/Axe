@@ -12,10 +12,18 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="wwwroot\Scripts\**" />
+    <Content Remove="wwwroot\Scripts\**" />
+    <EmbeddedResource Remove="wwwroot\Scripts\**" />
+    <None Remove="wwwroot\Scripts\**" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Content Remove="wwwroot/images\sky.svg" />
   </ItemGroup>
 
   <ItemGroup>
+    <Content Include="wwwroot\js\common.ts" />
     <Content Include="wwwroot\js\exams.take.js" />
     <Content Include="wwwroot\js\home.statistics.js" />
     <Content Include="wwwroot\js\profiles.visit.js" />
@@ -23,6 +31,7 @@
     <Content Include="wwwroot\js\questions.input.js" />
     <Content Include="wwwroot\js\quiz.index.js" />
     <Content Include="wwwroot\js\tasks.input.js" />
+    <Content Include="wwwroot\ts\common.ts" />
   </ItemGroup>
 
   <ItemGroup>
@@ -32,6 +41,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="jquery.TypeScript.DefinitelyTyped" Version="3.1.2" />
     <PackageReference Include="Microsoft.AspNetCore" Version="1.0.5" />
     <PackageReference Include="Microsoft.AspNetCore.Diagnostics" Version="1.0.2" />
     <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="1.0.2" />
