@@ -1,6 +1,31 @@
+@model List<Axe.Models.CodeBlock>
 @{
     ViewData["Title"] = "Compiler page";
 }
 
 <h2>Roslyn .NET compiler platform page</h2>
 
+@if (Model != null)
+{
+    <form asp-action="Execute" asp-controller="Compiler" method="post">
+
+        <div asp-validation-summary="All" class="text-danger"></div>
+
+        <select name="Id" id="codeBlockOption">
+            <option>Please select one</option>
+            @foreach (var codeBlock in Model)
+            {
+                <option value="@codeBlock.Id">@codeBlock.Task</option>
+            }
+        </select>
+
+        <textarea name="Code" class="form-control" rows="10"></textarea>
+        
+        <input type="submit" value="Execute" class="btn btn-primary" />
+    </form>
+}
+
+@if (ViewData["StatusOfExecuting"] != null)
+{
+    <p>Code execution status is <b>@ViewData["StatusOfExecuting"]</b></p>
+}

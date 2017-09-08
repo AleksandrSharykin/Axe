@@ -262,6 +262,44 @@ C# is simple, powerful, type-safe, and object-oriented",
 
             context.Add(task);
 
+            #region Code Blocks
+
+            var codeBlocks = new CodeBlock[]
+            {
+                new CodeBlock {
+                    Code = @"
+                            using System;
+                            namespace RoslynCompileSample
+                            {
+                                public class Writer
+                                {
+                                    public int Write(int[] array)
+                                    {
+                                        int maxValue = Int32.MinValue;
+                                        for (int i = 0; i < array.Length; i++)
+                                        {
+                                            if (array[i] > maxValue) maxValue = array[i];
+                                        }
+                                        return maxValue;
+                                    }
+                                }
+                            }",
+                    Output = "59334",
+                    Task = "Write a program to find max element of array"
+                },
+                new CodeBlock
+                {
+                    Code = @"
+                            Sample code",
+                    Output = "1",
+                    Task = "Write a program..."
+                }
+            };
+
+            context.CodeBlock.AddRange(codeBlocks);
+
+            #endregion
+
             await context.SaveChangesAsync();
         }
     }
