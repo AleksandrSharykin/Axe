@@ -7,25 +7,16 @@
 
 @if (Model != null)
 {
-    <form asp-action="Execute" asp-controller="Compiler" method="post">
-
-        <div asp-validation-summary="All" class="text-danger"></div>
-
-        <select name="Id" id="codeBlockOption">
-            <option>Please select one</option>
-            @foreach (var codeBlock in Model)
-            {
-                <option value="@codeBlock.Id">@codeBlock.Task</option>
-            }
-        </select>
-
-        <textarea name="Code" class="form-control" rows="10"></textarea>
-        
-        <input type="submit" value="Execute" class="btn btn-primary" />
-    </form>
-}
-
-@if (ViewData["StatusOfExecuting"] != null)
-{
-    <p>Code execution status is <b>@ViewData["StatusOfExecuting"]</b></p>
+    <div class="list-group">
+        @foreach (var codeBlock in Model)
+        {
+            <a asp-controller="Compiler" asp-action="Solve" asp-route-id="@codeBlock.Id" class="list-group-item list-group-item-action flex-column align-items-start">
+                <div class="d-flex w-100 justify-content-between">
+                    <h5 class="mb-1"><b>Task #@codeBlock.Id</b></h5>
+                </div>
+                <p class="mb-1">@codeBlock.Task</p>
+            </a>
+            <br />
+        }
+    </div>
 }

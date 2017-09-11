@@ -12,43 +12,68 @@ using System.IO;
 using System.Reflection;
 using System.Collections;
 using System.Runtime.Loader;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace Axe.Controllers
 {
     public class CompilerController : ControllerExt
     {
-        private AxeDbContext _context;
-
         public CompilerController(UserManager<ApplicationUser> userManager, AxeDbContext context)
             : base(userManager, context)
         {
-            this._context = context;
         }
 
         [HttpGet]
         public IActionResult Index()
         {
-            List<CodeBlock> codeBlocks = this._context.CodeBlock.ToList();
+            List<CodeBlock> codeBlocks = this.context.CodeBlock.ToList();
             return View(codeBlocks);
         }
 
+        [HttpGet]
+        public IActionResult Solve(int id)
+        {
+            try
+            {
+                CodeBlock codeBlock = context.CodeBlock.First(c => c.Id == id);
+                codeBlock.SourceCode = CSharpSyntaxTree.ParseText(codeBlock.SourceCode).GetRoot().NormalizeWhitespace().ToFullString(); // Source code formatting
+                return View(codeBlock);
+            }
+            catch (InvalidOperationException)
+            {
+                return NotFound();
+            }
+        }
+
         [HttpPost]
-        public IActionResult Execute(CodeBlock codeBlock)
+        public IActionResult Solve(CodeBlock codeBlock)
         {
             if (ModelState.IsValid)
             {
-                if (codeBlock != null)
+                try
                 {
                     string assemblyName = "AxeCompilerAssembly" + Path.GetRandomFileName();
                     // Random file name is necessary because .NETCore doesn't allow to unload assembly
-                    SyntaxTree syntaxTree = CSharpSyntaxTree.ParseText(codeBlock.Code);
+                    SyntaxTree syntaxTree = CSharpSyntaxTree.ParseText(codeBlock.SourceCode);
+
+                    StatementSyntax syntaxOfVerificationCode = SyntaxFactory.ParseStatement(codeBlock.VerificationCode.Replace("#number#", "AXE"));
+                    MethodDeclarationSyntax methodDeclaration = SyntaxFactory.MethodDeclaration(SyntaxFactory.ParseTypeName("bool"), "CHECK")
+                        .AddModifiers(SyntaxFactory.Token(SyntaxKind.PublicKeyword))
+                        .WithBody(SyntaxFactory.Block(syntaxOfVerificationCode));
+
+                    ClassDeclarationSyntax axeTaskClass = syntaxTree.GetRoot().DescendantNodes()
+                        .OfType<ClassDeclarationSyntax>()
+                        .First(c => c.Identifier.ValueText == "AxeTask");
+
+                    ClassDeclarationSyntax newAxeTaskClass = axeTaskClass.AddMembers(methodDeclaration);
+                    SyntaxNode syntaxNode = syntaxTree.GetRoot().ReplaceNode(axeTaskClass, newAxeTaskClass);
+                    string sourceCode = syntaxNode.NormalizeWhitespace().ToFullString();
+                    syntaxTree = CSharpSyntaxTree.ParseText(sourceCode);
 
                     MetadataReference[] references = new MetadataReference[]
                     {
-                    MetadataReference.CreateFromFile(typeof(object).GetTypeInfo().Assembly.Location),
-                    MetadataReference.CreateFromFile(typeof(Hashtable).GetTypeInfo().Assembly.Location)
-                        // MetadataReference.CreateFromFile(typeof(object).Assembly.Location),
-                        // MetadataReference.CreateFromFile(typeof(Enumerable).Assembly.Location)
+                        MetadataReference.CreateFromFile(typeof(object).GetTypeInfo().Assembly.Location),
+                        MetadataReference.CreateFromFile(typeof(Hashtable).GetTypeInfo().Assembly.Location)
                     };
 
                     CSharpCompilation compilation = CSharpCompilation.Create(
@@ -68,9 +93,9 @@ namespace Axe.Controllers
 
                             foreach (Diagnostic diagnostic in failures)
                             {
-                                Console.Error.WriteLine("{0}: {1}", diagnostic.Id, diagnostic.GetMessage());
+                                ModelState.AddModelError(diagnostic.Id, diagnostic.GetMessage());
                             }
-                            ViewData["StatusOfExecuting"] = "Error";
+                            ViewData["StatusOfExecuting"] = "error";
                         }
                         else
                         {
@@ -78,20 +103,23 @@ namespace Axe.Controllers
 
                             AssemblyLoadContext context = AssemblyLoadContext.Default;
                             Assembly assembly = context.LoadFromStream(stream);
-                            MethodInfo method = assembly.GetType("RoslynCompileSample.Writer").GetMethod("Write");
-                            Object writerClass = assembly.CreateInstance("RoslynCompileSample.Writer");
-                            Object output = method.Invoke(writerClass, new Object[] { new int[] { 6, 3, 1, 59334, 232, 3, -1 } });
 
-                            Console.WriteLine("Method returned {0}", output);
-                            CodeBlock codeBlock1 = this.context.CodeBlock.First(cb => cb.Id == codeBlock.Id);
-                            var answer = (codeBlock1.Output == output.ToString());
+                            MethodInfo method = assembly.GetType("Axe.AxeTask").GetMethod("CHECK");
+                            Object axeClass = assembly.CreateInstance("Axe.AxeTask");
+                            Object output = method.Invoke(axeClass, null);
 
-                            ViewData["StatusOfExecuting"] = answer ? "Ok" : "Output isn't correct";
+                            bool isCorrect = (bool)output;
+                            ViewData["StatusOfExecuting"] = isCorrect ? "ok" : "no";
                         }
                     }
                 }
+                catch (InvalidOperationException exception)
+                {
+                    ModelState.AddModelError("", exception.Message);
+                    return View(codeBlock);
+                }
             }
-            return View("Index", null);
+            return View(codeBlock);
         }
     }
 }
