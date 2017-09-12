@@ -15,6 +15,7 @@
     <Content Remove="wwwroot/images\sky.svg" />
   </ItemGroup>
 
+<!--
   <ItemGroup>
     <Content Include="wwwroot\js\exams.take.js" />
     <Content Include="wwwroot\js\home.statistics.js" />
@@ -24,6 +25,7 @@
     <Content Include="wwwroot\js\quiz.index.js" />
     <Content Include="wwwroot\js\tasks.input.js" />
   </ItemGroup>
+-->
 
   <ItemGroup>
     <None Update="wwwroot\**\*">
@@ -73,6 +75,7 @@
 
   <ItemGroup>
     <Folder Include="ViewModels\" />
+    <Folder Include="Views\Compiler\" />
   </ItemGroup>
 
   <ItemGroup>

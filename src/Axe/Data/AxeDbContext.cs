@@ -30,6 +30,8 @@ namespace Axe.Models
 
         public DbSet<RealtimeQuiz> RealtimeQuiz { get; set; }
 
+        public DbSet<CodeBlock> CodeBlock { get; set; }
+
         public AxeDbContext(DbContextOptions<AxeDbContext> options)
             : base(options)
         {
