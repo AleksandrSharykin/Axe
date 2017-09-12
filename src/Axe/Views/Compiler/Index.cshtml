@@ -1,0 +1,22 @@
+@model List<Axe.Models.CodeBlock>
+@{
+    ViewData["Title"] = "Compiler page";
+}
+
+<h2>Roslyn .NET compiler platform page</h2>
+
+@if (Model != null)
+{
+    <div class="list-group">
+        @foreach (var codeBlock in Model)
+        {
+            <a asp-controller="Compiler" asp-action="Solve" asp-route-id="@codeBlock.Id" class="list-group-item list-group-item-action flex-column align-items-start">
+                <div class="d-flex w-100 justify-content-between">
+                    <h5 class="mb-1"><b>Task #@codeBlock.Id</b></h5>
+                </div>
+                <p class="mb-1">@codeBlock.Task</p>
+            </a>
+            <br />
+        }
+    </div>
+}

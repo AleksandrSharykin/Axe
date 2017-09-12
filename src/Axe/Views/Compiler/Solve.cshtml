@@ -1,0 +1,49 @@
+@model Axe.Models.CodeBlock
+@{
+    ViewData["Title"] = "Solve task #" + Model.Id;
+}
+
+<h2>Roslyn .NET compiler platform page</h2>
+
+<p><b>Task:</b> @Model.Task</p>
+
+@if (ViewData["StatusOfExecuting"] != null)
+{
+    @switch (ViewData["StatusOfExecuting"].ToString().ToUpper())
+    {
+        case "ERROR":
+            <div class="alert alert-danger" role="alert">
+                Error list:
+                <div asp-validation-summary="All"></div>
+            </div>
+            break;
+        case "OK":
+            <div class="alert alert-success" role="alert">
+                All is done right
+            </div>
+            break;
+        case "NO":
+            <div class="alert alert-danger" role="alert">
+                Output isn't correct
+            </div>
+            break;
+    }
+}
+else
+{
+    @if (ViewData.ModelState.Any(x => x.Value.Errors.Any()))
+    {
+        <div asp-validation-summary="All" class="alert alert-danger" role="alert"></div>
+    }
+}
+
+<form asp-controller="Compiler" asp-action="Solve" method="post">
+    <input asp-for="Id" value="@Model.Id" hidden />
+    <input asp-for="Task" value="@Model.Task" hidden />
+    <input asp-for="VerificationCode" value ="@Model.VerificationCode" hidden />
+    <div class="form-group">
+        <label asp-for="SourceCode"></label>
+        <textarea asp-for="SourceCode" id="sourceCodeTextArea" rows="20" value="@Model.SourceCode" class="form-control"></textarea>
+    </div>
+    <button type="submit" class="btn btn-primary">Check</button>
+</form>
