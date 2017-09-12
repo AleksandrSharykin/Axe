@@ -1,5 +1,24 @@
 ﻿$(document).ready(function () {
 
+    //$(window).contextmenu(function (e) {
+    //    console.log(this);
+    //    //e.preventDefault();
+    //})
+
+    var pr = new Promise(function (resolve, reject) {
+        setTimeout(function () {
+            resolve('tick')
+        }, 2000);
+    });
+
+    pr.then(function (res) { console.log(res) });
+    console.log('continue');
+
+    $('code').contextmenu(function (e) {
+        console.log(this);
+        //e.preventDefault();
+    })
+
     $('input[type=datetime]').datepicker();
 
     $('input[type=time]').timesetter();
