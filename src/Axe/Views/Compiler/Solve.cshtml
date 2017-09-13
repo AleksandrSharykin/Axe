@@ -3,6 +3,17 @@
     ViewData["Title"] = "Solve task #" + Model.Id;
 }
 
+@section Scripts
+{
+    <script type="text/javascript">
+        var editor = CodeMirror.fromTextArea(document.getElementById("sourceCodeTextArea"), {
+            lineNumbers: true,
+            matchBrackets: true,
+            mode: "text/x-csharp"
+        });
+    </script>
+}
+
 <h2>Roslyn .NET compiler platform page</h2>
 
 <p><b>Task:</b> @Model.Task</p>
