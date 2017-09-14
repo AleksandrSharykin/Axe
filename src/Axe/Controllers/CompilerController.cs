@@ -13,6 +13,7 @@ using System.Reflection;
 using System.Collections;
 using System.Runtime.Loader;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
+using Axe.ViewModels.CompilerVm;
 
 namespace Axe.Controllers
 {
@@ -120,6 +121,34 @@ namespace Axe.Controllers
                 }
             }
             return View(codeBlock);
+        }
+
+        [HttpGet]
+        public IActionResult Create()
+        {
+            CodeBlockTaskVm model = new CodeBlockTaskVm();
+            model.TestCases.Add(new TestCaseCodeBlock());
+            return View(model);
+        }
+
+        [HttpPost]
+        public IActionResult Create(CodeBlockTaskVm model)
+        {
+            if (ModelState.IsValid)
+            {
+                CodeBlock codeBlock = new CodeBlock();
+                codeBlock.Task = model.Task;
+                codeBlock.SourceCode = "STUB of source code";
+                codeBlock.VerificationCode = "STUB of verification code";
+                foreach (var testCase in model.TestCases)
+                {
+                    codeBlock.TestCases.Add(new TestCaseCodeBlock { Input = testCase.Input, Output = testCase.Output });
+                }
+                codeBlock.OutputType = model.OutputType;
+                context.CodeBlock.Add(codeBlock);
+                context.SaveChanges();
+            }
+            return View(model);
         }
     }
 }

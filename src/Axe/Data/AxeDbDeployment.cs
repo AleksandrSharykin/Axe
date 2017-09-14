@@ -267,7 +267,7 @@ C# is simple, powerful, type-safe, and object-oriented",
             var codeBlocks = new CodeBlock[]
             {
                 new CodeBlock {
-                    SourceCode = 
+                    SourceCode =
 @"using System;
 namespace Axe
 {
@@ -287,7 +287,8 @@ else
     return false;",
                     Task = "Write a program to find max element of array. Input data is array (eg. { 6, 3, 1, 59334, 232, 3, -1 }). Program must return 59334. " +
                     "Main method signature is (int[]). " +
-                    "You mustn't change names of namespace, class and main method."
+                    "You mustn't change names of namespace, class and main method.",
+                    OutputType = OutputTypeEnum.INT
                 },
                 new CodeBlock
                 {
@@ -311,7 +312,8 @@ else
     return false;",
                     Task = "Write a program... maximum of two number. " +
                     "Main method signature is (int, int). " +
-                    "You mustn't change names of namespace, class and main method."
+                    "You mustn't change names of namespace, class and main method.",
+                    OutputType = OutputTypeEnum.INT
                 },
                 new CodeBlock
                 {
@@ -335,7 +337,8 @@ else
     return false;",
                     Task = "Write a program... string concatenation. " +
                     "Main method signature is (string, string). " +
-                    "You mustn't change names of namespace, class and main method."
+                    "You mustn't change names of namespace, class and main method.",
+                    OutputType = OutputTypeEnum.STRING
                 }
             };
             
