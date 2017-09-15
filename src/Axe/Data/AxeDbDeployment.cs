@@ -267,79 +267,29 @@ C# is simple, powerful, type-safe, and object-oriented",
             var codeBlocks = new CodeBlock[]
             {
                 new CodeBlock {
-                    SourceCode =
-@"using System;
-namespace Axe
-{
-    public class AxeTask
-    {
-        public int Main(int[] array)
-        {
-                
-        }
-    }
-}",
-                    VerificationCode =
-@"int result_#number# = Main(new int[] { 6, 3, 1, 59334, 232, 3, -1 });
-if (result_#number# == 59334)
-    return true;
-else
-    return false;",
                     Task = "Write a program to find max element of array. Input data is array (eg. { 6, 3, 1, 59334, 232, 3, -1 }). Program must return 59334. " +
                     "Main method signature is (int[]). " +
                     "You mustn't change names of namespace, class and main method.",
+                    TestCases = new List<TestCaseCodeBlock> { new TestCaseCodeBlock { Input = "new int[] { 6, 3, 1, 59334, 232, 3, -1 }", Output = "59334" } },
+                    VerificationCode = @"bool[] resultsOfTestCases_AXE = new bool[2];
+                    for (int i_AXE = 0; i_AXE < resultsOfTestCases_AXE.Length; i_AXE++)                    
+                        resultsOfTestCases_AXE[i_AXE] = true;
+                    
+                    int result_AXE_0 = Main(new int[] { 6, 3, 1, 59334, 232, 3, -1 });
+                    if (result_AXE_0 != 59334)
+                        resultsOfTestCases_AXE[0] = false;
+                    
+                    int result_AXE_1 = Main(new int[] { 5, 745, 2, 7434 });
+                    if (result_AXE_1 != 7434 )
+                        resultsOfTestCases_AXE[1] = false;
+                    
+                    for (int i_AXE = 0; i_AXE < resultsOfTestCases_AXE.Length; i_AXE++)
+                    {
+                        if (!resultsOfTestCases_AXE[i_AXE]) return false;
+                    }
+                    return true;",
                     OutputType = OutputTypeEnum.INT
                 },
-                new CodeBlock
-                {
-                    SourceCode =
-@"using System;
-namespace Axe
-{
-    public class AxeTask
-    {
-        public int Main(int x, int y)
-        {
-                
-        }
-    }
-}",
-                    VerificationCode =
-@"int result_#number# = Main(6, 8);
-if (result_#number# == 8)
-    return true;
-else
-    return false;",
-                    Task = "Write a program... maximum of two number. " +
-                    "Main method signature is (int, int). " +
-                    "You mustn't change names of namespace, class and main method.",
-                    OutputType = OutputTypeEnum.INT
-                },
-                new CodeBlock
-                {
-                    SourceCode =
-@"using System;
-namespace Axe
-{
-    public class AxeTask
-    {
-        public string Main(string str1, string str2)
-        {
-                
-        }
-    }
-}",
-                    VerificationCode =
-@"string result_#number# = Main(""str1_"", ""str2"");
-if (result_#number# == ""str1_str2"")
-    return true;
-else
-    return false;",
-                    Task = "Write a program... string concatenation. " +
-                    "Main method signature is (string, string). " +
-                    "You mustn't change names of namespace, class and main method.",
-                    OutputType = OutputTypeEnum.STRING
-                }
             };
             
             context.CodeBlock.AddRange(codeBlocks);

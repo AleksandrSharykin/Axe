@@ -1,4 +1,4 @@
-@model Axe.Models.CodeBlock
+@model Axe.ViewModels.CompilerVm.CodeBlockVm
 @{
     ViewData["Title"] = "Solve task #" + Model.Id;
 }
@@ -6,6 +6,21 @@
 @section Scripts
 {
     <script type="text/javascript">
+        $("form#formSolve").submit(function (e) {
+            $('#btnCheck').attr('disabled', true);
+            (function () {
+                var i = 1;
+                var countOfDelimeters = 3;
+                setInterval(function () {
+                    if (i > countOfDelimeters)
+                        i = 1;
+                    $('#btnCheck').attr('value', 'Checking' + '.'.repeat(i));
+                    i++;
+                }, 500);
+            })();
+            return true;
+        });
+
         var editor = CodeMirror.fromTextArea(document.getElementById("sourceCodeTextArea"), {
             lineNumbers: true,
             matchBrackets: true,
@@ -48,13 +63,12 @@ else
     }
 }
 
-<form asp-controller="Compiler" asp-action="Solve" method="post">
+<form id="formSolve" asp-controller="Compiler" asp-action="Solve" method="post">
     <input asp-for="Id" value="@Model.Id" hidden />
     <input asp-for="Task" value="@Model.Task" hidden />
-    <input asp-for="VerificationCode" value ="@Model.VerificationCode" hidden />
     <div class="form-group">
         <label asp-for="SourceCode"></label>
         <textarea asp-for="SourceCode" id="sourceCodeTextArea" rows="20" value="@Model.SourceCode" class="form-control"></textarea>
     </div>
-    <button type="submit" class="btn btn-primary">Check</button>
+    <input id="btnCheck" type="submit" value="Check" class="btn btn-primary"/>
 </form>
