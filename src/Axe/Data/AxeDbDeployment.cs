@@ -271,7 +271,7 @@ C# is simple, powerful, type-safe, and object-oriented",
                     "Main method signature is (int[]). " +
                     "You mustn't change names of namespace, class and main method.",
                     TestCases = new List<TestCaseCodeBlock> { new TestCaseCodeBlock { Input = "new int[] { 6, 3, 1, 59334, 232, 3, -1 }", Output = "59334" } },
-                    VerificationCode = @"bool[] resultsOfTestCases_AXE = new bool[2];
+                    VerificationCode = @"resultsOfTestCases_AXE = new bool[2];
                     for (int i_AXE = 0; i_AXE < resultsOfTestCases_AXE.Length; i_AXE++)                    
                         resultsOfTestCases_AXE[i_AXE] = true;
                     
@@ -281,13 +281,7 @@ C# is simple, powerful, type-safe, and object-oriented",
                     
                     int result_AXE_1 = Main(new int[] { 5, 745, 2, 7434 });
                     if (result_AXE_1 != 7434 )
-                        resultsOfTestCases_AXE[1] = false;
-                    
-                    for (int i_AXE = 0; i_AXE < resultsOfTestCases_AXE.Length; i_AXE++)
-                    {
-                        if (!resultsOfTestCases_AXE[i_AXE]) return false;
-                    }
-                    return true;",
+                        resultsOfTestCases_AXE[1] = false;",
                     OutputType = OutputTypeEnum.INT
                 },
             };

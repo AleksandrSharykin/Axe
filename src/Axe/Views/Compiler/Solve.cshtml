@@ -39,19 +39,14 @@
     @switch ((CodeBlockResult)ViewData["StatusOfExecuting"])
     {
         case CodeBlockResult.ERROR:
+        case CodeBlockResult.FAILED:
             <div class="alert alert-danger" role="alert">
-                Error list:
                 <div asp-validation-summary="All"></div>
             </div>
             break;
         case CodeBlockResult.SUCCESS:
             <div class="alert alert-success" role="alert">
                 All is done right
-            </div>
-            break;
-        case CodeBlockResult.FAILED:
-            <div class="alert alert-danger" role="alert">
-                Output isn't correct
             </div>
             break;
     }

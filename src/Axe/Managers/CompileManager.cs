@@ -67,15 +67,31 @@ namespace Axe.Managers
                 SyntaxTree syntaxTree = CSharpSyntaxTree.ParseText(model.SourceCode);
 
                 StatementSyntax syntaxOfVerificationCode = SyntaxFactory.ParseStatement(codeBlock.VerificationCode);
-                MethodDeclarationSyntax methodDeclaration = SyntaxFactory.MethodDeclaration(SyntaxFactory.ParseTypeName("bool"), "CHECK")
+                MethodDeclarationSyntax methodCheck = SyntaxFactory.MethodDeclaration(SyntaxFactory.ParseTypeName("void"), "CHECK")
                     .AddModifiers(SyntaxFactory.Token(SyntaxKind.PublicKeyword))
                     .WithBody(SyntaxFactory.Block(syntaxOfVerificationCode));
+
+                string arrayName = "resultsOfTestCases_#s#".Replace("#s#", "AXE");
+                VariableDeclarationSyntax arrayOfResults = SyntaxFactory.VariableDeclaration(SyntaxFactory.ParseTypeName("bool []"))
+                    .AddVariables(SyntaxFactory.VariableDeclarator(arrayName));
+                FieldDeclarationSyntax arrayField = SyntaxFactory.FieldDeclaration(arrayOfResults);
+
+                string parameterName = "i_#s#".Replace("#s#", "AXE");
+                ParameterSyntax parameter = SyntaxFactory.Parameter(SyntaxFactory.Identifier(parameterName))
+                    .WithType(SyntaxFactory.ParseTypeName("int"));
+                string codeOfFunction = @"return resultsOfTestCases_#s#[i_#s#];".Replace("#s#", "AXE"); ;
+                StatementSyntax syntaxOfFunction = SyntaxFactory.ParseStatement(codeOfFunction);
+                MethodDeclarationSyntax methodGetResult = SyntaxFactory.MethodDeclaration(SyntaxFactory.ParseTypeName("bool"), "GET_RESULT_OF_TEST_CASE")
+                    .AddModifiers(SyntaxFactory.Token(SyntaxKind.PublicKeyword))
+                    .AddParameterListParameters(parameter)
+                    .WithBody(SyntaxFactory.Block(syntaxOfFunction));
 
                 ClassDeclarationSyntax axeTaskClass = syntaxTree.GetRoot().DescendantNodes()
                     .OfType<ClassDeclarationSyntax>()
                     .First(c => c.Identifier.ValueText == "AxeTask");
 
-                ClassDeclarationSyntax newAxeTaskClass = axeTaskClass.AddMembers(methodDeclaration);
+                ClassDeclarationSyntax newAxeTaskClass = axeTaskClass.AddMembers(arrayField, methodCheck, methodGetResult);
+     
                 SyntaxNode syntaxNode = syntaxTree.GetRoot().ReplaceNode(axeTaskClass, newAxeTaskClass);
                 string sourceCode = syntaxNode.NormalizeWhitespace().ToFullString();
                 syntaxTree = CSharpSyntaxTree.ParseText(sourceCode);
@@ -111,12 +127,19 @@ namespace Axe.Managers
                         AssemblyLoadContext context = AssemblyLoadContext.Default;
                         Assembly assembly = context.LoadFromStream(stream);
 
-                        MethodInfo method = assembly.GetType("Axe.AxeTask").GetMethod("CHECK");
+                        MethodInfo check = assembly.GetType("Axe.AxeTask").GetMethod("CHECK");
                         Object axeClass = assembly.CreateInstance("Axe.AxeTask");
-                        Object output = method.Invoke(axeClass, null);
+                        check.Invoke(axeClass, null);
 
-                        bool isCorrect = (bool)output;
-                        return new Tuple<CodeBlockResult, string[]>(isCorrect ? CodeBlockResult.SUCCESS : CodeBlockResult.FAILED, null);
+                        MethodInfo getResult = assembly.GetType("Axe.AxeTask").GetMethod("GET_RESULT_OF_TEST_CASE");
+                        int countFailed = 0;
+                        for (int i = 0; i < codeBlock.TestCases.Count; i++)
+                        {
+                            Object output = getResult.Invoke(axeClass, new object[] { i });
+                            if (!(bool)output) countFailed++;
+                        }
+                        return new Tuple<CodeBlockResult, string[]>((countFailed == 0) ? CodeBlockResult.SUCCESS : CodeBlockResult.FAILED,
+                            new string[] { countFailed + " of " + codeBlock.TestCases.Count + " testcases ended in failure" });
                     }
                 }
             }
@@ -138,8 +161,8 @@ namespace Axe.Managers
                 }
                 codeBlock.OutputType = model.OutputType;
 
-                codeBlock.VerificationCode +=
-                    @"bool[] resultsOfTestCases_#s# = new bool[#TEST_CASE_COUNT#];
+                codeBlock.VerificationCode += 
+                    @"resultsOfTestCases_#s# = new bool[#TEST_CASE_COUNT#];
                 for (int i_#s# = 0; i_#s# < resultsOfTestCases_#s#.Length; i_#s#++)                    
                     resultsOfTestCases_#s#[i_#s#] = true;";
                 for (int i = 0; i < codeBlock.TestCases.Count; i++)
@@ -224,13 +247,6 @@ namespace Axe.Managers
                     default:
                         break;
                 }
-
-                codeBlock.VerificationCode +=
-                @"for (int i_#s# = 0; i_#s# < resultsOfTestCases_#s#.Length; i_#s#++)
-                {
-                    if (!resultsOfTestCases_#s#[i_#s#]) return false;
-                }
-                return true;";
 
                 codeBlock.VerificationCode = codeBlock.VerificationCode
                     .Replace("#TEST_CASE_COUNT#", codeBlock.TestCases.Count.ToString())
