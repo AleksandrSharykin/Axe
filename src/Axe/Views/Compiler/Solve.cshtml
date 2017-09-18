@@ -34,6 +34,18 @@
 
 <p><b>Task:</b> @Model.Task</p>
 
+<form id="formSolve" asp-controller="Compiler" asp-action="Solve" method="post">
+    <input asp-for="Id" value="@Model.Id" hidden />
+    <input asp-for="Task" value="@Model.Task" hidden />
+    <div class="form-group">
+        <label asp-for="SourceCode"></label>
+        <textarea asp-for="SourceCode" id="sourceCodeTextArea" rows="30" value="@Model.SourceCode" class="form-control"></textarea>
+    </div>
+    <input id="btnCheck" type="submit" value="Check" class="btn btn-primary"/>
+</form>
+
+<br />
+
 @if (ViewData["StatusOfExecuting"] != null)
 {
     @switch ((CodeBlockResult)ViewData["StatusOfExecuting"])
@@ -58,13 +70,3 @@ else
         <div asp-validation-summary="All" class="alert alert-danger" role="alert"></div>
     }
 }
-
-<form id="formSolve" asp-controller="Compiler" asp-action="Solve" method="post">
-    <input asp-for="Id" value="@Model.Id" hidden />
-    <input asp-for="Task" value="@Model.Task" hidden />
-    <div class="form-group">
-        <label asp-for="SourceCode"></label>
-        <textarea asp-for="SourceCode" id="sourceCodeTextArea" rows="20" value="@Model.SourceCode" class="form-control"></textarea>
-    </div>
-    <input id="btnCheck" type="submit" value="Check" class="btn btn-primary"/>
-</form>

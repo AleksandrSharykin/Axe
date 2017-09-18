@@ -132,14 +132,17 @@ namespace Axe.Managers
                         check.Invoke(axeClass, null);
 
                         MethodInfo getResult = assembly.GetType("Axe.AxeTask").GetMethod("GET_RESULT_OF_TEST_CASE");
-                        int countFailed = 0;
+                        List<string> failedTestCases = new List<string>();
                         for (int i = 0; i < codeBlock.TestCases.Count; i++)
                         {
                             Object output = getResult.Invoke(axeClass, new object[] { i });
-                            if (!(bool)output) countFailed++;
+                            if (!(bool)output)
+                            {
+                                failedTestCases.Add("Test case where input is " + codeBlock.TestCases[i].Input + " and output is " + codeBlock.TestCases[i].Output + " was failed");
+                            }
                         }
-                        return new Tuple<CodeBlockResult, string[]>((countFailed == 0) ? CodeBlockResult.SUCCESS : CodeBlockResult.FAILED,
-                            new string[] { countFailed + " of " + codeBlock.TestCases.Count + " testcases ended in failure" });
+                        string[] info = new string[] { failedTestCases.Count + " of " + codeBlock.TestCases.Count + " testcases ended in failure" }.Union(failedTestCases).ToArray();
+                        return new Tuple<CodeBlockResult, string[]>((failedTestCases.Count == 0) ? CodeBlockResult.SUCCESS : CodeBlockResult.FAILED, info);
                     }
                 }
             }

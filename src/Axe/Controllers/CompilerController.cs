@@ -99,6 +99,7 @@ namespace Axe.Controllers
                 try
                 {
                     await compileManager.Create(model);
+                    return RedirectToAction(nameof(CompilerController.Index));
                 }
                 catch (Exception exception)
                 {
