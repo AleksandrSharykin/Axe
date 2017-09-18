@@ -59,4 +59,14 @@ namespace Axe.Models
         [Display(Name = "string[]")]
         STRING_ARRAY
     }
+
+    /// <summary>
+    /// Enum represents result of execution code block
+    /// </summary>
+    public enum CodeBlockResult
+    {
+        SUCCESS,
+        FAILED,
+        ERROR
+    }
 }

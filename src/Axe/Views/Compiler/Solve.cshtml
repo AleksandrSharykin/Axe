@@ -1,3 +1,4 @@
+@using Axe.Models;
 @model Axe.ViewModels.CompilerVm.CodeBlockVm
 @{
     ViewData["Title"] = "Solve task #" + Model.Id;
@@ -35,20 +36,20 @@
 
 @if (ViewData["StatusOfExecuting"] != null)
 {
-    @switch (ViewData["StatusOfExecuting"].ToString().ToUpper())
+    @switch ((CodeBlockResult)ViewData["StatusOfExecuting"])
     {
-        case "ERROR":
+        case CodeBlockResult.ERROR:
             <div class="alert alert-danger" role="alert">
                 Error list:
                 <div asp-validation-summary="All"></div>
             </div>
             break;
-        case "OK":
+        case CodeBlockResult.SUCCESS:
             <div class="alert alert-success" role="alert">
                 All is done right
             </div>
             break;
-        case "NO":
+        case CodeBlockResult.FAILED:
             <div class="alert alert-danger" role="alert">
                 Output isn't correct
             </div>

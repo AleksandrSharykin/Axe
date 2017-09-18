@@ -19,7 +19,18 @@ namespace Axe.ViewModels.CompilerVm
         /// </summary>
         [Display(Name = "Source code")]
         [Required(ErrorMessage = "Source code is required")]
-        public string SourceCode { get; set; }
+        public string SourceCode { get; set; } =
+            @"using System;
+            namespace Axe
+            {
+                public class AxeTask
+                {
+                    public int Main()
+                    {
+                
+                    }
+                }
+            }";
 
         /// <summary>
         /// Gets or sets task
