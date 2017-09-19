@@ -5,29 +5,8 @@
 }
 
 @section Scripts
-{
-    <script type="text/javascript">
-        $("form#formSolve").submit(function (e) {
-            $('#btnCheck').attr('disabled', true);
-            (function () {
-                var i = 1;
-                var countOfDelimeters = 3;
-                setInterval(function () {
-                    if (i > countOfDelimeters)
-                        i = 1;
-                    $('#btnCheck').attr('value', 'Checking' + '.'.repeat(i));
-                    i++;
-                }, 500);
-            })();
-            return true;
-        });
-
-        var editor = CodeMirror.fromTextArea(document.getElementById("sourceCodeTextArea"), {
-            lineNumbers: true,
-            matchBrackets: true,
-            mode: "text/x-csharp"
-        });
-    </script>
+    {
+    <script src="~/js/compiler.solve.js"></script>
 }
 
 <h2>Roslyn .NET compiler platform page</h2>
@@ -46,27 +25,23 @@
 
 <br />
 
-@if (ViewData["StatusOfExecuting"] != null)
+@switch (Model.Result)
 {
-    @switch ((CodeBlockResult)ViewData["StatusOfExecuting"])
-    {
-        case CodeBlockResult.ERROR:
-        case CodeBlockResult.FAILED:
-            <div class="alert alert-danger" role="alert">
-                <div asp-validation-summary="All"></div>
-            </div>
-            break;
-        case CodeBlockResult.SUCCESS:
-            <div class="alert alert-success" role="alert">
-                All is done right
-            </div>
-            break;
-    }
-}
-else
-{
-    @if (ViewData.ModelState.Any(x => x.Value.Errors.Any()))
-    {
-        <div asp-validation-summary="All" class="alert alert-danger" role="alert"></div>
-    }
+    case CodeBlockResult.Failed:
+    case CodeBlockResult.Error:
+        <div class="alert alert-danger" role="alert">
+            <div asp-validation-summary="All"></div>
+        </div>
+        break;
+    case CodeBlockResult.Unknown:
+        @if (ViewData.ModelState.Any(x => x.Value.Errors.Any()))
+        {
+            <div asp-validation-summary="All" class="alert alert-danger" role="alert"></div>
+        }
+        break;
+    case CodeBlockResult.Success:
+        <div class="alert alert-success" role="alert">
+            All is done right
+        </div>
+        break;
 }

@@ -37,5 +37,10 @@ namespace Axe.ViewModels.CompilerVm
         /// </summary>
         [Required]
         public string Task { get; set; }
+
+        /// <summary>
+        /// Get or sets result of execution code block
+        /// </summary>
+        public CodeBlockResult Result { get; set; } = CodeBlockResult.Unknown;
     }
 }

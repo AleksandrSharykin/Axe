@@ -26,7 +26,7 @@ namespace Axe.ViewModels.CompilerVm
         /// </summary>
         [Required]
         [Display(Name = "Type of output")]
-        public OutputTypeEnum OutputType { get; set; }
+        public SupportedType OutputType { get; set; }
 
         /// <summary>
         /// Gets or sets list of test cases

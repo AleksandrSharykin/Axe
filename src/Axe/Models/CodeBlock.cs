@@ -26,7 +26,7 @@ namespace Axe.Models
         /// Gets or sets type of output
         /// </summary>
         [Required]
-        public OutputTypeEnum OutputType { get; set; }
+        public SupportedType OutputType { get; set; }
 
         /// <summary>
         /// Gets or sets list of test cases
@@ -44,20 +44,20 @@ namespace Axe.Models
     /// <summary>
     /// Enum represents type of output
     /// </summary>
-    public enum OutputTypeEnum
+    public enum SupportedType
     {
         [Display(Name = "int")]
-        INT,
+        Int,
         [Display(Name = "double")]
-        DOUBLE,
+        Double,
         [Display(Name = "string")]
-        STRING,
+        String,
         [Display(Name = "int[]")]
-        INT_ARRAY,
+        IntArray,
         [Display(Name = "double[]")]
-        DOUBLE_ARRAY,
+        DoubleArray,
         [Display(Name = "string[]")]
-        STRING_ARRAY
+        StringArray
     }
 
     /// <summary>
@@ -65,8 +65,9 @@ namespace Axe.Models
     /// </summary>
     public enum CodeBlockResult
     {
-        SUCCESS,
-        FAILED,
-        ERROR
+        Success,
+        Failed,
+        Error,
+        Unknown
     }
 }

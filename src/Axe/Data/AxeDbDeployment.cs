@@ -270,7 +270,9 @@ C# is simple, powerful, type-safe, and object-oriented",
                     Task = "Write a program to find max element of array. Input data is array (eg. { 6, 3, 1, 59334, 232, 3, -1 }). Program must return 59334. " +
                     "Main method signature is (int[]). " +
                     "You mustn't change names of namespace, class and main method.",
-                    TestCases = new List<TestCaseCodeBlock> { new TestCaseCodeBlock { Input = "new int[] { 6, 3, 1, 59334, 232, 3, -1 }", Output = "59334" } },
+                    TestCases = new List<TestCaseCodeBlock> {
+                        new TestCaseCodeBlock { Input = "new int[] { 6, 3, 1, 59334, 232, 3, -1 }", Output = "59334" },
+                        new TestCaseCodeBlock { Input = "new int[] { 5, 745, 2, 7434 }", Output = "7434" } },
                     VerificationCode = @"resultsOfTestCases_AXE = new bool[2];
                     for (int i_AXE = 0; i_AXE < resultsOfTestCases_AXE.Length; i_AXE++)                    
                         resultsOfTestCases_AXE[i_AXE] = true;
@@ -282,7 +284,7 @@ C# is simple, powerful, type-safe, and object-oriented",
                     int result_AXE_1 = Main(new int[] { 5, 745, 2, 7434 });
                     if (result_AXE_1 != 7434 )
                         resultsOfTestCases_AXE[1] = false;",
-                    OutputType = OutputTypeEnum.INT
+                    OutputType = SupportedType.Int
                 },
             };
             

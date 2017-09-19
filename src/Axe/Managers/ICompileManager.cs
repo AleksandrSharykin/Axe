@@ -15,14 +15,35 @@ namespace Axe.Managers
         /// <summary>
         /// Returns a list of code block available for current user
         /// </summary>
-        /// <param name="request"></param>
-        /// <returns></returns>
+        /// <returns>List of CodeBlockVm</returns>
         Task<List<CodeBlockVm>> GetCodeBlocks();
 
+        /// <summary>
+        /// Returns a code block with id
+        /// </summary>
+        /// <param name="id">Identifier of code block</param>
+        /// <returns>CodeBlockVm</returns>
         Task<CodeBlockVm> GetById(int id);
-
+        
+        /// <summary>
+        /// Solves and returns code block result 
+        /// </summary>
+        /// <param name="model"></param>
+        /// <returns>Tuple, where Item1 - type of result and Item2 - array of string which contains error if they were</returns>
         Tuple<CodeBlockResult, string[]> Solve(CodeBlockVm model);
 
+        /// <summary>
+        /// Creates and adds new code block task
+        /// </summary>
+        /// <param name="model"></param>
+        /// <returns></returns>
         Task Create(CodeBlockTaskVm model);
+
+        /// <summary>
+        /// Returns formatted code
+        /// </summary>
+        /// <param name="code"></param>
+        /// <returns>Full string of code with normalized whitespaces</returns>
+        string FormatCode(string code);
     }
 }

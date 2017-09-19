@@ -58,20 +58,15 @@ namespace Axe.Controllers
             {
                 try
                 {
-                    model.SourceCode = CSharpSyntaxTree.ParseText(model.SourceCode).GetRoot().NormalizeWhitespace().ToFullString();
+                    model.SourceCode = compileManager.FormatCode(model.SourceCode);
                     Tuple<CodeBlockResult, string[]> result = compileManager.Solve(model);
-                    ViewData["StatusOfExecuting"] = result.Item1;
-                    switch (result.Item1)
+                    model.Result = result.Item1;
+                    if (result.Item1 == CodeBlockResult.Error || result.Item1 == CodeBlockResult.Failed)
                     {
-                        case CodeBlockResult.SUCCESS:
-                            break;
-                        case CodeBlockResult.FAILED:
-                        case CodeBlockResult.ERROR:
-                            for (int i = 0; i < result.Item2.Length; i++)
-                            {
-                                ModelState.AddModelError(i.ToString(), result.Item2[i]);
-                            }
-                            break;
+                        for (int i = 0; i < result.Item2.Length; i++)
+                        {
+                            ModelState.AddModelError(i.ToString(), result.Item2[i]);
+                        }
                     }
                 }
                 catch (Exception exception)

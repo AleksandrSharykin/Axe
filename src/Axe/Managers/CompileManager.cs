@@ -45,7 +45,7 @@ namespace Axe.Managers
                     Id = codeBlock.Id,
                     Task = codeBlock.Task
                 };
-                model.SourceCode = CSharpSyntaxTree.ParseText(model.SourceCode).GetRoot().NormalizeWhitespace().ToFullString();
+                model.SourceCode = FormatCode(model.SourceCode);
                 return model;
             }
             catch (Exception exception)
@@ -118,7 +118,7 @@ namespace Axe.Managers
                              diagnostic.Severity == DiagnosticSeverity.Error).ToArray();
 
                         string[] errors = failures.Select(f => f.GetMessage()).ToArray();
-                        return new Tuple<CodeBlockResult, string[]>(CodeBlockResult.ERROR, errors);
+                        return new Tuple<CodeBlockResult, string[]>(CodeBlockResult.Error, errors);
                     }
                     else
                     {
@@ -142,7 +142,7 @@ namespace Axe.Managers
                             }
                         }
                         string[] info = new string[] { failedTestCases.Count + " of " + codeBlock.TestCases.Count + " testcases ended in failure" }.Union(failedTestCases).ToArray();
-                        return new Tuple<CodeBlockResult, string[]>((failedTestCases.Count == 0) ? CodeBlockResult.SUCCESS : CodeBlockResult.FAILED, info);
+                        return new Tuple<CodeBlockResult, string[]>((failedTestCases.Count == 0) ? CodeBlockResult.Success : CodeBlockResult.Failed, info);
                     }
                 }
             }
@@ -174,18 +174,18 @@ namespace Axe.Managers
                         @"#TYPE_FUNC# result_#s#_#INDEX# = Main(#INPUT#);";
                     switch (codeBlock.OutputType)
                     {
-                        case OutputTypeEnum.INT:
-                        case OutputTypeEnum.DOUBLE:
-                        case OutputTypeEnum.STRING:
+                        case SupportedType.Int:
+                        case SupportedType.Double:
+                        case SupportedType.String:
                             {
                                 codeBlock.VerificationCode +=
                                 @"if (result_#s#_#INDEX# != #OUTPUT#)
                                 resultsOfTestCases_#s#[#INDEX#] = false;";
                                 break;
                             }
-                        case OutputTypeEnum.INT_ARRAY:
-                        case OutputTypeEnum.DOUBLE_ARRAY:
-                        case OutputTypeEnum.STRING_ARRAY:
+                        case SupportedType.IntArray:
+                        case SupportedType.DoubleArray:
+                        case SupportedType.StringArray:
                             {
                                 codeBlock.VerificationCode +=
                                 @"var array_#s#_#INDEX# = #OUTPUT#;
@@ -211,37 +211,37 @@ namespace Axe.Managers
 
                 switch (codeBlock.OutputType)
                 {
-                    case OutputTypeEnum.INT:
+                    case SupportedType.Int:
                         {
                             codeBlock.VerificationCode = codeBlock.VerificationCode
                                 .Replace("#TYPE_FUNC#", "int");
                             break;
                         }
-                    case OutputTypeEnum.DOUBLE:
+                    case SupportedType.Double:
                         {
                             codeBlock.VerificationCode = codeBlock.VerificationCode
                                 .Replace("#TYPE_FUNC#", "double");
                             break;
                         }
-                    case OutputTypeEnum.STRING:
+                    case SupportedType.String:
                         {
                             codeBlock.VerificationCode = codeBlock.VerificationCode
                                 .Replace("#TYPE_FUNC#", "string");
                             break;
                         }
-                    case OutputTypeEnum.INT_ARRAY:
+                    case SupportedType.IntArray:
                         {
                             codeBlock.VerificationCode = codeBlock.VerificationCode
                                 .Replace("#TYPE_FUNC#", "int[]");
                             break;
                         }
-                    case OutputTypeEnum.DOUBLE_ARRAY:
+                    case SupportedType.DoubleArray:
                         {
                             codeBlock.VerificationCode = codeBlock.VerificationCode
                                 .Replace("#TYPE_FUNC#", "double[]");
                             break;
                         }
-                    case OutputTypeEnum.STRING_ARRAY:
+                    case SupportedType.StringArray:
                         {
                             codeBlock.VerificationCode = codeBlock.VerificationCode
                                 .Replace("#TYPE_FUNC#", "string[]");
@@ -263,6 +263,11 @@ namespace Axe.Managers
                 throw exception;
             }
             
+        }
+
+        public string FormatCode(string code)
+        {
+            return CSharpSyntaxTree.ParseText(code).GetRoot().NormalizeWhitespace().ToFullString();
         }
     }
 }
