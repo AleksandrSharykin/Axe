@@ -98,8 +98,14 @@ namespace Axe.Managers
 
                 MetadataReference[] references = new MetadataReference[]
                 {
-                    MetadataReference.CreateFromFile(typeof(object).GetTypeInfo().Assembly.Location),
-                    MetadataReference.CreateFromFile(typeof(Hashtable).GetTypeInfo().Assembly.Location)
+                    MetadataReference.CreateFromFile(typeof(System.Object).GetTypeInfo().Assembly.Location),
+                    MetadataReference.CreateFromFile(typeof(System.Collections.Hashtable).GetTypeInfo().Assembly.Location),
+                    MetadataReference.CreateFromFile(typeof(System.Linq.Enumerable).GetTypeInfo().Assembly.Location),
+                    //MetadataReference.CreateFromFile(typeof(System.Linq.Queryable).GetTypeInfo().Assembly.Location),
+                    //MetadataReference.CreateFromFile(typeof(System.Linq.EnumerableExecutor).GetTypeInfo().Assembly.Location),
+                    //MetadataReference.CreateFromFile(typeof(System.Linq.EnumerableQuery).GetTypeInfo().Assembly.Location),
+                    MetadataReference.CreateFromFile(typeof(System.Collections.Generic.List<>).GetTypeInfo().Assembly.Location),
+                    //MetadataReference.CreateFromFile(typeof(System.Collections.Generic.List<>).GetTypeInfo().Assembly.Location),
                 };
 
                 CSharpCompilation compilation = CSharpCompilation.Create(
