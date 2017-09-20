@@ -5,43 +5,66 @@
 }
 
 @section Scripts
-    {
+{
     <script src="~/js/compiler.solve.js"></script>
 }
 
-<h2>Roslyn .NET compiler platform page</h2>
-
-<p><b>Task:</b> @Model.Task</p>
+<div class="row" style="margin-top: 1em;">
+    <div class="col-md-12">
+        <div class="panel panel-default">
+            <div class="panel-heading"><b>Task:</b> @Model.Id</div>
+            <div class="panel-body">@Model.Task</div>
+        </div>
+    </div>
+</div>
 
 <form id="formSolve" asp-controller="Compiler" asp-action="Solve" method="post">
     <input asp-for="Id" value="@Model.Id" hidden />
     <input asp-for="Task" value="@Model.Task" hidden />
-    <div class="form-group">
-        <label asp-for="SourceCode"></label>
-        <textarea asp-for="SourceCode" id="sourceCodeTextArea" rows="30" value="@Model.SourceCode" class="form-control"></textarea>
+    <div class="row">
+        <div class="form-group col-md-12">
+            <label asp-for="SourceCode" class="col-md-12"></label>
+            <div class="col-md-12">
+                <textarea asp-for="SourceCode" id="sourceCodeTextArea" rows="30" value="@Model.SourceCode" class="form-control"></textarea>
+            </div>
+        </div>
     </div>
-    <input id="btnCheck" type="submit" value="Check" class="btn btn-primary"/>
+    <div class="row">
+        <div class="form-group col-md-8">
+            <input id="btnCheck" type="submit" value="Check" class="btn btn-primary col-md-2" />
+        </div>
+    </div>
 </form>
-
-<br />
 
 @switch (Model.Result)
 {
     case CodeBlockResult.Failed:
     case CodeBlockResult.Error:
-        <div class="alert alert-danger" role="alert">
-            <div asp-validation-summary="All"></div>
-        </div>
-        break;
     case CodeBlockResult.Unknown:
         @if (ViewData.ModelState.Any(x => x.Value.Errors.Any()))
         {
-            <div asp-validation-summary="All" class="alert alert-danger" role="alert"></div>
+            <div class="row">
+                <div class="col-md-12">
+                    <div class="panel panel-danger">
+                        <div class="panel-heading"><b>Errors</b></div>
+                        <div class="panel-body">
+                            <div asp-validation-summary="All"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
         }
         break;
     case CodeBlockResult.Success:
-        <div class="alert alert-success" role="alert">
-            All is done right
+        <div class="row">
+            <div class="col-md-12">
+                <div class="panel panel-success">
+                    <div class="panel-heading"><b>Result</b></div>
+                    <div class="panel-body">
+                        All is done right
+                    </div>
+                </div>
+            </div>
         </div>
         break;
 }
