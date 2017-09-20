@@ -10,46 +10,96 @@
     <script src="~/js/compiler.create.js"></script>
 }
 
-<h2>Add new task</h2>
+<div class="row">
+    <div class="col-md-12">
+        <h4><b>Add new task</b></h4>
+    </div>
+</div>
 
 <form id="formCreate" asp-controller="Compiler" asp-action="Create" method="post">
-    <div class="form-group">
-        <label asp-for="Task"></label>
-        <textarea asp-for="Task" class="form-control"></textarea>
-        <span asp-validation-for="Task" class="text-danger"></span>
+    <div class="row">
+        <div class="form-group col-md-8">
+            <label asp-for="Task" class="col-md-12"></label>
+            <div class="col-md-12">
+                <textarea asp-for="Task" rows="5" class="form-control"></textarea>
+            </div>
+            <span asp-validation-for="Task" class="text-danger col-md-12"></span>
+        </div>
     </div>
-
-    <div class="form-group">
-        <label asp-for="OutputType"></label>
-        <select asp-for="OutputType" asp-items="Html.GetEnumSelectList<SupportedType>()" class="form-control"></select>
-        <span asp-validation-for="OutputType" class="text-danger"></span>
+    <div class="row">
+        <div class="form-group col-md-8">
+            <label asp-for="OutputType" class="col-md-3"></label>
+            <div class="col-md-9">
+                <select asp-for="OutputType" asp-items="Html.GetEnumSelectList<SupportedType>()" class="form-control"></select>
+            </div>
+            <span asp-validation-for="OutputType" class="text-danger col-md-12"></span>
+        </div>
     </div>
+    <div id="testCasesFormGroup">
+        <div class="row">
+            <div class="form-group col-md-8">
+                <label asp-for="TestCases" class="col-md-12"></label>
+                <span asp-validation-for="TestCases" class="text-danger col-md-12"></span>
+            </div>
+        </div>
 
-    <div id="testCasesFormGroup" class="form-group">
-        <label asp-for="TestCases"></label>
-        <span asp-validation-for="TestCases" class="text-danger"></span>
-        <input id="input_0" name="TestCases[0].Input" class="form-control" placeholder="input_0" value="@Model.TestCases[0].Input"/>
-        <span asp-validation-for="TestCases[0].Input" class="text-danger"></span>
-        <input id="output_0" name="TestCases[0].Output" class="form-control" placeholder="output_0" value="@Model.TestCases[0].Output"/>
-        <span asp-validation-for="TestCases[0].Output" class="text-danger"></span>
+        <div class="row">
+            <div class="form-group col-md-8">
+                <div class="col-md-1">
+                    <span class="badge badge-secondary">1</span>
+                </div>
+                <label for="input_0" class="col-md-1">Input</label>
+                <div class="col-md-4">
+                    <input id="input_0" name="TestCases[0].Input" class="form-control col-md-12" placeholder="input_0" value="@Model.TestCases[0].Input" />
+                </div>
+                <label for="output_0" class="col-md-1">Output</label>
+                <div class="col-md-4">
+                    <input id="output_0" name="TestCases[0].Output" class="form-control col-md-12" placeholder="output_0" value="@Model.TestCases[0].Output" />
+                </div>
+                <div class="col-md-1">
+                    <button type="button" class="btn btn-default col-md-12" disabled="disabled">X</button>
+                </div>
+                <span asp-validation-for="TestCases[0].Input" class="text-danger col-md-12"></span>
+                <span asp-validation-for="TestCases[0].Output" class="text-danger col-md-12"></span>
+            </div>
+        </div>
+
         @if (Model.TestCases.Count > 1)
         {
             for (int i = 1; i < Model.TestCases.Count; i++)
             {
-                <input id="input_@i" name="TestCases[@i].Input" class="form-control" placeholder="input_@i" value="@Model.TestCases[i].Input"/>
-                <span asp-validation-for="TestCases[i].Input" class="text-danger"></span>
-                <input id="output_@i" name="TestCases[@i].Output" class="form-control" placeholder="output_@i" value="@Model.TestCases[i].Output"/>
-                <span asp-validation-for="TestCases[i].Output" class="text-danger"></span>
-                <button name="btnDeleteTestCase_@i" type="button" class="btn btn-default" value="@i">X</button>
+                <div class="row" id="group_@i">
+                    <div class="form-group col-md-8">
+                        <div class="col-md-1">
+                            <span id="span_@i" class="badge badge-secondary">@(i + 1)</span>
+                        </div>
+                        <label id="inputLabel_@i" for="input_@i" class="col-md-1">Input</label>
+                        <div class="col-md-4">
+                            <input id="input_@i" name="TestCases[@i].Input" class="form-control" placeholder="input_@i" value="@Model.TestCases[i].Input" />
+                        </div>
+                        <label id="outputLabel_@i" for="output_@i" class="col-md-1">Output</label>
+                        <div class="col-md-4">
+                            <input id="output_@i" name="TestCases[@i].Output" class="form-control" placeholder="output_@i" value="@Model.TestCases[i].Output" />
+                        </div>
+                        <div class="col-md-1">
+                            <button name="btnDeleteTestCase_@i" type="button" class="btn btn-danger col-md-12" value="@i">X</button>
+                        </div>
+                        <span asp-validation-for="TestCases[i].Input" class="text-danger col-md-12"></span>
+                        <span asp-validation-for="TestCases[i].Output" class="text-danger col-md-12"></span>
+                    </div>
+                </div>
             }
         }
     </div>
 
-    <div class="form-group">
-        <button id="btnAddTestCase" type="button" class="btn btn-info">Add test case</button>
+    <div class="row">
+        <div class="form-group col-md-8">
+            <button id="btnAddTestCase" type="button" class="btn btn-info col-md-2">+ test case</button>
+        </div>
     </div>
-    
-    <div class="form-group">
-        <button type="submit" class="btn btn-primary">Add task</button>
+    <div class="row">
+        <div class="form-group col-md-8">
+            <button type="submit" class="btn btn-primary col-md-2">Add task</button>
+        </div>
     </div>
 </form>
