@@ -54,11 +54,11 @@ namespace Axe.Controllers
         public IActionResult Solve(CodeBlockVm model)
         {
             System.Threading.Thread.Sleep(2000);
+            model.SourceCode = compileManager.FormatCode(model.SourceCode);
             if (ModelState.IsValid)
             {
                 try
                 {
-                    model.SourceCode = compileManager.FormatCode(model.SourceCode);
                     Tuple<CodeBlockResult, string[]> result = compileManager.Solve(model);
                     model.Result = result.Item1;
                     if (result.Item1 == CodeBlockResult.Error || result.Item1 == CodeBlockResult.Failed)
