@@ -21,9 +21,9 @@ namespace Axe.Controllers
 {
     public class CompilerController : ControllerExt
     {
-        private ICompileManager compileManager;
+        private ICompilerManager compileManager;
 
-        public CompilerController(UserManager<ApplicationUser> userManager, ICompileManager compileManager, AxeDbContext context)
+        public CompilerController(UserManager<ApplicationUser> userManager, ICompilerManager compileManager, AxeDbContext context)
             : base(userManager, context)
         {
             this.compileManager = compileManager;
@@ -105,5 +105,66 @@ namespace Axe.Controllers
             return View(model);
         }
 
+        [HttpGet]
+        public async Task<IActionResult> Edit(int id)
+        {
+            try
+            {
+                CodeBlockTaskVm model = await compileManager.GetByIdForEdit(id);
+                return View(model);
+            }
+            catch (Exception exception)
+            {
+                return NotFound();
+            }
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Edit(CodeBlockTaskVm model)
+        {
+            if (ModelState.IsValid)
+            {
+                try
+                {
+                    await compileManager.Update(model);
+                    return RedirectToActionPermanent(nameof(CompilerController.Index));
+                }
+                catch (Exception exception)
+                {
+                    ModelState.AddModelError("", exception.Message);
+                    return View(model);
+                }
+            }
+            return View(model);
+        }
+
+        public async Task<IActionResult> Delete(int id)
+        {
+            try
+            {
+                CodeBlockVm model = await compileManager.GetById(id);
+                return View(model);
+            }
+            catch (Exception exception)
+            {
+                return NotFound();
+            }
+        }
+
+        [HttpPost, ActionName("Delete")]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> DeleteConfirmed(int id)
+        {
+            try
+            {
+                await compileManager.DeleteById(id);
+                return RedirectToActionPermanent(nameof(CompilerController.Index));
+            }
+            catch (Exception exception)
+            {
+                return NotFound();
+            }
+        }
     }
 }

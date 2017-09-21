@@ -68,7 +68,7 @@ namespace Axe
             services.AddScoped<IExamManager, ExamManager>();
 
             services.AddScoped<IQuizManager, QuizManager>();
-            services.AddScoped<ICompileManager, CompileManager>();
+            services.AddScoped<ICompilerManager, CompilerManager>();
 
             // Configure Identity
             services.Configure<IdentityOptions>(options =>

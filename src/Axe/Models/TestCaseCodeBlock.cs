@@ -24,5 +24,10 @@ namespace Axe.Models
         /// </summary>
         [Required]
         public string Output { get; set; }
+
+        /// <summary>
+        /// Gets or sets codeBlock which contains it
+        /// </summary>
+        public CodeBlock codeBlock { get; set; }
     }
 }

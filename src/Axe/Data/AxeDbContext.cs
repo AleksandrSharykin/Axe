@@ -32,6 +32,8 @@ namespace Axe.Models
 
         public DbSet<CodeBlock> CodeBlock { get; set; }
 
+        public DbSet<TestCaseCodeBlock> TestCaseCodeBlock { get; set; }
+
         public AxeDbContext(DbContextOptions<AxeDbContext> options)
             : base(options)
         {

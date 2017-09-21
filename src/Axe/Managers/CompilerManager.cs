@@ -20,9 +20,9 @@ namespace Axe.Managers
     /// <summary>
     /// Class implements operations which can be performed with <see cref="CodeBlock"/> entities
     /// </summary>
-    public class CompileManager : ManagerBase, ICompileManager
+    public class CompilerManager : ManagerBase, ICompilerManager
     {
-        public CompileManager(AxeDbContext context) : base(context)
+        public CompilerManager(AxeDbContext context) : base(context)
         {
         }
         
@@ -48,6 +48,66 @@ namespace Axe.Managers
                 };
                 model.SourceCode = FormatCode(model.SourceCode);
                 return model;
+            }
+            catch (Exception exception)
+            {
+                throw exception;
+            }
+        }
+
+        public async Task<CodeBlockTaskVm> GetByIdForEdit(int id)
+        {
+            try
+            {
+                CodeBlock codeBlock = await this.context.CodeBlock
+                    .Include(cb => cb.TestCases)
+                    .FirstAsync(cb => cb.Id == id);
+                CodeBlockTaskVm model = new CodeBlockTaskVm()
+                {
+                    Id = codeBlock.Id,
+                    Task = codeBlock.Task,
+                    OutputType = codeBlock.OutputType,
+                    TestCases = codeBlock.TestCases
+                };
+                return model;
+            }
+            catch (Exception exception)
+            {
+                throw exception;
+            }
+        }
+
+        public async Task Update(CodeBlockTaskVm model)
+        {
+            try
+            {
+                var testCaseCodeBlocks = context.TestCaseCodeBlock.Where(ts => ts.codeBlock.Id == model.Id);
+                context.TestCaseCodeBlock.RemoveRange(testCaseCodeBlocks);
+                CodeBlock codeBlock = await this.context.CodeBlock
+                    .Include(cb => cb.TestCases)
+                    .FirstAsync(cb => cb.Id == model.Id);
+                codeBlock.Id = model.Id;
+                codeBlock.Task = model.Task;
+                codeBlock.OutputType = model.OutputType;
+                codeBlock.TestCases = model.TestCases;
+                codeBlock.VerificationCode = GenerateVerificationCode(model);
+                await context.SaveChangesAsync();
+            }
+            catch (Exception exception)
+            {
+                throw exception;
+            }
+        }
+
+        public async Task DeleteById(int id)
+        {
+            try
+            {
+                CodeBlock codeBlock = await context.CodeBlock
+                    .Include(cb => cb.TestCases)
+                    .SingleAsync(cb => cb.Id == id);
+                context.Remove(codeBlock);
+                await context.SaveChangesAsync();
             }
             catch (Exception exception)
             {
@@ -165,59 +225,72 @@ namespace Axe.Managers
             {
                 CodeBlock codeBlock = new CodeBlock();
                 codeBlock.Task = model.Task;
-                foreach (TestCaseCodeBlock testCase in model.TestCases)
-                {
-                    codeBlock.TestCases.Add(new TestCaseCodeBlock { Input = testCase.Input, Output = testCase.Output });
-                }
+                codeBlock.TestCases = model.TestCases;
                 codeBlock.OutputType = model.OutputType;
+                codeBlock.VerificationCode = GenerateVerificationCode(model);
+                context.CodeBlock.Add(codeBlock);
+                await context.SaveChangesAsync();
+            }
+            catch (Exception exception)
+            {
+                throw exception;
+            }
+        }
+        
+        public string FormatCode(string code)
+        {
+            return CSharpSyntaxTree.ParseText(code).GetRoot().NormalizeWhitespace().ToFullString();
+        }
 
-                codeBlock.VerificationCode += 
+        private string GenerateVerificationCode(CodeBlockTaskVm model)
+        {
+            string verificationCode =
                     @"resultsOfTestCases_#s# = new bool[#TEST_CASE_COUNT#];
                 for (int i_#s# = 0; i_#s# < resultsOfTestCases_#s#.Length; i_#s#++)                    
                     resultsOfTestCases_#s#[i_#s#] = true;";
-                for (int i = 0; i < codeBlock.TestCases.Count; i++)
+            for (int i = 0; i < model.TestCases.Count; i++)
+            {
+                verificationCode +=
+                    @"#TYPE_FUNC# result_#s#_#INDEX# = Main(#INPUT#);";
+                switch (model.OutputType)
                 {
-                    codeBlock.VerificationCode +=
-                        @"#TYPE_FUNC# result_#s#_#INDEX# = Main(#INPUT#);";
-                    switch (codeBlock.OutputType)
-                    {
-                        case SupportedType.Bool:
-                        case SupportedType.Byte:
-                        case SupportedType.Sbyte:
-                        case SupportedType.Short:
-                        case SupportedType.Ushort:
-                        case SupportedType.Int:
-                        case SupportedType.Uint:
-                        case SupportedType.Long:
-                        case SupportedType.Ulong:
-                        case SupportedType.Double:
-                        case SupportedType.Float:
-                        case SupportedType.Decimal:
-                        case SupportedType.Char:
-                        case SupportedType.String:
-                            {
-                                codeBlock.VerificationCode +=
-                                @"if (result_#s#_#INDEX# != #OUTPUT#)
+                    case SupportedType.Bool:
+                    case SupportedType.Byte:
+                    case SupportedType.Sbyte:
+                    case SupportedType.Short:
+                    case SupportedType.Ushort:
+                    case SupportedType.Int:
+                    case SupportedType.Uint:
+                    case SupportedType.Long:
+                    case SupportedType.Ulong:
+                    case SupportedType.Double:
+                    case SupportedType.Float:
+                    case SupportedType.Decimal:
+                    case SupportedType.Char:
+                    case SupportedType.String:
+                        {
+                            verificationCode +=
+                            @"if (result_#s#_#INDEX# != #OUTPUT#)
                                 resultsOfTestCases_#s#[#INDEX#] = false;";
-                                break;
-                            }
-                        case SupportedType.BoolArray:
-                        case SupportedType.ByteArray:
-                        case SupportedType.SbyteArray:
-                        case SupportedType.ShortArray:
-                        case SupportedType.UshortArray:
-                        case SupportedType.IntArray:
-                        case SupportedType.UintArray:
-                        case SupportedType.LongArray:
-                        case SupportedType.UlongArray:
-                        case SupportedType.DoubleArray:
-                        case SupportedType.FloatArray:
-                        case SupportedType.DecimalArray:
-                        case SupportedType.CharArray:
-                        case SupportedType.StringArray:
-                            {
-                                codeBlock.VerificationCode +=
-                                @"var array_#s#_#INDEX# = #OUTPUT#;
+                            break;
+                        }
+                    case SupportedType.BoolArray:
+                    case SupportedType.ByteArray:
+                    case SupportedType.SbyteArray:
+                    case SupportedType.ShortArray:
+                    case SupportedType.UshortArray:
+                    case SupportedType.IntArray:
+                    case SupportedType.UintArray:
+                    case SupportedType.LongArray:
+                    case SupportedType.UlongArray:
+                    case SupportedType.DoubleArray:
+                    case SupportedType.FloatArray:
+                    case SupportedType.DecimalArray:
+                    case SupportedType.CharArray:
+                    case SupportedType.StringArray:
+                        {
+                            verificationCode +=
+                            @"var array_#s#_#INDEX# = #OUTPUT#;
                             if (array_#s#_#INDEX#.Length != result_#s#_#INDEX#.Length)
                                 resultsOfTestCases_#s#[#INDEX#] = false;
                             else
@@ -226,44 +299,31 @@ namespace Axe.Managers
                                     if (array_#s#_#INDEX#[i_#s#] != result_#s#_#INDEX#[i_#s#])
                                     resultsOfTestCases_#s#[#INDEX#] = false;
                                 }";
-                                break;
-                            }
-                        default:
                             break;
-                    }
-
-                    codeBlock.VerificationCode = codeBlock.VerificationCode
-                        .Replace("#INDEX#", i.ToString())
-                        .Replace("#OUTPUT#", codeBlock.TestCases[i].Output)
-                        .Replace("#INPUT#", codeBlock.TestCases[i].Input);
+                        }
+                    default:
+                        break;
                 }
 
-                DisplayAttribute attributeOfOutputType = codeBlock.OutputType.GetType()
-                        .GetMember(codeBlock.OutputType.ToString())
-                        .First()
-                        .GetCustomAttribute<DisplayAttribute>();
-                string outputTypeStr = attributeOfOutputType.Name;
-
-                codeBlock.VerificationCode = codeBlock.VerificationCode
-                                .Replace("#TYPE_FUNC#", outputTypeStr);
-                
-                codeBlock.VerificationCode = codeBlock.VerificationCode
-                    .Replace("#TEST_CASE_COUNT#", codeBlock.TestCases.Count.ToString())
-                    .Replace("#s#", "AXE");
-
-                context.CodeBlock.Add(codeBlock);
-                await context.SaveChangesAsync();
+                verificationCode = verificationCode
+                    .Replace("#INDEX#", i.ToString())
+                    .Replace("#OUTPUT#", model.TestCases[i].Output)
+                    .Replace("#INPUT#", model.TestCases[i].Input);
             }
-            catch (Exception exception)
-            {
-                throw exception;
-            }
-            
-        }
 
-        public string FormatCode(string code)
-        {
-            return CSharpSyntaxTree.ParseText(code).GetRoot().NormalizeWhitespace().ToFullString();
+            DisplayAttribute attributeOfOutputType = model.OutputType.GetType()
+                .GetMember(model.OutputType.ToString())
+                .First()
+                .GetCustomAttribute<DisplayAttribute>();
+            string outputTypeStr = attributeOfOutputType.Name;
+
+            verificationCode = verificationCode
+                .Replace("#TYPE_FUNC#", outputTypeStr);
+
+            verificationCode = verificationCode
+                .Replace("#TEST_CASE_COUNT#", model.TestCases.Count.ToString())
+                .Replace("#s#", "AXE");
+            return verificationCode;
         }
     }
 }

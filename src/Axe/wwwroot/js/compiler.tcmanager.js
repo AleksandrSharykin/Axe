@@ -1,4 +1,7 @@
-﻿$(document).ready(function () {
+﻿/*
+    This script is used to add new item of test case into form
+*/
+$(document).ready(function () {
     var countOfTestCases = 1; // Default value for countOfTestCases
 
     // This function determinates the current count of test cases.

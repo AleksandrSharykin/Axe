@@ -2,26 +2,22 @@
 @model Axe.ViewModels.CompilerVm.CodeBlockTaskVm
 
 @{
-    ViewData["Title"] = "Add new task";
-}
-
-@section Scripts
-{
-    <script src="~/js/compiler.tcmanager.js"></script>
+    ViewData["Title"] = "Edit";
 }
 
 <div class="row">
     <div class="col-md-12">
-        <h4><b>Add new task</b></h4>
+        <h4><b>Edit the task #@Model.Id</b></h4>
     </div>
 </div>
 
-<form asp-controller="Compiler" asp-action="Create" method="post">
+<form asp-controller="Compiler" asp-action="Edit" method="post">
+    <input asp-for="Id" hidden />
     <div class="row">
         <div class="form-group col-md-8">
             <label asp-for="Task" class="col-md-12"></label>
             <div class="col-md-12">
-                <textarea asp-for="Task" rows="5" class="form-control"></textarea>
+                <textarea asp-for="Task" rows="5" class="form-control">@Model.Task</textarea>
             </div>
             <span asp-validation-for="Task" class="text-danger col-md-12"></span>
         </div>
@@ -42,7 +38,6 @@
                 <span asp-validation-for="TestCases" class="text-danger col-md-12"></span>
             </div>
         </div>
-
         <div class="row">
             <div class="form-group col-md-8">
                 <div class="col-md-1">
@@ -99,7 +94,7 @@
     </div>
     <div class="row">
         <div class="form-group col-md-8">
-            <button type="submit" class="btn btn-primary col-md-2">Add task</button>
+            <button type="submit" class="btn btn-primary col-md-2">Save task</button>
         </div>
     </div>
 </form>
@@ -109,3 +104,8 @@
         <a asp-controller="Compiler" asp-action="Index" class="btn btn-default col-md-2">Back to list</a>
     </div>
 </div>
+
+@section Scripts {
+    <script src="~/js/compiler.tcmanager.js"></script>
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

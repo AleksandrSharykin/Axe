@@ -10,7 +10,7 @@ namespace Axe.Managers
     /// <summary>
     /// Interface declares operations which can be performed with <see cref="CodeBlock"/>  ennities
     /// </summary>
-    public interface ICompileManager
+    public interface ICompilerManager
     {
         /// <summary>
         /// Returns a list of code block available for current user
@@ -24,7 +24,28 @@ namespace Axe.Managers
         /// <param name="id">Identifier of code block</param>
         /// <returns>CodeBlockVm</returns>
         Task<CodeBlockVm> GetById(int id);
-        
+
+        /// <summary>
+        /// Returns a code block with id
+        /// </summary>
+        /// <param name="id">Identifier of code block</param>
+        /// <returns>CodeBlockTaskVm</returns>
+        Task<CodeBlockTaskVm> GetByIdForEdit(int id);
+
+        /// <summary>
+        /// Updates a code block
+        /// </summary>
+        /// <param name="model">CodeBlockTaskVm</param>
+        /// <returns></returns>
+        Task Update(CodeBlockTaskVm model);
+
+        /// <summary>
+        /// Deletes a code block with id
+        /// </summary>
+        /// <param name="id">Identifier of code block</param>
+        /// <returns></returns>
+        Task DeleteById(int id);
+
         /// <summary>
         /// Solves and returns code block result 
         /// </summary>
