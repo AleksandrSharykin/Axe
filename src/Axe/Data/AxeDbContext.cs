@@ -59,6 +59,7 @@ namespace Axe.Models
             builder.Entity<ExamAttempt>().HasOne(ea => ea.Task).WithMany().OnDelete(DeleteBehavior.Restrict);
             builder.Entity<AttemptQuestion>().HasOne(q => q.TaskQuestion).WithMany().OnDelete(DeleteBehavior.Restrict);
             builder.Entity<AttemptAnswer>().HasOne(q => q.TaskAnswer).WithMany().OnDelete(DeleteBehavior.Restrict);
+            builder.Entity<CodeBlock>().HasMany(cb => cb.TestCases).WithOne(tc => tc.codeBlock).OnDelete(DeleteBehavior.Cascade);
 
             base.OnModelCreating(builder);
         }
