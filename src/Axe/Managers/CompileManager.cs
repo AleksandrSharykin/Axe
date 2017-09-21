@@ -13,6 +13,7 @@ using System.Reflection;
 using System.Collections;
 using Microsoft.CodeAnalysis.Emit;
 using System.Runtime.Loader;
+using System.ComponentModel.DataAnnotations;
 
 namespace Axe.Managers
 {
@@ -237,184 +238,15 @@ namespace Axe.Managers
                         .Replace("#INPUT#", codeBlock.TestCases[i].Input);
                 }
 
-                switch (codeBlock.OutputType)
-                {
-                    #region 1
-                    case SupportedType.Bool:
-                        {
-                            codeBlock.VerificationCode = codeBlock.VerificationCode
-                                .Replace("#TYPE_FUNC#", "bool");
-                            break;
-                        }
-                    case SupportedType.Byte:
-                        {
-                            codeBlock.VerificationCode = codeBlock.VerificationCode
-                                .Replace("#TYPE_FUNC#", "byte");
-                            break;
-                        }
-                    case SupportedType.Sbyte:
-                        {
-                            codeBlock.VerificationCode = codeBlock.VerificationCode
-                                .Replace("#TYPE_FUNC#", "sbyte");
-                            break;
-                        }
-                    case SupportedType.Short:
-                        {
-                            codeBlock.VerificationCode = codeBlock.VerificationCode
-                                .Replace("#TYPE_FUNC#", "short");
-                            break;
-                        }
-                    case SupportedType.Ushort:
-                        {
-                            codeBlock.VerificationCode = codeBlock.VerificationCode
-                                .Replace("#TYPE_FUNC#", "ushort");
-                            break;
-                        }
-                    case SupportedType.Int:
-                        {
-                            codeBlock.VerificationCode = codeBlock.VerificationCode
-                                .Replace("#TYPE_FUNC#", "int");
-                            break;
-                        }
-                    case SupportedType.Uint:
-                        {
-                            codeBlock.VerificationCode = codeBlock.VerificationCode
-                                .Replace("#TYPE_FUNC#", "uint");
-                            break;
-                        }
-                    case SupportedType.Long:
-                        {
-                            codeBlock.VerificationCode = codeBlock.VerificationCode
-                                .Replace("#TYPE_FUNC#", "long");
-                            break;
-                        }
-                    case SupportedType.Ulong:
-                        {
-                            codeBlock.VerificationCode = codeBlock.VerificationCode
-                                .Replace("#TYPE_FUNC#", "ulong");
-                            break;
-                        }
-                    case SupportedType.Double:
-                        {
-                            codeBlock.VerificationCode = codeBlock.VerificationCode
-                                .Replace("#TYPE_FUNC#", "double");
-                            break;
-                        }
-                    case SupportedType.Float:
-                        {
-                            codeBlock.VerificationCode = codeBlock.VerificationCode
-                                .Replace("#TYPE_FUNC#", "float");
-                            break;
-                        }
-                    case SupportedType.Decimal:
-                        {
-                            codeBlock.VerificationCode = codeBlock.VerificationCode
-                                .Replace("#TYPE_FUNC#", "decimal");
-                            break;
-                        }
-                    case SupportedType.Char:
-                        {
-                            codeBlock.VerificationCode = codeBlock.VerificationCode
-                                .Replace("#TYPE_FUNC#", "char");
-                            break;
-                        }
-                    case SupportedType.String:
-                        {
-                            codeBlock.VerificationCode = codeBlock.VerificationCode
-                                .Replace("#TYPE_FUNC#", "string");
-                            break;
-                        }
-                    #endregion
-                    #region 2
-                    case SupportedType.BoolArray:
-                        {
-                            codeBlock.VerificationCode = codeBlock.VerificationCode
-                                .Replace("#TYPE_FUNC#", "bool[]");
-                            break;
-                        }
-                    case SupportedType.ByteArray:
-                        {
-                            codeBlock.VerificationCode = codeBlock.VerificationCode
-                                .Replace("#TYPE_FUNC#", "byte[]");
-                            break;
-                        }
-                    case SupportedType.SbyteArray:
-                        {
-                            codeBlock.VerificationCode = codeBlock.VerificationCode
-                                .Replace("#TYPE_FUNC#", "sbyte[]");
-                            break;
-                        }
-                    case SupportedType.ShortArray:
-                        {
-                            codeBlock.VerificationCode = codeBlock.VerificationCode
-                                .Replace("#TYPE_FUNC#", "short[]");
-                            break;
-                        }
-                    case SupportedType.UshortArray:
-                        {
-                            codeBlock.VerificationCode = codeBlock.VerificationCode
-                                .Replace("#TYPE_FUNC#", "ushort[]");
-                            break;
-                        }
-                    case SupportedType.IntArray:
-                        {
-                            codeBlock.VerificationCode = codeBlock.VerificationCode
-                                .Replace("#TYPE_FUNC#", "int[]");
-                            break;
-                        }
-                    case SupportedType.UintArray:
-                        {
-                            codeBlock.VerificationCode = codeBlock.VerificationCode
-                                .Replace("#TYPE_FUNC#", "uint[]");
-                            break;
-                        }
-                    case SupportedType.LongArray:
-                        {
-                            codeBlock.VerificationCode = codeBlock.VerificationCode
-                                .Replace("#TYPE_FUNC#", "long[]");
-                            break;
-                        }
-                    case SupportedType.UlongArray:
-                        {
-                            codeBlock.VerificationCode = codeBlock.VerificationCode
-                                .Replace("#TYPE_FUNC#", "ulong[]");
-                            break;
-                        }
-                    case SupportedType.DoubleArray:
-                        {
-                            codeBlock.VerificationCode = codeBlock.VerificationCode
-                                .Replace("#TYPE_FUNC#", "double[]");
-                            break;
-                        }
-                    case SupportedType.FloatArray:
-                        {
-                            codeBlock.VerificationCode = codeBlock.VerificationCode
-                                .Replace("#TYPE_FUNC#", "float[]");
-                            break;
-                        }
-                    case SupportedType.DecimalArray:
-                        {
-                            codeBlock.VerificationCode = codeBlock.VerificationCode
-                                .Replace("#TYPE_FUNC#", "decimal[]");
-                            break;
-                        }
-                    case SupportedType.CharArray:
-                        {
-                            codeBlock.VerificationCode = codeBlock.VerificationCode
-                                .Replace("#TYPE_FUNC#", "char[]");
-                            break;
-                        }
-                    case SupportedType.StringArray:
-                        {
-                            codeBlock.VerificationCode = codeBlock.VerificationCode
-                                .Replace("#TYPE_FUNC#", "string[]");
-                            break;
-                        }
-                    #endregion
-                    default:
-                        break;
-                }
+                DisplayAttribute attributeOfOutputType = codeBlock.OutputType.GetType()
+                        .GetMember(codeBlock.OutputType.ToString())
+                        .First()
+                        .GetCustomAttribute<DisplayAttribute>();
+                string outputTypeStr = attributeOfOutputType.Name;
 
+                codeBlock.VerificationCode = codeBlock.VerificationCode
+                                .Replace("#TYPE_FUNC#", outputTypeStr);
+                
                 codeBlock.VerificationCode = codeBlock.VerificationCode
                     .Replace("#TEST_CASE_COUNT#", codeBlock.TestCases.Count.ToString())
                     .Replace("#s#", "AXE");
