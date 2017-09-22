@@ -1,0 +1,31 @@
+@model Axe.ViewModels.CompilerVm.CodeBlockVm
+@{
+    ViewData["Title"] = "Delete";
+}
+
+<div class="row">
+    <div class="col-md-12">
+        <h4><b>Delete the task #@Model.Id</b></h4>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-12">
+        <p>Are you sure that you want to delete the task #@Model.Id</p>
+    </div>
+</div>
+
+<form asp-controller="Compiler" asp-action="Delete" method="post">
+    <input name="id" value="@Model.Id" hidden="hidden" />
+    <div class="row">
+        <div class="form-group col-md-8">
+            <button type="submit" class="btn btn-danger col-md-2">Delete</button>
+        </div>
+    </div>
+</form>
+
+<div class="row">
+    <div class="col-md-8">
+        <a asp-controller="Compiler" asp-action="Index" class="btn btn-default col-md-2">Back to list</a>
+    </div>
+</div>
