@@ -17,21 +17,18 @@ namespace Axe.Controllers
     public class ProfilesController : ControllerExt
     {
         private readonly SignInManager<ApplicationUser> _signInManager;
-        private readonly string _externalCookieScheme;
         private readonly ILogger _logger;
 
         public ProfilesController(
           UserManager<ApplicationUser> userManager,
           SignInManager<ApplicationUser> signInManager,
           AxeDbContext context,
-          IOptions<IdentityCookieOptions> identityCookieOptions,
           ILoggerFactory loggerFactory)
             : base(userManager, context)
         {
             this.userManager = userManager;
             _signInManager = signInManager;
             this.context = context;
-            _externalCookieScheme = identityCookieOptions.Value.ExternalCookieAuthenticationScheme;
             _logger = loggerFactory.CreateLogger<ProfilesController>();
         }
 
