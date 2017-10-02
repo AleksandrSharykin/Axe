@@ -1,5 +1,5 @@
 @using Axe.Models;
-@model Axe.ViewModels.CompilerVm.CodeBlockVm
+@model Axe.ViewModels.CompilerVm.CodeBlockSolveVm
 @{
     ViewData["Title"] = "Solve task #" + Model.Id;
 }
@@ -21,11 +21,22 @@
 <form id="formSolve" asp-controller="Compiler" asp-action="Solve" method="post">
     <input asp-for="Id" value="@Model.Id" hidden />
     <input asp-for="Task" value="@Model.Task" hidden />
+    
+    <div class="row">
+        <div class="form-group col-md-12">
+            <label asp-for="Technology" class="col-md-3"></label>
+            <input asp-for="SelectedTechnologyId" value="@Model.Technology.Id" type="hidden" />
+            <div class="col-md-9">
+                <input id="selectedTechnology" value="@Model.Technology.Name" disabled="disabled" class="form-control disabled" />
+            </div>
+        </div>
+    </div>
+    
     <div class="row">
         <div class="form-group col-md-12">
             <label asp-for="SourceCode" class="col-md-12"></label>
             <div class="col-md-12">
-                <textarea asp-for="SourceCode" id="sourceCodeTextArea" rows="30" class="form-control">@Model.SourceCode</textarea>
+                <textarea id="sourceCodeTextArea" asp-for="SourceCode" rows="30" class="form-control">@Model.SourceCode</textarea>
             </div>
         </div>
     </div>

@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace Axe.ViewModels.CompilerVm
 {
-    public class CodeBlockTaskVm
+    public class CodeBlockCreateVm
     {
         /// <summary>
         /// Gets or sets task identifier
@@ -27,6 +27,11 @@ namespace Axe.ViewModels.CompilerVm
         [Required]
         [Display(Name = "Type of output")]
         public SupportedType OutputType { get; set; }
+
+        public SelectList ListOfTechnologies { get; set; }
+
+        [Display(Name = "Select technology")]
+        public int SelectedTechnologyId { get; set; }
 
         /// <summary>
         /// Gets or sets list of test cases

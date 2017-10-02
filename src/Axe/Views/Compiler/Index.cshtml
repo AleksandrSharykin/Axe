@@ -1,4 +1,4 @@
-@model List<Axe.ViewModels.CompilerVm.CodeBlockVm>
+﻿@model Axe.ViewModels.CompilerVm.CodeBlockIndexVm
 @{
     ViewData["Title"] = "Compiler page";
 }
@@ -14,16 +14,41 @@
         <a asp-controller="Compiler" asp-action="Create" class="btn btn-primary">+ Add task</a>
     </div>
 </div>
-@if (Model != null)
+
+<form id="formTechnology" asp-action="Index" asp-controller="Compiler" method="get">
+    <div class="row">
+        <div class="form-group col-lg-4 col-lg-offset-1">
+            <label asp-for="SelectedTechnologyId"></label>
+            <select asp-for="SelectedTechnologyId" asp-items="@Model.ListOfTechnologies" onchange="$('#formTechnology').submit();" class="form-control">
+                <option value="0">All technologies</option>
+            </select>
+        </div>
+    </div>
+</form>
+
+@if (Model.ListOfCodeBlocks != null)
 {
-    @foreach (var codeBlock in Model)
+    @foreach (var codeBlock in Model.ListOfCodeBlocks)
     {
-        <div class="col-lg-10 col-lg-offset-1 well">
-            <h5><b>Task #@codeBlock.Id</b></h5>
-            <p>@codeBlock.Task</p>
-            <a asp-controller="Compiler" asp-action="Solve" asp-route-id="@codeBlock.Id" class="btn btn-primary">Solve</a>
-            <a asp-controller="Compiler" asp-action="Edit" asp-route-id="@codeBlock.Id" class="btn btn-info">Edit</a>
-            <a asp-controller="Compiler" asp-action="Delete" asp-route-id="@codeBlock.Id" class="btn btn-danger">Delete</a>
+        <div class="row">
+            <div class="col-lg-10 col-lg-offset-1 well">
+                <h5><b>Task #@codeBlock.Id</b></h5>
+                <p>
+                    <b>Technology:</b>
+                    @if (codeBlock.Technology != null)
+                    {
+                        <span class="badge">@codeBlock.Technology.Name</span>
+                    }
+                    else
+                    {
+                        <span class="badge">Any technology</span>
+                    }
+                </p>
+                <p>@codeBlock.Task</p>
+                <a asp-controller="Compiler" asp-action="Solve" asp-route-id="@codeBlock.Id" class="btn btn-primary">Solve</a>
+                <a asp-controller="Compiler" asp-action="Edit" asp-route-id="@codeBlock.Id" class="btn btn-info">Edit</a>
+                <a asp-controller="Compiler" asp-action="Delete" asp-route-id="@codeBlock.Id" class="btn btn-danger">Delete</a>
+            </div>
         </div>
     }
 }

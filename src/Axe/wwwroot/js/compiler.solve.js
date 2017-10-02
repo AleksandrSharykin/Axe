@@ -1,4 +1,30 @@
-﻿$("form#formSolve").submit(function (e) {
+﻿var editor = CodeMirror.fromTextArea(document.getElementById("sourceCodeTextArea"), {
+    lineNumbers: true,
+    matchBrackets: true,
+    mode: "text/x-csharp"
+});
+
+editor.autoFormatRange({ line: 0, ch: 0 }, { line: totalLines });
+
+var tagname = $('#selectedTechnology').prop('tagName').toUpperCase();
+switch (tagname) {
+    case 'INPUT': {
+        setupCodeEditor($('#selectedTechnology').val());
+        break;
+    }
+    /*
+    case 'SELECT': {
+        setupCodeEditor($("#selectedTechnology option:selected").text());
+        $('#selectedTechnology').change(function () {
+            var selectedTechnology = $("#selectedTechnology option:selected").text();
+            setupCodeEditor(selectedTechnology);
+        });
+        break;
+    }
+    */
+}
+
+$("form#formSolve").submit(function (e) {
     $('#btnCheck').attr('disabled', true);
     (function () {
         var i = 1;
@@ -13,8 +39,20 @@
     return true;
 });
 
-var editor = CodeMirror.fromTextArea(document.getElementById("sourceCodeTextArea"), {
-    lineNumbers: true,
-    matchBrackets: true,
-    mode: "text/x-csharp"
-});
+function setupCodeEditor(technology) {
+    console.log('tech: ' + technology + " is active");
+    switch (technology) {
+        case 'C#': {
+            editor.setOption('mode', 'text/x-csharp');
+            break;
+        }
+        case 'JavaScript': {
+            editor.setOption('mode', 'text/javascript');
+            break;
+        }
+        default: {
+            editor.setOption('mode', 'text/x-csharp');
+            break;
+        }
+    }
+}

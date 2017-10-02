@@ -58,5 +58,18 @@ namespace Axe.Managers
         /// <param name="request"></param>
         /// <returns></returns>
         Task<Response<Technology>> DeletePost(Request<int> request);
+
+        /// <summary>
+        /// Returns a list of technologies
+        /// </summary>
+        /// <returns>List of technologies</returns>
+        Task<List<Technology>> GetTechnologies();
+
+        /// <summary>
+        /// Returns the technology by id
+        /// </summary>
+        /// <param name="request">Identifier of technology</param>
+        /// <returns>Technology</returns>
+        Task<Technology> GetTechnologyById(int id);
     }
 }

@@ -14,6 +14,7 @@ using System.Collections;
 using Microsoft.CodeAnalysis.Emit;
 using System.Runtime.Loader;
 using System.ComponentModel.DataAnnotations;
+using Microsoft.AspNetCore.NodeServices;
 
 namespace Axe.Managers
 {
@@ -22,31 +23,47 @@ namespace Axe.Managers
     /// </summary>
     public class CompilerManager : ManagerBase, ICompilerManager
     {
-        public CompilerManager(AxeDbContext context) : base(context)
+        private INodeServices nodeServices;
+
+        public CompilerManager(AxeDbContext context, INodeServices nodeServices) : base(context)
         {
+            this.nodeServices = nodeServices;
         }
         
-        public async Task<List<CodeBlockVm>> GetCodeBlocks()
+        public async Task<List<CodeBlockVm>> GetCodeBlocks(int technologyId)
         {
-            List<CodeBlockVm> list = await context.CodeBlock.Select(cb => new CodeBlockVm
+            List<CodeBlockVm> list = await context.CodeBlock
+                .Include(cb => cb.Technology)
+                .Select(cb => new CodeBlockVm
+                {
+                    Id = cb.Id,
+                    Task = cb.Task,
+                    Technology = cb.Technology,
+                })
+                .ToListAsync();
+            
+            if (technologyId > 0)
             {
-                Id = cb.Id,
-                Task = cb.Task
-            }).ToListAsync();
+                list = list.Where(cb => cb.Technology != null && cb.Technology.Id == technologyId).ToList();
+            }
+            
             return list;
         }
 
-        public async Task<CodeBlockVm> GetById(int id)
+        public async Task<CodeBlockSolveVm> GetCodeBlockById(int id)
         {
             try
             {
-                CodeBlock codeBlock = await this.context.CodeBlock.FirstAsync(cb => cb.Id == id);
-                CodeBlockVm model = new CodeBlockVm()
+                CodeBlock codeBlock = await this.context.CodeBlock
+                    .Include(cb => cb.Technology)
+                    .FirstAsync(cb => cb.Id == id);
+                CodeBlockSolveVm model = new CodeBlockSolveVm()
                 {
                     Id = codeBlock.Id,
-                    Task = codeBlock.Task
+                    Task = codeBlock.Task,
+                    Technology = codeBlock.Technology,
+                    SourceCode = FormatCode(codeBlock.Technology.Template),
                 };
-                model.SourceCode = FormatCode(model.SourceCode);
                 return model;
             }
             catch (Exception exception)
@@ -55,19 +72,21 @@ namespace Axe.Managers
             }
         }
 
-        public async Task<CodeBlockTaskVm> GetByIdForEdit(int id)
+        public async Task<CodeBlockCreateVm> GetByIdForEdit(int id)
         {
             try
             {
                 CodeBlock codeBlock = await this.context.CodeBlock
                     .Include(cb => cb.TestCases)
+                    .Include(cb => cb.Technology)
                     .FirstAsync(cb => cb.Id == id);
-                CodeBlockTaskVm model = new CodeBlockTaskVm()
+                CodeBlockCreateVm model = new CodeBlockCreateVm()
                 {
                     Id = codeBlock.Id,
                     Task = codeBlock.Task,
                     OutputType = codeBlock.OutputType,
-                    TestCases = codeBlock.TestCases
+                    TestCases = codeBlock.TestCases,
+                    SelectedTechnologyId = codeBlock.Technology.Id,
                 };
                 return model;
             }
@@ -77,7 +96,26 @@ namespace Axe.Managers
             }
         }
 
-        public async Task Update(CodeBlockTaskVm model)
+        public async Task Create(CodeBlockCreateVm model)
+        {
+            try
+            {
+                CodeBlock codeBlock = new CodeBlock();
+                codeBlock.Task = model.Task;
+                codeBlock.TestCases = model.TestCases;
+                codeBlock.OutputType = model.OutputType;
+                codeBlock.VerificationCode = GenerateVerificationCodeCSharp(model);
+                codeBlock.Technology = await context.Technology.FirstAsync(t => t.Id == model.SelectedTechnologyId);
+                context.CodeBlock.Add(codeBlock);
+                await context.SaveChangesAsync();
+            }
+            catch (Exception exception)
+            {
+                throw exception;
+            }
+        }
+
+        public async Task Update(CodeBlockCreateVm model)
         {
             try
             {
@@ -85,12 +123,14 @@ namespace Axe.Managers
                 context.TestCaseCodeBlock.RemoveRange(testCaseCodeBlocks);
                 CodeBlock codeBlock = await this.context.CodeBlock
                     .Include(cb => cb.TestCases)
+                    .Include(cb => cb.Technology)
                     .FirstAsync(cb => cb.Id == model.Id);
                 codeBlock.Id = model.Id;
                 codeBlock.Task = model.Task;
                 codeBlock.OutputType = model.OutputType;
                 codeBlock.TestCases = model.TestCases;
-                codeBlock.VerificationCode = GenerateVerificationCode(model);
+                codeBlock.Technology = await context.Technology.FirstAsync(t => t.Id == model.SelectedTechnologyId);
+                codeBlock.VerificationCode = GenerateVerificationCodeCSharp(model);
                 await context.SaveChangesAsync();
             }
             catch (Exception exception)
@@ -115,7 +155,26 @@ namespace Axe.Managers
             }
         }
 
-        public Tuple<CodeBlockResult, string[]> Solve(CodeBlockVm model)
+        public async Task<Tuple<CodeBlockResult, string[]>> HandleCodeBlock(CodeBlockSolveVm model)
+        {
+            try {
+                switch (model.Technology.Name)
+                {
+                    case "C#":
+                        return CompileAndExecuteCSharp(model);
+                    case "JavaScript":
+                        return await InterpretJS(model);
+                    default:
+                        throw new Exception("Unsupported technology is used");
+                }
+            }
+            catch (Exception exception)
+            {
+                return new Tuple<CodeBlockResult, string[]>(CodeBlockResult.Error, new string[] { exception.Message });
+            }
+        }
+
+        private Tuple<CodeBlockResult, string[]> CompileAndExecuteCSharp(CodeBlockSolveVm model)
         {
             try
             {
@@ -162,11 +221,7 @@ namespace Axe.Managers
                     MetadataReference.CreateFromFile(typeof(System.Object).GetTypeInfo().Assembly.Location),
                     MetadataReference.CreateFromFile(typeof(System.Collections.Hashtable).GetTypeInfo().Assembly.Location),
                     MetadataReference.CreateFromFile(typeof(System.Linq.Enumerable).GetTypeInfo().Assembly.Location),
-                    //MetadataReference.CreateFromFile(typeof(System.Linq.Queryable).GetTypeInfo().Assembly.Location),
-                    //MetadataReference.CreateFromFile(typeof(System.Linq.EnumerableExecutor).GetTypeInfo().Assembly.Location),
-                    //MetadataReference.CreateFromFile(typeof(System.Linq.EnumerableQuery).GetTypeInfo().Assembly.Location),
                     MetadataReference.CreateFromFile(typeof(System.Collections.Generic.List<>).GetTypeInfo().Assembly.Location),
-                    //MetadataReference.CreateFromFile(typeof(System.Collections.Generic.List<>).GetTypeInfo().Assembly.Location),
                 };
 
                 CSharpCompilation compilation = CSharpCompilation.Create(
@@ -219,21 +274,46 @@ namespace Axe.Managers
             }
         }
 
-        public async Task Create(CodeBlockTaskVm model)
+        private async Task<Tuple<CodeBlockResult, string[]>> InterpretJS(CodeBlockSolveVm model)
         {
             try
             {
-                CodeBlock codeBlock = new CodeBlock();
-                codeBlock.Task = model.Task;
-                codeBlock.TestCases = model.TestCases;
-                codeBlock.OutputType = model.OutputType;
-                codeBlock.VerificationCode = GenerateVerificationCode(model);
-                context.CodeBlock.Add(codeBlock);
-                await context.SaveChangesAsync();
+                CodeBlock codeBlock = context.CodeBlock
+                    .Include(cb => cb.TestCases)
+                    .First(cb => cb.Id == model.Id);
+                List<string> failedTestCases = new List<string>();
+
+                string jsFilePath = Path.GetTempPath() + Path.GetRandomFileName().Replace(".", "") + ".js";
+                for (int i = 0; i < codeBlock.TestCases.Count; i++)
+                {
+                    string code = @"module.exports = function (callback) {" + model.SourceCode + ";" +
+                    "callback(null, main(" + codeBlock.TestCases[i].Input + ")); };";
+                    using (var jsFile = File.Create(jsFilePath))
+                    {
+                        using (var stream = new StreamWriter(jsFile))
+                        {
+                            stream.Write(code);
+                        }
+                    }
+                    object outputObj = await nodeServices.InvokeAsync<Object>(jsFilePath);   
+                    nodeServices.Dispose();
+
+                    string output = outputObj.ToString();
+                    if (output != codeBlock.TestCases[i].Output)
+                    {
+                        failedTestCases.Add("Test case where input is " + codeBlock.TestCases[i].Input + " and output is " + codeBlock.TestCases[i].Output + " was failed");
+                    }
+                }
+                if (File.Exists(jsFilePath))
+                {
+                    File.Delete(jsFilePath);
+                }
+                string[] info = new string[] { failedTestCases.Count + " of " + codeBlock.TestCases.Count + " testcases ended in failure" }.Union(failedTestCases).ToArray();
+                return new Tuple<CodeBlockResult, string[]>((failedTestCases.Count == 0) ? CodeBlockResult.Success : CodeBlockResult.Failed, info);
             }
             catch (Exception exception)
             {
-                throw exception;
+                return new Tuple<CodeBlockResult, string[]>(CodeBlockResult.Error, new string[] { exception.Message });
             }
         }
         
@@ -242,7 +322,7 @@ namespace Axe.Managers
             return CSharpSyntaxTree.ParseText(code).GetRoot().NormalizeWhitespace().ToFullString();
         }
 
-        private string GenerateVerificationCode(CodeBlockTaskVm model)
+        private string GenerateVerificationCodeCSharp(CodeBlockCreateVm model)
         {
             string verificationCode =
                     @"resultsOfTestCases_#s# = new bool[#TEST_CASE_COUNT#];
