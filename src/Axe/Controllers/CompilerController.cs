@@ -53,7 +53,7 @@ namespace Axe.Controllers
                 model.ListOfTechnologies = new SelectList(await technologyManager.GetTechnologies(), "Id", "Name");
                 return View(model);
             }
-            catch (InvalidOperationException)
+            catch
             {
                 return NotFound();
             }
@@ -62,12 +62,12 @@ namespace Axe.Controllers
         [HttpPost]
         public async Task<IActionResult> Solve(CodeBlockSolveVm model)
         {
-            model.ListOfTechnologies = new SelectList(await technologyManager.GetTechnologies(), "Id", "Name");
-            model.Technology = await technologyManager.GetTechnologyById(model.SelectedTechnologyId);
-            model.SourceCode = compileManager.FormatCode(model.SourceCode);
-            if (ModelState.IsValid)
+            try
             {
-                try
+                model.ListOfTechnologies = new SelectList(await technologyManager.GetTechnologies(), "Id", "Name");
+                model.Technology = await technologyManager.GetTechnologyById(model.SelectedTechnologyId);
+                model.SourceCode = compileManager.FormatCode(model.SourceCode);
+                if (ModelState.IsValid)
                 {
                     Tuple<CodeBlockResult, string[]> result = await compileManager.HandleCodeBlock(model);
                     model.Result = result.Item1;
@@ -79,13 +79,13 @@ namespace Axe.Controllers
                         }
                     }
                 }
-                catch (Exception exception)
-                {
-                    ModelState.AddModelError("", exception.Message);
-                    return View(model);
-                }
+                return View(model);
             }
-            return View(model);
+            catch (Exception exception)
+            {
+                ModelState.AddModelError("Task", exception.Message);
+                return View(model);
+            }
         }
 
         [Authorize(Roles = "superuser")]
@@ -103,21 +103,21 @@ namespace Axe.Controllers
         [HttpPost]
         public async Task<IActionResult> Create(CodeBlockCreateVm model)
         {
-            model.ListOfTechnologies = new SelectList(await technologyManager.GetTechnologies(), "Id", "Name");
-            if (ModelState.IsValid)
+            try
             {
-                try
+                model.ListOfTechnologies = new SelectList(await technologyManager.GetTechnologies(), "Id", "Name");
+                if (ModelState.IsValid)
                 {
                     await compileManager.Create(model);
                     return RedirectToAction(nameof(CompilerController.Index));
                 }
-                catch (Exception exception)
-                {
-                    ModelState.AddModelError("", exception.Message);
-                    return View(model);
-                }
+                return View(model);
             }
-            return View(model);
+            catch (Exception exception)
+            {
+                ModelState.AddModelError("Task", exception.Message);
+                return View(model);
+            }
         }
 
         [Authorize(Roles = "superuser")]
@@ -130,7 +130,7 @@ namespace Axe.Controllers
                 model.ListOfTechnologies = new SelectList(await technologyManager.GetTechnologies(), "Id", "Name");
                 return View(model);
             }
-            catch (Exception exception)
+            catch
             {
                 return NotFound();
             }
@@ -141,21 +141,21 @@ namespace Axe.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(CodeBlockCreateVm model)
         {
-            model.ListOfTechnologies = new SelectList(await technologyManager.GetTechnologies(), "Id", "Name");
-            if (ModelState.IsValid)
+            try
             {
-                try
+                model.ListOfTechnologies = new SelectList(await technologyManager.GetTechnologies(), "Id", "Name");
+                if (ModelState.IsValid)
                 {
                     await compileManager.Update(model);
                     return RedirectToActionPermanent(nameof(CompilerController.Index));
                 }
-                catch (Exception exception)
-                {
-                    ModelState.AddModelError("Task", exception.Message);
-                    return View(model);
-                }
+                return View(model);
             }
-            return View(model);
+            catch (Exception exception)
+            {
+                ModelState.AddModelError("Task", exception.Message);
+                return View(model);
+            }
         }
 
         [Authorize(Roles = "superuser")]
@@ -166,7 +166,7 @@ namespace Axe.Controllers
                 CodeBlockSolveVm model = await compileManager.GetCodeBlockById(id);
                 return View(model);
             }
-            catch (Exception exception)
+            catch
             {
                 return NotFound();
             }
@@ -182,7 +182,7 @@ namespace Axe.Controllers
                 await compileManager.DeleteById(id);
                 return RedirectToActionPermanent(nameof(CompilerController.Index));
             }
-            catch (Exception exception)
+            catch
             {
                 return NotFound();
             }
