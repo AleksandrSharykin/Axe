@@ -15,6 +15,7 @@ using Microsoft.CodeAnalysis.Emit;
 using System.Runtime.Loader;
 using System.ComponentModel.DataAnnotations;
 using Microsoft.AspNetCore.NodeServices;
+using System.Diagnostics;
 
 namespace Axe.Managers
 {
@@ -125,6 +126,8 @@ namespace Axe.Managers
                     return CompileAndExecuteCSharp(model);
                 case "JavaScript":
                     return await InterpretJS(model);
+                case "Python":
+                    return await InterpretPython(model);
                 default:
                     throw new Exception("Unsupported technology is used");
             }
@@ -265,10 +268,97 @@ namespace Axe.Managers
                 return new Tuple<CodeBlockResult, string[]>(CodeBlockResult.Error, new string[] { exception.Message });
             }
         }
-        
+
+        private async Task<Tuple<CodeBlockResult, string[]>> InterpretPython(CodeBlockSolveVm model)
+        {
+            try
+            {
+                CodeBlock codeBlock = context.CodeBlock
+                    .Include(cb => cb.TestCases)
+                    .First(cb => cb.Id == model.Id);
+                List<string> failedTestCases = new List<string>();
+
+                string pyFilePath = Path.GetTempPath() + Path.GetRandomFileName().Replace(".", "") + ".py";
+
+                //ProcessStartInfo startInfo = new ProcessStartInfo("C:\\Users\\andrei.shilkin\\AppData\\Local\\Programs\\Python\\Python36-32\\python.exe");
+                ProcessStartInfo startInfo = new ProcessStartInfo(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile) + "\\AppData\\Local\\Programs\\Python\\Python36-32\\python.exe");
+                startInfo.Arguments = pyFilePath;
+                startInfo.UseShellExecute = false;
+                startInfo.CreateNoWindow = true;
+                startInfo.RedirectStandardOutput = true;
+                startInfo.RedirectStandardError = true;
+
+                for (int i = 0; i < codeBlock.TestCases.Count; i++)
+                {
+                    string code = model.SourceCode;
+                    string[] inputArguments = codeBlock.TestCases[i].Input.Split(' ');
+                    code += "\nprint(main(";
+                    for (int j = 0; j < inputArguments.Length; j++)
+                    {
+                        code += inputArguments[j];
+                        if (j < inputArguments.Length - 1)
+                        {
+                            code += ", ";
+                        }
+                    }
+                    code += "));";
+
+                    using (var pyFile = File.Create(pyFilePath))
+                    {
+                        using (var stream = new StreamWriter(pyFile))
+                        {
+                            stream.Write(code);
+                        }
+                    }
+
+                    Process process = new Process();
+                    process.StartInfo = startInfo;
+                    process.Start();
+
+                    string error;
+                    using (var stream = process.StandardError)
+                    {
+                        error = await stream.ReadToEndAsync();
+                    }
+                    if (error.Length > 0)
+                    {
+                        return new Tuple<CodeBlockResult, string[]>(CodeBlockResult.Error, new string[] { error });
+                    }
+
+                    string output;
+                    using (var stream = process.StandardOutput)
+                    {
+                        output = await stream.ReadToEndAsync();
+                    }
+                    output = output.Replace("\r\n", ""); // Console returnes this symbol in the end of the string
+                    if (output != codeBlock.TestCases[i].Output)
+                    {
+                        failedTestCases.Add("Test case where input is " + codeBlock.TestCases[i].Input + " and output is " + codeBlock.TestCases[i].Output + " was failed");
+                    }
+
+                    if (!process.HasExited)
+                    {
+                        process.Kill();
+                    }
+                }
+                if (File.Exists(pyFilePath))
+                {
+                    File.Delete(pyFilePath);
+                }
+
+                string[] info = new string[] { failedTestCases.Count + " of " + codeBlock.TestCases.Count + " testcases ended in failure" }.Union(failedTestCases).ToArray();
+                return new Tuple<CodeBlockResult, string[]>((failedTestCases.Count == 0) ? CodeBlockResult.Success : CodeBlockResult.Failed, info);
+            }
+            catch (Exception exception)
+            {
+                return new Tuple<CodeBlockResult, string[]>(CodeBlockResult.Error, new string[] { exception.Message });
+            }
+        }
+
         public string FormatCode(string code)
         {
-            return CSharpSyntaxTree.ParseText(code).GetRoot().NormalizeWhitespace().ToFullString();
+            return code; // It's temporary stub
+            //return CSharpSyntaxTree.ParseText(code).GetRoot().NormalizeWhitespace().ToFullString();
         }
 
         private string GenerateVerificationCodeCSharp(CodeBlockCreateVm model)

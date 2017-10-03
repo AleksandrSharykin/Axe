@@ -100,7 +100,8 @@ $(document).ready(function () {
                 $('#divOutputType').show();
                 break;
             }
-            case 'JavaScript': {
+            case 'JavaScript':
+            case 'Python': {
                 $('#divOutputType').hide();
                 break;
             }

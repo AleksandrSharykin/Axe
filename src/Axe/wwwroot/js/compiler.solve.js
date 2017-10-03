@@ -4,8 +4,6 @@
     mode: "text/x-csharp"
 });
 
-editor.autoFormatRange({ line: 0, ch: 0 }, { line: totalLines });
-
 var tagname = $('#selectedTechnology').prop('tagName').toUpperCase();
 switch (tagname) {
     case 'INPUT': {
@@ -48,6 +46,10 @@ function setupCodeEditor(technology) {
         }
         case 'JavaScript': {
             editor.setOption('mode', 'text/javascript');
+            break;
+        }
+        case 'Python': {
+            editor.setOption('mode', 'text/x-python');
             break;
         }
         default: {

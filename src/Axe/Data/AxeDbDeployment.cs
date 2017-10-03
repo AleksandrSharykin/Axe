@@ -58,7 +58,14 @@ C# is simple, powerful, type-safe, and object-oriented",
             };
             javascript.Experts = new List<ExpertTechnologyLink> { new ExpertTechnologyLink { User = superuser, Technology = javascript } };
 
-            context.AddRange(csharp, javascript);
+            var python = new Technology
+            {
+                Name = "Python",
+                InformationText = "Python is ...",
+                Template = "def main():\n\t#body",
+            };
+            python.Experts = new List<ExpertTechnologyLink> { new ExpertTechnologyLink { User = superuser, Technology = python } };
+            context.AddRange(csharp, javascript, python);
 
             #endregion
 
@@ -300,6 +307,16 @@ C# is simple, powerful, type-safe, and object-oriented",
                     OutputType = SupportedType.Int,
                     Technology = javascript,
                 },
+                new CodeBlock
+                {
+                    Task = "Python",
+                    TestCases = new List<TestCaseCodeBlock> {
+                        new TestCaseCodeBlock { Input = "20.0 4.0", Output = "80.0" },
+                        new TestCaseCodeBlock { Input = "15.4 6.6", Output = "101.64" } },
+                    VerificationCode = @"",
+                    OutputType = SupportedType.Int,
+                    Technology = python,
+                }
             };
             
             context.CodeBlock.AddRange(codeBlocks);
