@@ -34,6 +34,7 @@ namespace Axe.Managers
         {
             List<CodeBlockVm> list = await context.CodeBlock
                 .Include(cb => cb.Technology)
+                .Where(cb => (technologyId > 0) ? cb.Technology.Id == technologyId : cb.Technology.Id > 0)
                 .Select(cb => new CodeBlockVm
                 {
                     Id = cb.Id,
@@ -41,11 +42,7 @@ namespace Axe.Managers
                     Technology = cb.Technology,
                 })
                 .ToListAsync();
-            
-            if (technologyId > 0)
-            {
-                list = list.Where(cb => cb.Technology != null && cb.Technology.Id == technologyId).ToList();
-            }
+          
             
             return list;
         }

@@ -26,17 +26,14 @@ namespace Axe.Controllers
     {
         private ICompilerManager compileManager;
         private ITechnologyManager technologyManager;
-        private INodeServices nodeServices;
 
         public CompilerController(UserManager<ApplicationUser> userManager,
             ICompilerManager compileManager,
             ITechnologyManager technologyManager,
-            INodeServices nodeServices,
             AxeDbContext context): base(userManager, context)
         {
             this.compileManager = compileManager;
             this.technologyManager = technologyManager;
-            this.nodeServices = nodeServices;
         }
 
         [HttpGet]
