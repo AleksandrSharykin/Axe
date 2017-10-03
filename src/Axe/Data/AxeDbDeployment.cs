@@ -11,7 +11,7 @@ namespace Axe.Models
     {
         public static async Task Deploy(UserManager<ApplicationUser> userManager, RoleManager<IdentityRole> roleManager, AxeDbContext context)
         {
-            context.Database.EnsureCreated();
+            await context.Database.EnsureCreatedAsync();
 
             if (context.Roles.Any())
             {
@@ -45,6 +45,7 @@ namespace Axe.Models
                 InformationText =
 @"C# is a programming language that is designed for building a variety of applications that run on the .NET Framework.
 C# is simple, powerful, type-safe, and object-oriented",
+                Template = "using System;\nnamespace Axe\n{\npublic class AxeTask\n{\npublic int Main()\n{\n}\n}\n}",
             };
             csharp.Experts = new List<ExpertTechnologyLink> { new ExpertTechnologyLink { User = superuser, Technology = csharp } };
 
@@ -53,6 +54,7 @@ C# is simple, powerful, type-safe, and object-oriented",
                 Name = "JavaScript",
                 InformationText =
 @"JavaScript is a high-level, dynamic, multi-paradigm, object-oriented, prototype-based, weakly-typed language traditionally used for client-side scripting in web browsers.",
+                Template = "function main() {\n\n}",
             };
             javascript.Experts = new List<ExpertTechnologyLink> { new ExpertTechnologyLink { User = superuser, Technology = javascript } };
 
@@ -284,7 +286,19 @@ C# is simple, powerful, type-safe, and object-oriented",
                     int result_AXE_1 = Main(new int[] { 5, 745, 2, 7434 });
                     if (result_AXE_1 != 7434 )
                         resultsOfTestCases_AXE[1] = false;",
-                    OutputType = SupportedType.Int
+                    OutputType = SupportedType.Int,
+                    Technology = csharp,
+                },
+                new CodeBlock {
+                    Task = "Write a program to sum of two number. Input data is two number (eg. 15.4, 6.6). Program must return 22. " +
+                    "The entrance function is \"main\". " +
+                    "You mustn't change name of main function.",
+                    TestCases = new List<TestCaseCodeBlock> {
+                        new TestCaseCodeBlock { Input = "20, 5", Output = "25" },
+                        new TestCaseCodeBlock { Input = "15.4, 6.6", Output = "22" } },
+                    VerificationCode = @"",
+                    OutputType = SupportedType.Int,
+                    Technology = javascript,
                 },
             };
             

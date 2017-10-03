@@ -16,7 +16,6 @@ namespace Axe.Models
         /// <summary>
         /// Gets or sets input parameters
         /// </summary>
-        [Required]
         public string Input { get; set; }
 
         /// <summary>

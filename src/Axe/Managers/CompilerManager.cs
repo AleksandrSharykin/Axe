@@ -14,6 +14,7 @@ using System.Collections;
 using Microsoft.CodeAnalysis.Emit;
 using System.Runtime.Loader;
 using System.ComponentModel.DataAnnotations;
+using Microsoft.AspNetCore.NodeServices;
 
 namespace Axe.Managers
 {
@@ -22,218 +23,246 @@ namespace Axe.Managers
     /// </summary>
     public class CompilerManager : ManagerBase, ICompilerManager
     {
-        public CompilerManager(AxeDbContext context) : base(context)
+        private INodeServices nodeServices;
+
+        public CompilerManager(AxeDbContext context, INodeServices nodeServices) : base(context)
         {
+            this.nodeServices = nodeServices;
         }
         
-        public async Task<List<CodeBlockVm>> GetCodeBlocks()
+        public async Task<List<CodeBlockVm>> GetCodeBlocks(int technologyId)
         {
-            List<CodeBlockVm> list = await context.CodeBlock.Select(cb => new CodeBlockVm
-            {
-                Id = cb.Id,
-                Task = cb.Task
-            }).ToListAsync();
+            List<CodeBlockVm> list = await context.CodeBlock
+                .Include(cb => cb.Technology)
+                .Where(cb => (technologyId > 0) ? cb.Technology.Id == technologyId : cb.Technology.Id > 0)
+                .Select(cb => new CodeBlockVm
+                {
+                    Id = cb.Id,
+                    Task = cb.Task,
+                    Technology = cb.Technology,
+                })
+                .ToListAsync();
+          
+            
             return list;
         }
 
-        public async Task<CodeBlockVm> GetById(int id)
+        public async Task<CodeBlockSolveVm> GetCodeBlockById(int id)
         {
-            try
+            CodeBlock codeBlock = await this.context.CodeBlock
+                .Include(cb => cb.Technology)
+                .FirstAsync(cb => cb.Id == id);
+            CodeBlockSolveVm model = new CodeBlockSolveVm()
             {
-                CodeBlock codeBlock = await this.context.CodeBlock.FirstAsync(cb => cb.Id == id);
-                CodeBlockVm model = new CodeBlockVm()
-                {
-                    Id = codeBlock.Id,
-                    Task = codeBlock.Task
-                };
-                model.SourceCode = FormatCode(model.SourceCode);
-                return model;
-            }
-            catch (Exception exception)
-            {
-                throw exception;
-            }
+                Id = codeBlock.Id,
+                Task = codeBlock.Task,
+                Technology = codeBlock.Technology,
+                SourceCode = FormatCode(codeBlock.Technology.Template),
+            };
+            return model;
         }
 
-        public async Task<CodeBlockTaskVm> GetByIdForEdit(int id)
+        public async Task<CodeBlockCreateVm> GetByIdForEdit(int id)
         {
-            try
+            CodeBlock codeBlock = await this.context.CodeBlock
+                .Include(cb => cb.TestCases)
+                .Include(cb => cb.Technology)
+                .FirstAsync(cb => cb.Id == id);
+            CodeBlockCreateVm model = new CodeBlockCreateVm()
             {
-                CodeBlock codeBlock = await this.context.CodeBlock
-                    .Include(cb => cb.TestCases)
-                    .FirstAsync(cb => cb.Id == id);
-                CodeBlockTaskVm model = new CodeBlockTaskVm()
-                {
-                    Id = codeBlock.Id,
-                    Task = codeBlock.Task,
-                    OutputType = codeBlock.OutputType,
-                    TestCases = codeBlock.TestCases
-                };
-                return model;
-            }
-            catch (Exception exception)
-            {
-                throw exception;
-            }
+                Id = codeBlock.Id,
+                Task = codeBlock.Task,
+                OutputType = codeBlock.OutputType,
+                TestCases = codeBlock.TestCases,
+                SelectedTechnologyId = codeBlock.Technology.Id,
+            };
+            return model;
         }
 
-        public async Task Update(CodeBlockTaskVm model)
+        public async Task Create(CodeBlockCreateVm model)
         {
-            try
-            {
-                var testCaseCodeBlocks = context.TestCaseCodeBlock.Where(ts => ts.codeBlock.Id == model.Id);
-                context.TestCaseCodeBlock.RemoveRange(testCaseCodeBlocks);
-                CodeBlock codeBlock = await this.context.CodeBlock
-                    .Include(cb => cb.TestCases)
-                    .FirstAsync(cb => cb.Id == model.Id);
-                codeBlock.Id = model.Id;
-                codeBlock.Task = model.Task;
-                codeBlock.OutputType = model.OutputType;
-                codeBlock.TestCases = model.TestCases;
-                codeBlock.VerificationCode = GenerateVerificationCode(model);
-                await context.SaveChangesAsync();
-            }
-            catch (Exception exception)
-            {
-                throw exception;
-            }
+            CodeBlock codeBlock = new CodeBlock();
+            codeBlock.Task = model.Task;
+            codeBlock.TestCases = model.TestCases;
+            codeBlock.OutputType = model.OutputType;
+            codeBlock.VerificationCode = GenerateVerificationCodeCSharp(model);
+            codeBlock.Technology = await context.Technology.FirstAsync(t => t.Id == model.SelectedTechnologyId);
+            context.CodeBlock.Add(codeBlock);
+            await context.SaveChangesAsync();
+        }
+
+        public async Task Update(CodeBlockCreateVm model)
+        {
+            var testCaseCodeBlocks = context.TestCaseCodeBlock.Where(ts => ts.codeBlock.Id == model.Id);
+            context.TestCaseCodeBlock.RemoveRange(testCaseCodeBlocks);
+            CodeBlock codeBlock = await this.context.CodeBlock
+                .Include(cb => cb.TestCases)
+                .Include(cb => cb.Technology)
+                .FirstAsync(cb => cb.Id == model.Id);
+            codeBlock.Id = model.Id;
+            codeBlock.Task = model.Task;
+            codeBlock.OutputType = model.OutputType;
+            codeBlock.TestCases = model.TestCases;
+            codeBlock.Technology = await context.Technology.FirstAsync(t => t.Id == model.SelectedTechnologyId);
+            codeBlock.VerificationCode = GenerateVerificationCodeCSharp(model);
+            await context.SaveChangesAsync();
         }
 
         public async Task DeleteById(int id)
         {
-            try
+            CodeBlock codeBlock = await context.CodeBlock
+                .Include(cb => cb.TestCases)
+                .SingleAsync(cb => cb.Id == id);
+            context.Remove(codeBlock);
+            await context.SaveChangesAsync();
+        }
+
+        public async Task<Tuple<CodeBlockResult, string[]>> HandleCodeBlock(CodeBlockSolveVm model)
+        {
+            switch (model.Technology.Name)
             {
-                CodeBlock codeBlock = await context.CodeBlock
-                    .Include(cb => cb.TestCases)
-                    .SingleAsync(cb => cb.Id == id);
-                context.Remove(codeBlock);
-                await context.SaveChangesAsync();
-            }
-            catch (Exception exception)
-            {
-                throw exception;
+                case "C#":
+                    return CompileAndExecuteCSharp(model);
+                case "JavaScript":
+                    return await InterpretJS(model);
+                default:
+                    throw new Exception("Unsupported technology is used");
             }
         }
 
-        public Tuple<CodeBlockResult, string[]> Solve(CodeBlockVm model)
+        private Tuple<CodeBlockResult, string[]> CompileAndExecuteCSharp(CodeBlockSolveVm model)
+        {
+            CodeBlock codeBlock = context.CodeBlock
+                .Include(cb => cb.TestCases)
+                .First(cb => cb.Id == model.Id);
+
+            string assemblyName = "AxeCompilerAssembly" + Path.GetRandomFileName();
+            // Random file name is necessary because .NETCore doesn't allow to unload assembly
+            SyntaxTree syntaxTree = CSharpSyntaxTree.ParseText(model.SourceCode);
+
+            StatementSyntax syntaxOfVerificationCode = SyntaxFactory.ParseStatement(codeBlock.VerificationCode);
+            MethodDeclarationSyntax methodCheck = SyntaxFactory.MethodDeclaration(SyntaxFactory.ParseTypeName("void"), "CHECK")
+                .AddModifiers(SyntaxFactory.Token(SyntaxKind.PublicKeyword))
+                .WithBody(SyntaxFactory.Block(syntaxOfVerificationCode));
+
+            string arrayName = "resultsOfTestCases_#s#".Replace("#s#", "AXE");
+            VariableDeclarationSyntax arrayOfResults = SyntaxFactory.VariableDeclaration(SyntaxFactory.ParseTypeName("bool []"))
+                .AddVariables(SyntaxFactory.VariableDeclarator(arrayName));
+            FieldDeclarationSyntax arrayField = SyntaxFactory.FieldDeclaration(arrayOfResults);
+
+            string parameterName = "i_#s#".Replace("#s#", "AXE");
+            ParameterSyntax parameter = SyntaxFactory.Parameter(SyntaxFactory.Identifier(parameterName))
+                .WithType(SyntaxFactory.ParseTypeName("int"));
+            string codeOfFunction = @"return resultsOfTestCases_#s#[i_#s#];".Replace("#s#", "AXE"); ;
+            StatementSyntax syntaxOfFunction = SyntaxFactory.ParseStatement(codeOfFunction);
+            MethodDeclarationSyntax methodGetResult = SyntaxFactory.MethodDeclaration(SyntaxFactory.ParseTypeName("bool"), "GET_RESULT_OF_TEST_CASE")
+                .AddModifiers(SyntaxFactory.Token(SyntaxKind.PublicKeyword))
+                .AddParameterListParameters(parameter)
+                .WithBody(SyntaxFactory.Block(syntaxOfFunction));
+
+            ClassDeclarationSyntax axeTaskClass = syntaxTree.GetRoot().DescendantNodes()
+                .OfType<ClassDeclarationSyntax>()
+                .First(c => c.Identifier.ValueText == "AxeTask");
+
+            ClassDeclarationSyntax newAxeTaskClass = axeTaskClass.AddMembers(arrayField, methodCheck, methodGetResult);
+     
+            SyntaxNode syntaxNode = syntaxTree.GetRoot().ReplaceNode(axeTaskClass, newAxeTaskClass);
+            string sourceCode = syntaxNode.NormalizeWhitespace().ToFullString();
+            syntaxTree = CSharpSyntaxTree.ParseText(sourceCode);
+
+            MetadataReference[] references = new MetadataReference[]
+            {
+                MetadataReference.CreateFromFile(typeof(System.Object).GetTypeInfo().Assembly.Location),
+                MetadataReference.CreateFromFile(typeof(System.Collections.Hashtable).GetTypeInfo().Assembly.Location),
+                MetadataReference.CreateFromFile(typeof(System.Linq.Enumerable).GetTypeInfo().Assembly.Location),
+                MetadataReference.CreateFromFile(typeof(System.Collections.Generic.List<>).GetTypeInfo().Assembly.Location),
+            };
+
+            CSharpCompilation compilation = CSharpCompilation.Create(
+                assemblyName: assemblyName,
+                syntaxTrees: new[] { syntaxTree },
+                references: references,
+                options: new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
+
+            using (var stream = new MemoryStream())
+            {
+                EmitResult result = compilation.Emit(stream);
+                if (!result.Success)
+                {
+                    Diagnostic[] failures = result.Diagnostics.Where(diagnostic =>
+                            diagnostic.IsWarningAsError ||
+                            diagnostic.Severity == DiagnosticSeverity.Error).ToArray();
+
+                    string[] errors = failures.Select(f => f.GetMessage()).ToArray();
+                    return new Tuple<CodeBlockResult, string[]>(CodeBlockResult.Error, errors);
+                }
+                else
+                {
+                    stream.Seek(0, SeekOrigin.Begin);
+
+                    AssemblyLoadContext context = AssemblyLoadContext.Default;
+                    Assembly assembly = context.LoadFromStream(stream);
+
+                    MethodInfo check = assembly.GetType("Axe.AxeTask").GetMethod("CHECK");
+                    Object axeClass = assembly.CreateInstance("Axe.AxeTask");
+                    check.Invoke(axeClass, null);
+
+                    MethodInfo getResult = assembly.GetType("Axe.AxeTask").GetMethod("GET_RESULT_OF_TEST_CASE");
+                    List<string> failedTestCases = new List<string>();
+                    for (int i = 0; i < codeBlock.TestCases.Count; i++)
+                    {
+                        Object output = getResult.Invoke(axeClass, new object[] { i });
+                        if (!(bool)output)
+                        {
+                            failedTestCases.Add("Test case where input is " + codeBlock.TestCases[i].Input + " and output is " + codeBlock.TestCases[i].Output + " was failed");
+                        }
+                    }
+                    string[] info = new string[] { failedTestCases.Count + " of " + codeBlock.TestCases.Count + " testcases ended in failure" }.Union(failedTestCases).ToArray();
+                    return new Tuple<CodeBlockResult, string[]>((failedTestCases.Count == 0) ? CodeBlockResult.Success : CodeBlockResult.Failed, info);
+                }
+            }
+        }
+
+        private async Task<Tuple<CodeBlockResult, string[]>> InterpretJS(CodeBlockSolveVm model)
         {
             try
             {
                 CodeBlock codeBlock = context.CodeBlock
                     .Include(cb => cb.TestCases)
                     .First(cb => cb.Id == model.Id);
+                List<string> failedTestCases = new List<string>();
 
-                string assemblyName = "AxeCompilerAssembly" + Path.GetRandomFileName();
-                // Random file name is necessary because .NETCore doesn't allow to unload assembly
-                SyntaxTree syntaxTree = CSharpSyntaxTree.ParseText(model.SourceCode);
-
-                StatementSyntax syntaxOfVerificationCode = SyntaxFactory.ParseStatement(codeBlock.VerificationCode);
-                MethodDeclarationSyntax methodCheck = SyntaxFactory.MethodDeclaration(SyntaxFactory.ParseTypeName("void"), "CHECK")
-                    .AddModifiers(SyntaxFactory.Token(SyntaxKind.PublicKeyword))
-                    .WithBody(SyntaxFactory.Block(syntaxOfVerificationCode));
-
-                string arrayName = "resultsOfTestCases_#s#".Replace("#s#", "AXE");
-                VariableDeclarationSyntax arrayOfResults = SyntaxFactory.VariableDeclaration(SyntaxFactory.ParseTypeName("bool []"))
-                    .AddVariables(SyntaxFactory.VariableDeclarator(arrayName));
-                FieldDeclarationSyntax arrayField = SyntaxFactory.FieldDeclaration(arrayOfResults);
-
-                string parameterName = "i_#s#".Replace("#s#", "AXE");
-                ParameterSyntax parameter = SyntaxFactory.Parameter(SyntaxFactory.Identifier(parameterName))
-                    .WithType(SyntaxFactory.ParseTypeName("int"));
-                string codeOfFunction = @"return resultsOfTestCases_#s#[i_#s#];".Replace("#s#", "AXE"); ;
-                StatementSyntax syntaxOfFunction = SyntaxFactory.ParseStatement(codeOfFunction);
-                MethodDeclarationSyntax methodGetResult = SyntaxFactory.MethodDeclaration(SyntaxFactory.ParseTypeName("bool"), "GET_RESULT_OF_TEST_CASE")
-                    .AddModifiers(SyntaxFactory.Token(SyntaxKind.PublicKeyword))
-                    .AddParameterListParameters(parameter)
-                    .WithBody(SyntaxFactory.Block(syntaxOfFunction));
-
-                ClassDeclarationSyntax axeTaskClass = syntaxTree.GetRoot().DescendantNodes()
-                    .OfType<ClassDeclarationSyntax>()
-                    .First(c => c.Identifier.ValueText == "AxeTask");
-
-                ClassDeclarationSyntax newAxeTaskClass = axeTaskClass.AddMembers(arrayField, methodCheck, methodGetResult);
-     
-                SyntaxNode syntaxNode = syntaxTree.GetRoot().ReplaceNode(axeTaskClass, newAxeTaskClass);
-                string sourceCode = syntaxNode.NormalizeWhitespace().ToFullString();
-                syntaxTree = CSharpSyntaxTree.ParseText(sourceCode);
-
-                MetadataReference[] references = new MetadataReference[]
+                string jsFilePath = Path.GetTempPath() + Path.GetRandomFileName().Replace(".", "") + ".js";
+                for (int i = 0; i < codeBlock.TestCases.Count; i++)
                 {
-                    MetadataReference.CreateFromFile(typeof(System.Object).GetTypeInfo().Assembly.Location),
-                    MetadataReference.CreateFromFile(typeof(System.Collections.Hashtable).GetTypeInfo().Assembly.Location),
-                    MetadataReference.CreateFromFile(typeof(System.Linq.Enumerable).GetTypeInfo().Assembly.Location),
-                    //MetadataReference.CreateFromFile(typeof(System.Linq.Queryable).GetTypeInfo().Assembly.Location),
-                    //MetadataReference.CreateFromFile(typeof(System.Linq.EnumerableExecutor).GetTypeInfo().Assembly.Location),
-                    //MetadataReference.CreateFromFile(typeof(System.Linq.EnumerableQuery).GetTypeInfo().Assembly.Location),
-                    MetadataReference.CreateFromFile(typeof(System.Collections.Generic.List<>).GetTypeInfo().Assembly.Location),
-                    //MetadataReference.CreateFromFile(typeof(System.Collections.Generic.List<>).GetTypeInfo().Assembly.Location),
-                };
-
-                CSharpCompilation compilation = CSharpCompilation.Create(
-                    assemblyName: assemblyName,
-                    syntaxTrees: new[] { syntaxTree },
-                    references: references,
-                    options: new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
-
-                using (var stream = new MemoryStream())
-                {
-                    EmitResult result = compilation.Emit(stream);
-                    if (!result.Success)
+                    string code = @"module.exports = function (callback) {" + model.SourceCode + ";" +
+                    "callback(null, main(" + codeBlock.TestCases[i].Input + ")); };";
+                    using (var jsFile = File.Create(jsFilePath))
                     {
-                        Diagnostic[] failures = result.Diagnostics.Where(diagnostic =>
-                             diagnostic.IsWarningAsError ||
-                             diagnostic.Severity == DiagnosticSeverity.Error).ToArray();
-
-                        string[] errors = failures.Select(f => f.GetMessage()).ToArray();
-                        return new Tuple<CodeBlockResult, string[]>(CodeBlockResult.Error, errors);
-                    }
-                    else
-                    {
-                        stream.Seek(0, SeekOrigin.Begin);
-
-                        AssemblyLoadContext context = AssemblyLoadContext.Default;
-                        Assembly assembly = context.LoadFromStream(stream);
-
-                        MethodInfo check = assembly.GetType("Axe.AxeTask").GetMethod("CHECK");
-                        Object axeClass = assembly.CreateInstance("Axe.AxeTask");
-                        check.Invoke(axeClass, null);
-
-                        MethodInfo getResult = assembly.GetType("Axe.AxeTask").GetMethod("GET_RESULT_OF_TEST_CASE");
-                        List<string> failedTestCases = new List<string>();
-                        for (int i = 0; i < codeBlock.TestCases.Count; i++)
+                        using (var stream = new StreamWriter(jsFile))
                         {
-                            Object output = getResult.Invoke(axeClass, new object[] { i });
-                            if (!(bool)output)
-                            {
-                                failedTestCases.Add("Test case where input is " + codeBlock.TestCases[i].Input + " and output is " + codeBlock.TestCases[i].Output + " was failed");
-                            }
+                            stream.Write(code);
                         }
-                        string[] info = new string[] { failedTestCases.Count + " of " + codeBlock.TestCases.Count + " testcases ended in failure" }.Union(failedTestCases).ToArray();
-                        return new Tuple<CodeBlockResult, string[]>((failedTestCases.Count == 0) ? CodeBlockResult.Success : CodeBlockResult.Failed, info);
+                    }
+                    object outputObj = await nodeServices.InvokeAsync<Object>(jsFilePath);   
+                    nodeServices.Dispose();
+
+                    string output = outputObj.ToString();
+                    if (output != codeBlock.TestCases[i].Output)
+                    {
+                        failedTestCases.Add("Test case where input is " + codeBlock.TestCases[i].Input + " and output is " + codeBlock.TestCases[i].Output + " was failed");
                     }
                 }
+                if (File.Exists(jsFilePath))
+                {
+                    File.Delete(jsFilePath);
+                }
+                string[] info = new string[] { failedTestCases.Count + " of " + codeBlock.TestCases.Count + " testcases ended in failure" }.Union(failedTestCases).ToArray();
+                return new Tuple<CodeBlockResult, string[]>((failedTestCases.Count == 0) ? CodeBlockResult.Success : CodeBlockResult.Failed, info);
             }
             catch (Exception exception)
             {
-                throw exception;
-            }
-        }
-
-        public async Task Create(CodeBlockTaskVm model)
-        {
-            try
-            {
-                CodeBlock codeBlock = new CodeBlock();
-                codeBlock.Task = model.Task;
-                codeBlock.TestCases = model.TestCases;
-                codeBlock.OutputType = model.OutputType;
-                codeBlock.VerificationCode = GenerateVerificationCode(model);
-                context.CodeBlock.Add(codeBlock);
-                await context.SaveChangesAsync();
-            }
-            catch (Exception exception)
-            {
-                throw exception;
+                return new Tuple<CodeBlockResult, string[]>(CodeBlockResult.Error, new string[] { exception.Message });
             }
         }
         
@@ -242,7 +271,7 @@ namespace Axe.Managers
             return CSharpSyntaxTree.ParseText(code).GetRoot().NormalizeWhitespace().ToFullString();
         }
 
-        private string GenerateVerificationCode(CodeBlockTaskVm model)
+        private string GenerateVerificationCodeCSharp(CodeBlockCreateVm model)
         {
             string verificationCode =
                     @"resultsOfTestCases_#s# = new bool[#TEST_CASE_COUNT#];

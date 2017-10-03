@@ -39,6 +39,12 @@ namespace Axe.Models
         /// </summary>
         [Required]
         public string Task { get; set; }
+
+        /// <summary>
+        /// Gets or sets technology
+        /// </summary>
+        [Required]
+        public Technology Technology { get; set; }
     }
 
     /// <summary>

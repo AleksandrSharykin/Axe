@@ -44,7 +44,6 @@ namespace Axe
                 o.SerializerSettings.ContractResolver = new CamelCasePropertyNamesContractResolver();
             });
 
-
             services.AddDbContext<AxeDbContext>(options =>
                     options.UseSqlServer(Configuration.GetConnectionString("AxeDbContext")));
 
@@ -52,23 +51,13 @@ namespace Axe
                     .AddEntityFrameworkStores<AxeDbContext>()
                     .AddDefaultTokenProviders();
 
-            services.AddScoped<IHomeManager, HomeManager>();
+            services.ConfigureApplicationCookie(options =>
+            {
+                options.ExpireTimeSpan = TimeSpan.FromDays(7);
+                options.LoginPath = "/Account/LogIn";
+                options.LogoutPath = "/Account/LogOut";
+            });
 
-            services.AddScoped<IStatisticsManager, StatisticsManager>();
-
-            services.AddScoped<ITechnologyManager, TechnologyManager>();
-
-            services.AddScoped<IAssessmentManager, AssessmentManager>();
-
-            services.AddScoped<IQuestionManager, QuestionManager>();
-
-            services.AddScoped<IExamTaskManager, ExamTaskManager>();
-
-            services.AddScoped<IExamEvaluator, ExamEvaluator>();
-            services.AddScoped<IExamManager, ExamManager>();
-
-            services.AddScoped<IQuizManager, QuizManager>();
-            services.AddScoped<ICompilerManager, CompilerManager>();
 
             // Configure Identity
             services.Configure<IdentityOptions>(options =>
@@ -84,18 +73,26 @@ namespace Axe
                 options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(30);
                 options.Lockout.MaxFailedAccessAttempts = 10;
 
-                // Cookie settings
-                options.Cookies.ApplicationCookie.ExpireTimeSpan = TimeSpan.FromDays(7);
-                options.Cookies.ApplicationCookie.LoginPath = "/Account/LogIn";
-                options.Cookies.ApplicationCookie.LogoutPath = "/Account/LogOut";
-
                 // User settings
                 options.User.RequireUniqueEmail = true;
             });
+
+            services.AddScoped<IHomeManager, HomeManager>();
+            services.AddScoped<IStatisticsManager, StatisticsManager>();
+            services.AddScoped<ITechnologyManager, TechnologyManager>();
+            services.AddScoped<IAssessmentManager, AssessmentManager>();
+            services.AddScoped<IQuestionManager, QuestionManager>();
+            services.AddScoped<IExamTaskManager, ExamTaskManager>();
+            services.AddScoped<IExamEvaluator, ExamEvaluator>();
+            services.AddScoped<IExamManager, ExamManager>();
+            services.AddScoped<IQuizManager, QuizManager>();
+            services.AddScoped<ICompilerManager, CompilerManager>();
+
+            services.AddNodeServices();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public async void Configure(IApplicationBuilder app, IHostingEnvironment env, ILoggerFactory loggerFactory, IServiceProvider serviceProvider)
+        public void Configure(IApplicationBuilder app, IHostingEnvironment env, ILoggerFactory loggerFactory, IServiceProvider serviceProvider)
         {
             loggerFactory.AddConsole(Configuration.GetSection("Logging"));
             loggerFactory.AddDebug();
@@ -112,7 +109,7 @@ namespace Axe
 
             app.UseStaticFiles();
 
-            app.UseIdentity();
+            app.UseAuthentication();
 
             app.UseWebSockets();
 
@@ -124,12 +121,6 @@ namespace Axe
                     name: "default",
                     template: "{controller=Home}/{action=Index}/{id?}");
             });
-
-            var dbContext = serviceProvider.GetRequiredService<AxeDbContext>();
-            var userManager = serviceProvider.GetRequiredService<UserManager<ApplicationUser>>();
-            var roleManager = serviceProvider.GetRequiredService<RoleManager<IdentityRole>>();
-
-            await AxeDbDeployment.Deploy(userManager, roleManager, dbContext);
 
             app.Use(async (context, next) =>
             {

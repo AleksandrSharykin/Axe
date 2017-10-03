@@ -44,5 +44,10 @@ namespace Axe.Models
         /// Gets or sets list of skill assessments in this technology
         /// </summary>
         public ICollection<SkillAssessment> Assessments { get; set; }
+
+        /// <summary>
+        /// Gets or sets template for code block
+        /// </summary>
+        public string Template { get; set; }
     }
 }

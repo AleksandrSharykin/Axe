@@ -16,28 +16,28 @@ namespace Axe.Managers
         /// Returns a list of code block available for current user
         /// </summary>
         /// <returns>List of CodeBlockVm</returns>
-        Task<List<CodeBlockVm>> GetCodeBlocks();
+        Task<List<CodeBlockVm>> GetCodeBlocks(int technologyId);
 
         /// <summary>
         /// Returns a code block with id
         /// </summary>
         /// <param name="id">Identifier of code block</param>
         /// <returns>CodeBlockVm</returns>
-        Task<CodeBlockVm> GetById(int id);
+        Task<CodeBlockSolveVm> GetCodeBlockById(int id);
 
         /// <summary>
         /// Returns a code block with id
         /// </summary>
         /// <param name="id">Identifier of code block</param>
         /// <returns>CodeBlockTaskVm</returns>
-        Task<CodeBlockTaskVm> GetByIdForEdit(int id);
+        Task<CodeBlockCreateVm> GetByIdForEdit(int id);
 
         /// <summary>
         /// Updates a code block
         /// </summary>
         /// <param name="model">CodeBlockTaskVm</param>
         /// <returns></returns>
-        Task Update(CodeBlockTaskVm model);
+        Task Update(CodeBlockCreateVm model);
 
         /// <summary>
         /// Deletes a code block with id
@@ -47,18 +47,11 @@ namespace Axe.Managers
         Task DeleteById(int id);
 
         /// <summary>
-        /// Solves and returns code block result 
-        /// </summary>
-        /// <param name="model"></param>
-        /// <returns>Tuple, where Item1 - type of result and Item2 - array of string which contains error if they were</returns>
-        Tuple<CodeBlockResult, string[]> Solve(CodeBlockVm model);
-
-        /// <summary>
         /// Creates and adds new code block task
         /// </summary>
         /// <param name="model"></param>
         /// <returns></returns>
-        Task Create(CodeBlockTaskVm model);
+        Task Create(CodeBlockCreateVm model);
 
         /// <summary>
         /// Returns formatted code
@@ -66,5 +59,12 @@ namespace Axe.Managers
         /// <param name="code"></param>
         /// <returns>Full string of code with normalized whitespaces</returns>
         string FormatCode(string code);
+
+        /// <summary>
+        /// Solves and returns code block result 
+        /// </summary>
+        /// <param name="model"></param>
+        /// <returns>Tuple, where Item1 - type of result and Item2 - array of string which contains error if they were</returns>
+        Task<Tuple<CodeBlockResult, string[]>> HandleCodeBlock(CodeBlockSolveVm model);
     }
 }

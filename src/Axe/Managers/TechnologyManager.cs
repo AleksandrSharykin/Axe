@@ -280,5 +280,17 @@ namespace Axe.Managers
 
             return this.Response(new Technology());
         }
+
+        public async Task<List<Technology>> GetTechnologies()
+        {
+            List<Technology> list = await context.Technology.ToListAsync();
+            return list;
+        }
+
+        public async Task<Technology> GetTechnologyById(int id)
+        {
+            Technology item = await context.Technology.FirstAsync(t => t.Id == id);
+            return item;
+        }
     }
 }

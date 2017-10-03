@@ -1,5 +1,5 @@
 @using Axe.Models
-@model Axe.ViewModels.CompilerVm.CodeBlockTaskVm
+@model Axe.ViewModels.CompilerVm.CodeBlockCreateVm
 
 @{
     ViewData["Title"] = "Add new task";
@@ -26,7 +26,19 @@
             <span asp-validation-for="Task" class="text-danger col-md-12"></span>
         </div>
     </div>
+
     <div class="row">
+        <div class="form-group col-md-8">
+            <label asp-for="SelectedTechnologyId" class="col-md-3"></label>
+            <div class="col-md-9">
+                <select id="selectTechnology" asp-for="SelectedTechnologyId" asp-items="@Model.ListOfTechnologies" class="form-control">
+                    @*<option value="0">All technologies</option>*@
+                </select>
+            </div>
+        </div>
+    </div>
+
+    <div id="divOutputType" class="row">
         <div class="form-group col-md-8">
             <label asp-for="OutputType" class="col-md-3"></label>
             <div class="col-md-9">
@@ -35,6 +47,7 @@
             <span asp-validation-for="OutputType" class="text-danger col-md-12"></span>
         </div>
     </div>
+
     <div id="testCasesFormGroup">
         <div class="row">
             <div class="form-group col-md-8">

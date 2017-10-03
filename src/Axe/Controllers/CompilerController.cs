@@ -16,23 +16,31 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Axe.ViewModels.CompilerVm;
 using Microsoft.EntityFrameworkCore;
 using Axe.Managers;
+using Microsoft.AspNetCore.NodeServices;
+using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.AspNetCore.Authorization;
 
 namespace Axe.Controllers
 {
     public class CompilerController : ControllerExt
     {
         private ICompilerManager compileManager;
+        private ITechnologyManager technologyManager;
 
-        public CompilerController(UserManager<ApplicationUser> userManager, ICompilerManager compileManager, AxeDbContext context)
-            : base(userManager, context)
+        public CompilerController(UserManager<ApplicationUser> userManager,
+            ICompilerManager compileManager,
+            ITechnologyManager technologyManager,
+            AxeDbContext context): base(userManager, context)
         {
             this.compileManager = compileManager;
+            this.technologyManager = technologyManager;
         }
 
         [HttpGet]
-        public async Task<IActionResult> Index()
-        {
-            List<CodeBlockVm> model = await compileManager.GetCodeBlocks();
+        public async Task<IActionResult> Index(CodeBlockIndexVm model)
+        {         
+            model.ListOfCodeBlocks = await compileManager.GetCodeBlocks(model.SelectedTechnologyId);
+            model.ListOfTechnologies = new SelectList(await technologyManager.GetTechnologies(), "Id", "Name");
             return View(model);
         }
 
@@ -41,25 +49,27 @@ namespace Axe.Controllers
         {
             try
             {
-                CodeBlockVm model = await compileManager.GetById(id);
+                CodeBlockSolveVm model = await compileManager.GetCodeBlockById(id);
+                model.ListOfTechnologies = new SelectList(await technologyManager.GetTechnologies(), "Id", "Name");
                 return View(model);
             }
-            catch (InvalidOperationException)
+            catch
             {
                 return NotFound();
             }
         }
 
         [HttpPost]
-        public IActionResult Solve(CodeBlockVm model)
+        public async Task<IActionResult> Solve(CodeBlockSolveVm model)
         {
-            System.Threading.Thread.Sleep(2000);
-            model.SourceCode = compileManager.FormatCode(model.SourceCode);
-            if (ModelState.IsValid)
+            try
             {
-                try
+                model.ListOfTechnologies = new SelectList(await technologyManager.GetTechnologies(), "Id", "Name");
+                model.Technology = await technologyManager.GetTechnologyById(model.SelectedTechnologyId);
+                model.SourceCode = compileManager.FormatCode(model.SourceCode);
+                if (ModelState.IsValid)
                 {
-                    Tuple<CodeBlockResult, string[]> result = compileManager.Solve(model);
+                    Tuple<CodeBlockResult, string[]> result = await compileManager.HandleCodeBlock(model);
                     model.Result = result.Item1;
                     if (result.Item1 == CodeBlockResult.Error || result.Item1 == CodeBlockResult.Failed)
                     {
@@ -69,89 +79,100 @@ namespace Axe.Controllers
                         }
                     }
                 }
-                catch (Exception exception)
-                {
-                    ModelState.AddModelError("", exception.Message);
-                    return View(model);
-                }
+                return View(model);
             }
-            return View(model);
+            catch (Exception exception)
+            {
+                ModelState.AddModelError("Task", exception.Message);
+                return View(model);
+            }
         }
 
+        [Authorize(Roles = "superuser")]
         [HttpGet]
-        public IActionResult Create()
+        public async Task<IActionResult> Create()
         {
-            CodeBlockTaskVm model = new CodeBlockTaskVm();
+            CodeBlockCreateVm model = new CodeBlockCreateVm();
+            model.ListOfTechnologies = new SelectList(await technologyManager.GetTechnologies(), "Id", "Name");
             model.TestCases.Add(new TestCaseCodeBlock());
             return View(model);
         }
 
+        [Authorize(Roles = "superuser")]
+        [Authorize]
         [HttpPost]
-        public async Task<IActionResult> Create(CodeBlockTaskVm model)
+        public async Task<IActionResult> Create(CodeBlockCreateVm model)
         {
-            if (ModelState.IsValid)
+            try
             {
-                try
+                model.ListOfTechnologies = new SelectList(await technologyManager.GetTechnologies(), "Id", "Name");
+                if (ModelState.IsValid)
                 {
                     await compileManager.Create(model);
                     return RedirectToAction(nameof(CompilerController.Index));
                 }
-                catch (Exception exception)
-                {
-                    ModelState.AddModelError("", exception.Message);
-                    return View(model);
-                }
+                return View(model);
             }
-            return View(model);
+            catch (Exception exception)
+            {
+                ModelState.AddModelError("Task", exception.Message);
+                return View(model);
+            }
         }
 
+        [Authorize(Roles = "superuser")]
         [HttpGet]
         public async Task<IActionResult> Edit(int id)
         {
             try
             {
-                CodeBlockTaskVm model = await compileManager.GetByIdForEdit(id);
+                CodeBlockCreateVm model = await compileManager.GetByIdForEdit(id);
+                model.ListOfTechnologies = new SelectList(await technologyManager.GetTechnologies(), "Id", "Name");
                 return View(model);
             }
-            catch (Exception exception)
+            catch
             {
                 return NotFound();
             }
         }
 
+        [Authorize(Roles = "superuser")]
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(CodeBlockTaskVm model)
+        public async Task<IActionResult> Edit(CodeBlockCreateVm model)
         {
-            if (ModelState.IsValid)
+            try
             {
-                try
+                model.ListOfTechnologies = new SelectList(await technologyManager.GetTechnologies(), "Id", "Name");
+                if (ModelState.IsValid)
                 {
                     await compileManager.Update(model);
                     return RedirectToActionPermanent(nameof(CompilerController.Index));
                 }
-                catch (Exception exception)
-                {
-                    ModelState.AddModelError("", exception.Message);
-                    return View(model);
-                }
+                return View(model);
             }
-            return View(model);
+            catch (Exception exception)
+            {
+                ModelState.AddModelError("Task", exception.Message);
+                return View(model);
+            }
         }
 
+        [Authorize(Roles = "superuser")]
         public async Task<IActionResult> Delete(int id)
         {
             try
             {
-                CodeBlockVm model = await compileManager.GetById(id);
+                CodeBlockSolveVm model = await compileManager.GetCodeBlockById(id);
                 return View(model);
             }
-            catch (Exception exception)
+            catch
             {
                 return NotFound();
             }
         }
 
+        [Authorize(Roles = "superuser")]
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
@@ -161,7 +182,7 @@ namespace Axe.Controllers
                 await compileManager.DeleteById(id);
                 return RedirectToActionPermanent(nameof(CompilerController.Index));
             }
-            catch (Exception exception)
+            catch
             {
                 return NotFound();
             }

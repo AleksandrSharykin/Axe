@@ -4,6 +4,8 @@
 $(document).ready(function () {
     var countOfTestCases = 1; // Default value for countOfTestCases
 
+    manageDivOutputType($("#selectTechnology option:selected").text());
+
     // This function determinates the current count of test cases.
     (function () {
         var i = 1;
@@ -85,6 +87,29 @@ $(document).ready(function () {
         countOfTestCases++;
         console.log('The current count of test cases: ' + countOfTestCases);
     });
+
+    $('#selectTechnology').change(function () {
+        var selectedTechnology = $("#selectTechnology option:selected").text();
+        manageDivOutputType(selectedTechnology);
+    });
+
+    function manageDivOutputType(technology)
+    {
+        switch (technology) {
+            case 'C#': {
+                $('#divOutputType').show();
+                break;
+            }
+            case 'JavaScript': {
+                $('#divOutputType').hide();
+                break;
+            }
+            default: {
+                $('#divOutputType').show();
+                break;
+            }
+        }
+    }
 
     function deleteTestCase(id) {
         console.log('deleteTestCase() was called for: ' + id);
