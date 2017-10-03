@@ -1,4 +1,5 @@
-﻿@model Axe.ViewModels.CompilerVm.CodeBlockIndexVm
+﻿@using Axe.Models;
+@model Axe.ViewModels.CompilerVm.CodeBlockIndexVm
 @{
     ViewData["Title"] = "Compiler page";
 }
@@ -10,9 +11,12 @@
     <div class="col-lg-8 col-lg-offset-1">
         <h4><b>Task list</b></h4>
     </div>
-    <div class="col-lg-2">
-        <a asp-controller="Compiler" asp-action="Create" class="btn btn-primary">+ Add task</a>
-    </div>
+    @if (this.User.IsInRole(UserRole.Superuser))
+    {
+        <div class="col-lg-2">
+            <a asp-controller="Compiler" asp-action="Create" class="btn btn-primary">+ Add task</a>
+        </div>
+    }
 </div>
 
 <form id="formTechnology" asp-action="Index" asp-controller="Compiler" method="get">
@@ -46,8 +50,11 @@
                 </p>
                 <p>@codeBlock.Task</p>
                 <a asp-controller="Compiler" asp-action="Solve" asp-route-id="@codeBlock.Id" class="btn btn-primary">Solve</a>
-                <a asp-controller="Compiler" asp-action="Edit" asp-route-id="@codeBlock.Id" class="btn btn-info">Edit</a>
-                <a asp-controller="Compiler" asp-action="Delete" asp-route-id="@codeBlock.Id" class="btn btn-danger">Delete</a>
+                @if (this.User.IsInRole(UserRole.Superuser))
+                {
+                    <a asp-controller="Compiler" asp-action="Edit" asp-route-id="@codeBlock.Id" class="btn btn-info">Edit</a>
+                    <a asp-controller="Compiler" asp-action="Delete" asp-route-id="@codeBlock.Id" class="btn btn-danger">Delete</a>
+                }
             </div>
         </div>
     }

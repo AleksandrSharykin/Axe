@@ -18,6 +18,7 @@ using Microsoft.EntityFrameworkCore;
 using Axe.Managers;
 using Microsoft.AspNetCore.NodeServices;
 using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.AspNetCore.Authorization;
 
 namespace Axe.Controllers
 {
@@ -90,6 +91,7 @@ namespace Axe.Controllers
             return View(model);
         }
 
+        [Authorize(Roles = "superuser")]
         [HttpGet]
         public async Task<IActionResult> Create()
         {
@@ -99,6 +101,8 @@ namespace Axe.Controllers
             return View(model);
         }
 
+        [Authorize(Roles = "superuser")]
+        [Authorize]
         [HttpPost]
         public async Task<IActionResult> Create(CodeBlockCreateVm model)
         {
@@ -119,6 +123,7 @@ namespace Axe.Controllers
             return View(model);
         }
 
+        [Authorize(Roles = "superuser")]
         [HttpGet]
         public async Task<IActionResult> Edit(int id)
         {
@@ -134,6 +139,7 @@ namespace Axe.Controllers
             }
         }
 
+        [Authorize(Roles = "superuser")]
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(CodeBlockCreateVm model)
@@ -155,6 +161,7 @@ namespace Axe.Controllers
             return View(model);
         }
 
+        [Authorize(Roles = "superuser")]
         public async Task<IActionResult> Delete(int id)
         {
             try
@@ -168,6 +175,7 @@ namespace Axe.Controllers
             }
         }
 
+        [Authorize(Roles = "superuser")]
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
