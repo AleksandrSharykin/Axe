@@ -239,7 +239,10 @@ namespace Axe.Managers
                 for (int i = 0; i < codeBlock.TestCases.Count; i++)
                 {
                     string code = @"module.exports = function (callback) {" + model.SourceCode + ";" +
-                    "callback(null, main(" + codeBlock.TestCases[i].Input + ")); };";
+                    "callback(null, equal_AXE(" + codeBlock.TestCases[i].Output + ", " + "main(" + codeBlock.TestCases[i].Input + "))" + "); };";
+
+                    code += GetVerificationCodeJavaScript();
+
                     using (var jsFile = File.Create(jsFilePath))
                     {
                         using (var stream = new StreamWriter(jsFile))
@@ -247,11 +250,10 @@ namespace Axe.Managers
                             stream.Write(code);
                         }
                     }
-                    object outputObj = await nodeServices.InvokeAsync<Object>(jsFilePath);   
+                    bool output = await nodeServices.InvokeAsync<bool>(jsFilePath);
                     nodeServices.Dispose();
 
-                    string output = outputObj.ToString();
-                    if (output != codeBlock.TestCases[i].Output)
+                    if (!output)
                     {
                         failedTestCases.Add("Test case where input is " + codeBlock.TestCases[i].Input + " and output is " + codeBlock.TestCases[i].Output + " was failed");
                     }
@@ -444,5 +446,63 @@ namespace Axe.Managers
                 .Replace("#s#", "AXE");
             return verificationCode;
         }
+
+        private string GetVerificationCodeJavaScript() => @"
+            function equal_AXE(x, y) {
+                if (typeof x == typeof y) {
+                    switch (typeof x) {
+                        case 'object':
+                            {
+                                // Handle null
+                                if (x == null || y == null) {
+                                    if (x == null && y == null) {
+                                        return true;
+                                    }
+                                    else
+                                    {
+                                        return false;
+                                    }
+                                }
+                                return objectsIsEqual_AXE(x, y);
+                            }
+                        case 'number':
+                        case 'string':
+                        case 'boolean':
+                        case 'undefined':
+                            {
+                                return x === y;
+                            }
+                        case 'function':
+                            {
+                                // Skip function type
+                                return true;
+                            }
+                        default:
+                            {
+                                return false;
+                            }
+                    }
+                }
+                else {
+                    return false;
+                }
+            };
+
+            function objectsIsEqual_AXE(a, b) {
+                var aProps = Object.getOwnPropertyNames(a);
+                var bProps = Object.getOwnPropertyNames(b);
+                if (aProps.length != bProps.length) {
+                    return false;
+                }
+                for (var i = 0; i < aProps.length; i++) {
+                    var propName = aProps[i];
+
+                    if (!equal_AXE(a[propName], b[propName]))
+                    {
+                        return false;
+                    }
+                }
+                return true;
+            };";
     }
 }
