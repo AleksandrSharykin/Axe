@@ -143,16 +143,19 @@ namespace Axe.Managers
             // Random file name is necessary because .NETCore doesn't allow to unload assembly
             SyntaxTree syntaxTree = CSharpSyntaxTree.ParseText(model.SourceCode);
 
+            // Declaration of the verification function
             StatementSyntax syntaxOfVerificationCode = SyntaxFactory.ParseStatement(codeBlock.VerificationCode);
             MethodDeclarationSyntax methodCheck = SyntaxFactory.MethodDeclaration(SyntaxFactory.ParseTypeName("void"), "CHECK")
                 .AddModifiers(SyntaxFactory.Token(SyntaxKind.PublicKeyword))
                 .WithBody(SyntaxFactory.Block(syntaxOfVerificationCode));
 
+            // Declaration of array with test case results
             string arrayName = "resultsOfTestCases_#s#".Replace("#s#", "AXE");
             VariableDeclarationSyntax arrayOfResults = SyntaxFactory.VariableDeclaration(SyntaxFactory.ParseTypeName("bool []"))
                 .AddVariables(SyntaxFactory.VariableDeclarator(arrayName));
             FieldDeclarationSyntax arrayField = SyntaxFactory.FieldDeclaration(arrayOfResults);
 
+            // Declaration of the function which requires number of test case and returns result of this test case
             string parameterName = "i_#s#".Replace("#s#", "AXE");
             ParameterSyntax parameter = SyntaxFactory.Parameter(SyntaxFactory.Identifier(parameterName))
                 .WithType(SyntaxFactory.ParseTypeName("int"));
@@ -162,7 +165,7 @@ namespace Axe.Managers
                 .AddModifiers(SyntaxFactory.Token(SyntaxKind.PublicKeyword))
                 .AddParameterListParameters(parameter)
                 .WithBody(SyntaxFactory.Block(syntaxOfFunction));
-
+ 
             ClassDeclarationSyntax axeTaskClass = syntaxTree.GetRoot().DescendantNodes()
                 .OfType<ClassDeclarationSyntax>()
                 .First(c => c.Identifier.ValueText == "AxeTask");
@@ -206,10 +209,11 @@ namespace Axe.Managers
                     AssemblyLoadContext context = AssemblyLoadContext.Default;
                     Assembly assembly = context.LoadFromStream(stream);
 
+                    // Invoke the method CHECK which performs test cases
                     MethodInfo check = assembly.GetType("Axe.AxeTask").GetMethod("CHECK");
                     Object axeClass = assembly.CreateInstance("Axe.AxeTask");
                     check.Invoke(axeClass, null);
-
+                    
                     MethodInfo getResult = assembly.GetType("Axe.AxeTask").GetMethod("GET_RESULT_OF_TEST_CASE");
                     List<string> failedTestCases = new List<string>();
                     for (int i = 0; i < codeBlock.TestCases.Count; i++)
@@ -217,7 +221,7 @@ namespace Axe.Managers
                         Object output = getResult.Invoke(axeClass, new object[] { i });
                         if (!(bool)output)
                         {
-                            failedTestCases.Add("Test case where input is " + codeBlock.TestCases[i].Input + " and output is " + codeBlock.TestCases[i].Output + " was failed");
+                            failedTestCases.Add("Test case where input is " + (codeBlock.TestCases[i].Input ?? " ") + " and output is " + codeBlock.TestCases[i].Output + " was failed");
                         }
                     }
                     string[] info = new string[] { failedTestCases.Count + " of " + codeBlock.TestCases.Count + " testcases ended in failure" }.Union(failedTestCases).ToArray();
@@ -238,11 +242,12 @@ namespace Axe.Managers
                 string jsFilePath = Path.GetTempPath() + Path.GetRandomFileName().Replace(".", "") + ".js";
                 for (int i = 0; i < codeBlock.TestCases.Count; i++)
                 {
+                    // Generate the code for execution
                     string code = @"module.exports = function (callback) {" + model.SourceCode + ";" +
-                    "callback(null, equal_AXE(" + codeBlock.TestCases[i].Output + ", " + "main(" + codeBlock.TestCases[i].Input + "))" + "); };";
+                    "callback(null, equal_AXE(" + codeBlock.TestCases[i].Output + ", " + "main(" + (codeBlock.TestCases[i].Input ?? " ") + "))" + "); };";
 
                     code += GetVerificationCodeJavaScript();
-
+                    // Write the code into temporary file
                     using (var jsFile = File.Create(jsFilePath))
                     {
                         using (var stream = new StreamWriter(jsFile))
@@ -250,12 +255,13 @@ namespace Axe.Managers
                             stream.Write(code);
                         }
                     }
+                    // Get result from node services
                     bool output = await nodeServices.InvokeAsync<bool>(jsFilePath);
                     nodeServices.Dispose();
 
                     if (!output)
                     {
-                        failedTestCases.Add("Test case where input is " + codeBlock.TestCases[i].Input + " and output is " + codeBlock.TestCases[i].Output + " was failed");
+                        failedTestCases.Add("Test case where input is " + (codeBlock.TestCases[i].Input ?? " ") + " and output is " + codeBlock.TestCases[i].Output + " was failed");
                     }
                 }
                 if (File.Exists(jsFilePath))
@@ -292,19 +298,27 @@ namespace Axe.Managers
 
                 for (int i = 0; i < codeBlock.TestCases.Count; i++)
                 {
+                    // Generate the code for execution
                     string code = model.SourceCode;
-                    string[] inputArguments = codeBlock.TestCases[i].Input.Split(' ');
-                    code += "\nprint(main(";
-                    for (int j = 0; j < inputArguments.Length; j++)
+                    if (codeBlock.TestCases[i].Input != null)
                     {
-                        code += inputArguments[j];
-                        if (j < inputArguments.Length - 1)
+                        string[] inputArguments = codeBlock.TestCases[i].Input.Split(' ');
+                        code += "\nprint(main(";
+                        for (int j = 0; j < inputArguments.Length; j++)
                         {
-                            code += ", ";
+                            code += inputArguments[j];
+                            if (j < inputArguments.Length - 1)
+                            {
+                                code += ", ";
+                            }
                         }
+                        code += "));";
                     }
-                    code += "));";
-
+                    else
+                    {
+                        code += "\nprint(main());";
+                    }
+                    // Write the code into temporary file
                     using (var pyFile = File.Create(pyFilePath))
                     {
                         using (var stream = new StreamWriter(pyFile))
@@ -312,11 +326,11 @@ namespace Axe.Managers
                             stream.Write(code);
                         }
                     }
-
+                    // Create process for Python and execute script
                     Process process = new Process();
                     process.StartInfo = startInfo;
                     process.Start();
-
+                    // Read data from terminal
                     string error;
                     using (var stream = process.StandardError)
                     {
@@ -335,7 +349,7 @@ namespace Axe.Managers
                     output = output.Replace("\r\n", ""); // Console returnes this symbol in the end of the string
                     if (output != codeBlock.TestCases[i].Output)
                     {
-                        failedTestCases.Add("Test case where input is " + codeBlock.TestCases[i].Input + " and output is " + codeBlock.TestCases[i].Output + " was failed");
+                        failedTestCases.Add("Test case where input is " + (codeBlock.TestCases[i].Input ?? " ") + " and output is " + codeBlock.TestCases[i].Output + " was failed");
                     }
 
                     if (!process.HasExited)
@@ -429,7 +443,7 @@ namespace Axe.Managers
                 verificationCode = verificationCode
                     .Replace("#INDEX#", i.ToString())
                     .Replace("#OUTPUT#", model.TestCases[i].Output)
-                    .Replace("#INPUT#", model.TestCases[i].Input);
+                    .Replace("#INPUT#", model.TestCases[i].Input ?? "");
             }
 
             DisplayAttribute attributeOfOutputType = model.OutputType.GetType()

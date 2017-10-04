@@ -309,7 +309,7 @@ C# is simple, powerful, type-safe, and object-oriented",
                 },
                 new CodeBlock
                 {
-                    Task = "Python",
+                    Task = "Write a program to multiply of two number. Input data is two numbre (eg. 20.0, 4.0). Program must return 80.0. ",
                     TestCases = new List<TestCaseCodeBlock> {
                         new TestCaseCodeBlock { Input = "20.0 4.0", Output = "80.0" },
                         new TestCaseCodeBlock { Input = "15.4 6.6", Output = "101.64" } },
