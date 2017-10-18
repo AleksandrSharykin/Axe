@@ -16,21 +16,14 @@ namespace Axe.Managers
         /// Returns a list of code block available for current user
         /// </summary>
         /// <returns>List of CodeBlockVm</returns>
-        Task<List<CodeBlockVm>> GetCodeBlocks(int technologyId);
+        Task<List<T>> GetCodeBlocks<T>(int technologyId) where T : class;
 
         /// <summary>
         /// Returns a code block with id
         /// </summary>
         /// <param name="id">Identifier of code block</param>
         /// <returns>CodeBlockVm</returns>
-        Task<CodeBlockSolveVm> GetCodeBlockById(int id);
-
-        /// <summary>
-        /// Returns a code block with id
-        /// </summary>
-        /// <param name="id">Identifier of code block</param>
-        /// <returns>CodeBlockTaskVm</returns>
-        Task<CodeBlockCreateVm> GetByIdForEdit(int id);
+        Task<T> GetCodeBlockById<T>(int id) where T : class;
 
         /// <summary>
         /// Updates a code block
@@ -54,17 +47,36 @@ namespace Axe.Managers
         Task Create(CodeBlockCreateVm model);
 
         /// <summary>
-        /// Returns formatted code
-        /// </summary>
-        /// <param name="code"></param>
-        /// <returns>Full string of code with normalized whitespaces</returns>
-        string FormatCode(string code);
-
-        /// <summary>
         /// Solves and returns code block result 
         /// </summary>
         /// <param name="model"></param>
-        /// <returns>Tuple, where Item1 - type of result and Item2 - array of string which contains error if they were</returns>
-        Task<Tuple<CodeBlockResult, string[]>> HandleCodeBlock(CodeBlockSolveVm model);
+        /// <returns></returns>
+        Task<CodeBlockResultVm> HandleCodeBlock(CodeBlockCheckVm model);
+
+        /// <summary>
+        /// Allows to get all attempts for user
+        /// </summary>
+        /// <typeparam name="T">View model class which represents attempt</typeparam>
+        /// <param name="userId">User identifier</param>
+        /// <returns>List attempts</returns>
+        Task<List<T>> GetAttempts<T>(string userId) where T : class;
+
+        /// <summary>
+        /// Allows to get specific attempt for user
+        /// </summary>
+        /// <typeparam name="T">View model class which represents attempt</typeparam>
+        /// <param name="userId">User identifier</param>
+        /// <param name="taskId">Task identifier</param>
+        /// <returns></returns>
+        Task<T> GetAttempt<T>(string userId, int taskId) where T : class;
+
+        /// <summary>
+        /// Allows to save attempt
+        /// </summary>
+        /// <param name="userId"></param>
+        /// <param name="codeBlockId"></param>
+        /// <param name="sourceCode"></param>
+        /// <returns></returns>
+        Task SaveAttempt(string userId, int codeBlockId, string sourceCode);
     }
 }

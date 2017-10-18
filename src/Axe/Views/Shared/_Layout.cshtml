@@ -73,7 +73,21 @@
                     }
                     <li><a asp-area="" asp-controller="Home" asp-action="About">About</a></li>
                     <li><a asp-area="" asp-controller="Home" asp-action="Contact">Contact</a></li>
-                    <li><a asp-area="" asp-controller="Compiler" asp-action="Index">Compiler</a></li>
+                    <li></li>
+                    <li class="dropdown">
+                        <a class="dropdown-toggle" data-toggle="dropdown" href="#">
+                            Compiler
+                            <span class="caret"></span>
+                        </a>
+                        <ul class="dropdown-menu">
+                            <li><a asp-area="" asp-controller="Compiler" asp-action="Index">Tasks</a></li>
+                            <li><a asp-area="" asp-controller="Compiler" asp-action="Attempts">Your attempts</a></li>
+                            @if (this.User.IsInRole("superuser"))
+                            {
+                            <li><a asp-area="" asp-controller="Compiler" asp-action="Observe">Observe</a></li>
+                            }
+                        </ul>
+                    </li>
                 </ul>
                 @await Html.PartialAsync("_LoginPartial")
             </div>
@@ -94,6 +108,7 @@
         <script src="~/lib/codemirror/lib/codemirror.js"></script>
         <script src="~/lib/codemirror/mode/clike/clike.js"></script>
         <script src="~/lib/codemirror/mode/javascript/javascript.js"></script>
+        <script src="~/lib/codemirror/mode/python/python.js"></script>
         <script src="~/js/site.js" asp-append-version="true"></script>
     </environment>
     <environment names="Staging,Production">
@@ -109,6 +124,7 @@
         <script src="~/lib/codemirror/lib/codemirror.js"></script>
         <script src="~/lib/codemirror/mode/clike/clike.js"></script>
         <script src="~/lib/codemirror/mode/javascript/javascript.js"></script>
+        <script src="~/lib/codemirror/mode/python/python.js"></script>
         <script src="~/js/site.min.js" asp-append-version="true"></script>
     </environment>
 

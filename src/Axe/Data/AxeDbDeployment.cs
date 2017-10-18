@@ -31,6 +31,25 @@ namespace Axe.Models
 
             await userManager.CreateAsync(superuser, "T0pSecret");
             await userManager.AddToRolesAsync(superuser, new string[] { UserRole.Superuser, UserRole.Member });
+            //await userManager.AddToRoleAsync(superuser, UserRole.Superuser);
+
+            var user1 = new ApplicationUser
+            {
+                UserName = "a@a.a",
+                Email = "a@m.a",
+                JobPosition = "admin",
+            };
+            await userManager.CreateAsync(user1, "Qwerty11");
+            await userManager.AddToRolesAsync(user1, new string[] { UserRole.Superuser, UserRole.Member });
+
+            var user2 = new ApplicationUser
+            {
+                UserName = "s@s.s",
+                Email = "s@s.s",
+                JobPosition = "user",
+            };
+            await userManager.CreateAsync(user2, "Qwerty11");
+            await userManager.AddToRoleAsync(user2, UserRole.Member);
 
             #region Technologies
             if (context.Technology.Any())
@@ -58,7 +77,14 @@ C# is simple, powerful, type-safe, and object-oriented",
             };
             javascript.Experts = new List<ExpertTechnologyLink> { new ExpertTechnologyLink { User = superuser, Technology = javascript } };
 
-            context.AddRange(csharp, javascript);
+            var python = new Technology
+            {
+                Name = "Python",
+                InformationText = "Python is ...",
+                Template = "def main():\n\t#body",
+            };
+            python.Experts = new List<ExpertTechnologyLink> { new ExpertTechnologyLink { User = superuser, Technology = python } };
+            context.AddRange(csharp, javascript, python);
 
             #endregion
 
@@ -300,6 +326,16 @@ C# is simple, powerful, type-safe, and object-oriented",
                     OutputType = SupportedType.Int,
                     Technology = javascript,
                 },
+                new CodeBlock
+                {
+                    Task = "Write a program to multiply of two number. Input data is two numbre (eg. 20.0, 4.0). Program must return 80.0. ",
+                    TestCases = new List<TestCaseCodeBlock> {
+                        new TestCaseCodeBlock { Input = "20.0 4.0", Output = "80.0" },
+                        new TestCaseCodeBlock { Input = "15.4 6.6", Output = "101.64" } },
+                    VerificationCode = @"",
+                    OutputType = SupportedType.Int,
+                    Technology = python,
+                }
             };
             
             context.CodeBlock.AddRange(codeBlocks);

@@ -34,6 +34,8 @@ namespace Axe.Models
 
         public DbSet<TestCaseCodeBlock> TestCaseCodeBlock { get; set; }
 
+        public DbSet<AttemptCodeBlock> AttemptCodeBlock { get; set; }
+
         public AxeDbContext(DbContextOptions<AxeDbContext> options)
             : base(options)
         {
@@ -59,7 +61,9 @@ namespace Axe.Models
             builder.Entity<ExamAttempt>().HasOne(ea => ea.Task).WithMany().OnDelete(DeleteBehavior.Restrict);
             builder.Entity<AttemptQuestion>().HasOne(q => q.TaskQuestion).WithMany().OnDelete(DeleteBehavior.Restrict);
             builder.Entity<AttemptAnswer>().HasOne(q => q.TaskAnswer).WithMany().OnDelete(DeleteBehavior.Restrict);
+
             builder.Entity<CodeBlock>().HasMany(cb => cb.TestCases).WithOne(tc => tc.codeBlock).OnDelete(DeleteBehavior.Cascade);
+            builder.Entity<CodeBlock>().HasMany(cb => cb.AttemptsCodeBlock).WithOne(acb => acb.CodeBlock).OnDelete(DeleteBehavior.Cascade);
 
             base.OnModelCreating(builder);
         }

@@ -1,11 +1,21 @@
-﻿var editor = CodeMirror.fromTextArea(document.getElementById("sourceCodeTextArea"), {
+﻿var messageTypes = {
+    startedSolveTask: 'StartedSolveTask',
+    finishedSolveTask: 'FinishedSolveTask',
+    madeChanges: 'MadeChanges',
+    startedObserve: 'StartedObserve',
+    finishedObserve: 'FinishedObserve',
+    sync: 'Sync'
+};
+var ALERT_TIMEOUT = 5000;
+
+// CodeMirror editor
+var editor = CodeMirror.fromTextArea(document.getElementById("sourceCodeTextArea"), {
     lineNumbers: true,
     matchBrackets: true,
     mode: "text/x-csharp"
 });
 
-editor.autoFormatRange({ line: 0, ch: 0 }, { line: totalLines });
-
+// Setup mode for CodeMirror
 var tagname = $('#selectedTechnology').prop('tagName').toUpperCase();
 switch (tagname) {
     case 'INPUT': {
@@ -24,23 +34,9 @@ switch (tagname) {
     */
 }
 
-$("form#formSolve").submit(function (e) {
-    $('#btnCheck').attr('disabled', true);
-    (function () {
-        var i = 1;
-        var countOfDelimeters = 3;
-        setInterval(function () {
-            if (i > countOfDelimeters)
-                i = 1;
-            $('#btnCheck').attr('value', 'Checking' + '.'.repeat(i));
-            i++;
-        }, 500);
-    })();
-    return true;
-});
-
+// Allows to setup mode for CodeMirror is according to technology
 function setupCodeEditor(technology) {
-    console.log('tech: ' + technology + " is active");
+    console.log('Technology: ' + technology + " is active");
     switch (technology) {
         case 'C#': {
             editor.setOption('mode', 'text/x-csharp');
@@ -50,9 +46,69 @@ function setupCodeEditor(technology) {
             editor.setOption('mode', 'text/javascript');
             break;
         }
+        case 'Python': {
+            editor.setOption('mode', 'text/x-python');
+            break;
+        }
         default: {
             editor.setOption('mode', 'text/x-csharp');
             break;
         }
     }
+}
+
+// Web-socket
+var socket;
+
+editor.on("change", function (editor, change) {
+    if (!change.origin || change.origin === 'setValue') {
+        return;
+    }
+
+    console.log('Content of editor was changed');
+    console.log(change);
+
+    var stringChanges = JSON.stringify(change);
+    var data = {
+        Text: stringChanges,
+        Type: messageTypes.madeChanges,
+    };
+
+    var dataString = JSON.stringify(data);
+    console.log('Send that content of editor was changed: ' + data.Text);
+    console.log(dataString);
+    socket.send(dataString);
+});
+
+function addAlert(message, type) {
+    var alert = $('<div/>').addClass('alert');
+
+    switch (type.toUpperCase()) {
+        case 'WARNING': {
+            alert.addClass('alert-warning');
+            alert.append('<strong>WARNING!<strong> ');
+            break;
+        }
+        case 'DANGER': {
+            alert.addClass('alert-danger');
+            alert.append('<strong>ERROR!<strong> ');
+            break;
+        }
+        case 'SUCCESS': {
+            alert.addClass('alert-success');
+            alert.append('<strong>SUCCESS!<strong> ');
+            break;
+        }
+        default: {
+            alert.addClass('alert-info');
+            alert.append('<strong>INFO!<strong> ');
+            break;
+        }
+    }
+    alert.append(message);
+
+    $('#divMessages').append(alert);
+    setTimeout(() => {
+        alert.remove();
+    }, ALERT_TIMEOUT);
 }

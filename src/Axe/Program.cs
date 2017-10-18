@@ -10,8 +10,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.AspNetCore;
 using Microsoft.Extensions.Logging;
 
-//"AxeDbContext": "Server=(localdb)\\MSSQLLocalDB;Initial Catalog=AxeDbNew;Integrated Security=True;Connect Timeout=30;Encrypt=False;TrustServerCertificate=True;ApplicationIntent=ReadWrite;MultiSubnetFailover=False;"
-
 namespace Axe
 {
     public class Program

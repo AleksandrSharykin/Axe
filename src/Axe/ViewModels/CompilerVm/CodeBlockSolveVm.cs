@@ -35,9 +35,8 @@ namespace Axe.ViewModels.CompilerVm
 
         public SelectList ListOfTechnologies { get; set; }
 
-        /// <summary>
-        /// Get or sets result of execution code block
-        /// </summary>
-        public CodeBlockResult Result { get; set; } = CodeBlockResult.Unknown;
+        public DateTime DateLastChanges { get; set; } = DateTime.MinValue;
+
+        public bool isMonitoringMode { get; set; } = false;
     }
 }
