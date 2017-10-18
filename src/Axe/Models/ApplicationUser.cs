@@ -60,5 +60,10 @@ namespace Axe.Models
         /// Gets or sets profile image
         /// </summary>
         public byte[] Avatar { get; set; }
+
+        /// <summary>
+        /// Gets or sets attempts to solve tasks (compiler)
+        /// </summary>
+        public List<AttemptCodeBlock> AttemptsCodeBlock { get; set; }
     }
 }

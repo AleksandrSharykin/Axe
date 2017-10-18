@@ -1,0 +1,46 @@
+﻿@using System.Net.WebSockets;
+@using Axe.ViewModels.CompilerVm;
+@model List<CodeBlockObserveVm>;
+
+@{
+    ViewData["Title"] = "Active users";
+}
+
+@section Scripts
+{
+    <script src="~/js/compiler.observe.js"></script>
+}
+
+<div class="row">
+    <div class="col-md-12">
+        <h4><b>Active users</b></h4>
+    </div>
+</div>
+
+<table id="activityTable" class="table table-hover">
+    <tbody>
+        <tr>
+            <th>User</th>
+            <th>Task #</th>
+            <th>Technology</th>
+            <th>Observer</th>
+            <th>Action</th>
+        </tr>
+        @foreach (var item in Model)
+        {
+            <tr data-userId="@item.User.Id">
+                <td>@item.User.UserName</td>
+                <td>@item.CodeBlock.Id</td>
+                <td>@item.CodeBlock.Technology.Name</td>
+                <td name="observer">@((item.Observer != null) ? item.Observer.UserName : "-")</td>
+                <td>
+                    <form asp-action="Observe" method="post">
+                        <input name="userId" type="hidden" value="@item.User.Id"/>
+                        <input name="taskId" type="hidden" value="@item.CodeBlock.Id" />
+                        <input type="submit" value="Observe" class="btn btn-primary @(item.Observer != null ? "disabled" : null)" @(item.Observer != null ? "disabled" : null)/>
+                    </form>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>

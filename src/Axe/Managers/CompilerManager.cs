@@ -16,6 +16,8 @@ using System.Runtime.Loader;
 using System.ComponentModel.DataAnnotations;
 using Microsoft.AspNetCore.NodeServices;
 using System.Diagnostics;
+using AutoMapper;
+using System.Text;
 
 namespace Axe.Managers
 {
@@ -24,70 +26,48 @@ namespace Axe.Managers
     /// </summary>
     public class CompilerManager : ManagerBase, ICompilerManager
     {
-        private INodeServices nodeServices;
+        private readonly ITechnologyManager technologyManager;
+        private readonly INodeServices nodeServices;
+        private readonly IMapper mapper;
 
-        public CompilerManager(AxeDbContext context, INodeServices nodeServices) : base(context)
+        public CompilerManager(AxeDbContext context, ITechnologyManager technologyManager, INodeServices nodeServices, IMapper mapper) : base(context)
         {
+            this.technologyManager = technologyManager;
             this.nodeServices = nodeServices;
-        }
-        
-        public async Task<List<CodeBlockVm>> GetCodeBlocks(int technologyId)
-        {
-            List<CodeBlockVm> list = await context.CodeBlock
-                .Include(cb => cb.Technology)
-                .Where(cb => (technologyId > 0) ? cb.Technology.Id == technologyId : cb.Technology.Id > 0)
-                .Select(cb => new CodeBlockVm
-                {
-                    Id = cb.Id,
-                    Task = cb.Task,
-                    Technology = cb.Technology,
-                })
-                .ToListAsync();
-          
-            
-            return list;
+            this.mapper = mapper;
         }
 
-        public async Task<CodeBlockSolveVm> GetCodeBlockById(int id)
+        public async Task<List<T>> GetCodeBlocks<T>(int technologyId) where T:class
         {
-            CodeBlock codeBlock = await this.context.CodeBlock
+            var codeBlocks = await context.CodeBlock
+                .Where(cb => (technologyId > 0) ? cb.Technology.Id == technologyId : cb.Technology.Id > 0)
                 .Include(cb => cb.Technology)
-                .FirstAsync(cb => cb.Id == id);
-            CodeBlockSolveVm model = new CodeBlockSolveVm()
-            {
-                Id = codeBlock.Id,
-                Task = codeBlock.Task,
-                Technology = codeBlock.Technology,
-                SourceCode = FormatCode(codeBlock.Technology.Template),
-            };
+                .ToListAsync();
+
+            var model = mapper.Map<List<T>>(codeBlocks);
             return model;
         }
 
-        public async Task<CodeBlockCreateVm> GetByIdForEdit(int id)
+        public async Task<T> GetCodeBlockById<T>(int id) where T: class
         {
-            CodeBlock codeBlock = await this.context.CodeBlock
+            var codeBlock = await this.context.CodeBlock
                 .Include(cb => cb.TestCases)
                 .Include(cb => cb.Technology)
                 .FirstAsync(cb => cb.Id == id);
-            CodeBlockCreateVm model = new CodeBlockCreateVm()
-            {
-                Id = codeBlock.Id,
-                Task = codeBlock.Task,
-                OutputType = codeBlock.OutputType,
-                TestCases = codeBlock.TestCases,
-                SelectedTechnologyId = codeBlock.Technology.Id,
-            };
+
+            var model = mapper.Map<T>(codeBlock);
             return model;
         }
 
         public async Task Create(CodeBlockCreateVm model)
         {
-            CodeBlock codeBlock = new CodeBlock();
+            var codeBlock = new CodeBlock();
             codeBlock.Task = model.Task;
             codeBlock.TestCases = model.TestCases;
             codeBlock.OutputType = model.OutputType;
-            codeBlock.VerificationCode = GenerateVerificationCodeCSharp(model);
-            codeBlock.Technology = await context.Technology.FirstAsync(t => t.Id == model.SelectedTechnologyId);
+            codeBlock.TechnologyId = model.SelectedTechnologyId;
+            var technology = await technologyManager.GetTechnologyById(model.SelectedTechnologyId);
+            codeBlock.VerificationCode = technology.Name == "C#" ? GenerateVerificationCodeCSharp(model) : "";
             context.CodeBlock.Add(codeBlock);
             await context.SaveChangesAsync();
         }
@@ -96,31 +76,31 @@ namespace Axe.Managers
         {
             var testCaseCodeBlocks = context.TestCaseCodeBlock.Where(ts => ts.codeBlock.Id == model.Id);
             context.TestCaseCodeBlock.RemoveRange(testCaseCodeBlocks);
-            CodeBlock codeBlock = await this.context.CodeBlock
+            var codeBlock = await this.context.CodeBlock
                 .Include(cb => cb.TestCases)
                 .Include(cb => cb.Technology)
                 .FirstAsync(cb => cb.Id == model.Id);
-            codeBlock.Id = model.Id;
             codeBlock.Task = model.Task;
             codeBlock.OutputType = model.OutputType;
             codeBlock.TestCases = model.TestCases;
-            codeBlock.Technology = await context.Technology.FirstAsync(t => t.Id == model.SelectedTechnologyId);
-            codeBlock.VerificationCode = GenerateVerificationCodeCSharp(model);
+            codeBlock.TechnologyId = model.SelectedTechnologyId;
+            var technology = await technologyManager.GetTechnologyById(model.SelectedTechnologyId);
+            codeBlock.VerificationCode = technology.Name == "C#" ? GenerateVerificationCodeCSharp(model) : "";
             await context.SaveChangesAsync();
         }
 
         public async Task DeleteById(int id)
         {
-            CodeBlock codeBlock = await context.CodeBlock
+            var codeBlock = await context.CodeBlock
                 .Include(cb => cb.TestCases)
-                .SingleAsync(cb => cb.Id == id);
+                .FirstAsync(cb => cb.Id == id);
             context.Remove(codeBlock);
             await context.SaveChangesAsync();
         }
 
-        public async Task<Tuple<CodeBlockResult, string[]>> HandleCodeBlock(CodeBlockSolveVm model)
+        public async Task<CodeBlockResultVm> HandleCodeBlock(CodeBlockCheckVm model)
         {
-            switch (model.Technology.Name)
+            switch (model.TechnologyName)
             {
                 case "C#":
                     return CompileAndExecuteCSharp(model);
@@ -133,7 +113,7 @@ namespace Axe.Managers
             }
         }
 
-        private Tuple<CodeBlockResult, string[]> CompileAndExecuteCSharp(CodeBlockSolveVm model)
+        private CodeBlockResultVm CompileAndExecuteCSharp(CodeBlockCheckVm model)
         {
             CodeBlock codeBlock = context.CodeBlock
                 .Include(cb => cb.TestCases)
@@ -200,7 +180,7 @@ namespace Axe.Managers
                             diagnostic.Severity == DiagnosticSeverity.Error).ToArray();
 
                     string[] errors = failures.Select(f => f.GetMessage()).ToArray();
-                    return new Tuple<CodeBlockResult, string[]>(CodeBlockResult.Error, errors);
+                    return new CodeBlockResultVm { TypeResult = CodeBlockResult.Error, Content = errors };
                 }
                 else
                 {
@@ -224,35 +204,43 @@ namespace Axe.Managers
                             failedTestCases.Add("Test case where input is " + (codeBlock.TestCases[i].Input ?? " ") + " and output is " + codeBlock.TestCases[i].Output + " was failed");
                         }
                     }
-                    string[] info = new string[] { failedTestCases.Count + " of " + codeBlock.TestCases.Count + " testcases ended in failure" }.Union(failedTestCases).ToArray();
-                    return new Tuple<CodeBlockResult, string[]>((failedTestCases.Count == 0) ? CodeBlockResult.Success : CodeBlockResult.Failed, info);
+                    if (failedTestCases.Count > 0)
+                    {
+                        failedTestCases.Add(failedTestCases.Count + " of " + codeBlock.TestCases.Count + " testcases ended in failure");
+                    }
+
+                    return new CodeBlockResultVm
+                    {
+                        TypeResult = (failedTestCases.Count == 0) ? CodeBlockResult.Success : CodeBlockResult.Failed,
+                        Content = failedTestCases.ToArray(),
+                    };
                 }
             }
         }
-
-        private async Task<Tuple<CodeBlockResult, string[]>> InterpretJS(CodeBlockSolveVm model)
+        
+        private async Task<CodeBlockResultVm> InterpretJS(CodeBlockCheckVm model)
         {
             try
             {
-                CodeBlock codeBlock = context.CodeBlock
-                    .Include(cb => cb.TestCases)
-                    .First(cb => cb.Id == model.Id);
+                var codeBlock = await GetCodeBlockById<CodeBlock>(model.Id);
                 List<string> failedTestCases = new List<string>();
 
                 string jsFilePath = Path.GetTempPath() + Path.GetRandomFileName().Replace(".", "") + ".js";
-                for (int i = 0; i < codeBlock.TestCases.Count; i++)
+                foreach (var testCase in codeBlock.TestCases)
                 {
                     // Generate the code for execution
-                    string code = @"module.exports = function (callback) {" + model.SourceCode + ";" +
-                    "callback(null, equal_AXE(" + codeBlock.TestCases[i].Output + ", " + "main(" + (codeBlock.TestCases[i].Input ?? " ") + "))" + "); };";
-
-                    code += GetVerificationCodeJavaScript();
+                    var codeSb = new StringBuilder("module.exports = function (callback) {");
+                    codeSb.AppendJoin("", model.SourceCode, ";", "callback(null, equal_AXE(", testCase.Output, ", " +
+                        "main(", (testCase.Input ?? " "), "))",
+                        "); };");
+                    
+                    codeSb.Append(GetVerificationCodeJavaScript());
                     // Write the code into temporary file
                     using (var jsFile = File.Create(jsFilePath))
                     {
                         using (var stream = new StreamWriter(jsFile))
                         {
-                            stream.Write(code);
+                            stream.Write(codeSb.ToString());
                         }
                     }
                     // Get result from node services
@@ -261,34 +249,41 @@ namespace Axe.Managers
 
                     if (!output)
                     {
-                        failedTestCases.Add("Test case where input is " + (codeBlock.TestCases[i].Input ?? " ") + " and output is " + codeBlock.TestCases[i].Output + " was failed");
+                        failedTestCases.Add("Test case where input is " + (testCase.Input ?? " ") + " and output is " + testCase.Output + " was failed");
                     }
                 }
                 if (File.Exists(jsFilePath))
                 {
                     File.Delete(jsFilePath);
                 }
-                string[] info = new string[] { failedTestCases.Count + " of " + codeBlock.TestCases.Count + " testcases ended in failure" }.Union(failedTestCases).ToArray();
-                return new Tuple<CodeBlockResult, string[]>((failedTestCases.Count == 0) ? CodeBlockResult.Success : CodeBlockResult.Failed, info);
+                if (failedTestCases.Count > 0)
+                {
+                    failedTestCases.Add(failedTestCases.Count + " of " + codeBlock.TestCases.Count + " testcases ended in failure");
+                }
+                return new CodeBlockResultVm
+                {
+                    TypeResult = (failedTestCases.Count == 0) ? CodeBlockResult.Success : CodeBlockResult.Failed,
+                    Content = failedTestCases.ToArray(),
+                };
             }
             catch (Exception exception)
             {
-                return new Tuple<CodeBlockResult, string[]>(CodeBlockResult.Error, new string[] { exception.Message });
+                return new CodeBlockResultVm
+                {
+                    TypeResult = CodeBlockResult.Error,
+                    Content = new string[] { exception.Message },
+                };
             }
         }
-
-        private async Task<Tuple<CodeBlockResult, string[]>> InterpretPython(CodeBlockSolveVm model)
+        
+        private async Task<CodeBlockResultVm> InterpretPython(CodeBlockCheckVm model)
         {
             try
             {
-                CodeBlock codeBlock = context.CodeBlock
-                    .Include(cb => cb.TestCases)
-                    .First(cb => cb.Id == model.Id);
+                var codeBlock = await GetCodeBlockById<CodeBlock>(model.Id);
                 List<string> failedTestCases = new List<string>();
-
                 string pyFilePath = Path.GetTempPath() + Path.GetRandomFileName().Replace(".", "") + ".py";
 
-                //ProcessStartInfo startInfo = new ProcessStartInfo("C:\\Users\\andrei.shilkin\\AppData\\Local\\Programs\\Python\\Python36-32\\python.exe");
                 ProcessStartInfo startInfo = new ProcessStartInfo(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile) + "\\AppData\\Local\\Programs\\Python\\Python36-32\\python.exe");
                 startInfo.Arguments = pyFilePath;
                 startInfo.UseShellExecute = false;
@@ -296,34 +291,34 @@ namespace Axe.Managers
                 startInfo.RedirectStandardOutput = true;
                 startInfo.RedirectStandardError = true;
 
-                for (int i = 0; i < codeBlock.TestCases.Count; i++)
+                foreach (var testCase in codeBlock.TestCases)
                 {
                     // Generate the code for execution
-                    string code = model.SourceCode;
-                    if (codeBlock.TestCases[i].Input != null)
+                    var codeSb = new StringBuilder(model.SourceCode);
+                    if (testCase.Input != null)
                     {
-                        string[] inputArguments = codeBlock.TestCases[i].Input.Split(' ');
-                        code += "\nprint(main(";
+                        string[] inputArguments = testCase.Input.Split(' ');
+                        codeSb.Append("\nprint(main(");
                         for (int j = 0; j < inputArguments.Length; j++)
                         {
-                            code += inputArguments[j];
+                            codeSb.Append(inputArguments[j]);
                             if (j < inputArguments.Length - 1)
                             {
-                                code += ", ";
+                                codeSb.Append(", ");
                             }
                         }
-                        code += "));";
+                        codeSb.Append("));");
                     }
                     else
                     {
-                        code += "\nprint(main());";
+                        codeSb.Append("\nprint(main());");
                     }
                     // Write the code into temporary file
                     using (var pyFile = File.Create(pyFilePath))
                     {
                         using (var stream = new StreamWriter(pyFile))
                         {
-                            stream.Write(code);
+                            stream.Write(codeSb.ToString());
                         }
                     }
                     // Create process for Python and execute script
@@ -338,7 +333,8 @@ namespace Axe.Managers
                     }
                     if (error.Length > 0)
                     {
-                        return new Tuple<CodeBlockResult, string[]>(CodeBlockResult.Error, new string[] { error });
+                        failedTestCases.Add(error);
+                        break;
                     }
 
                     string output;
@@ -347,9 +343,9 @@ namespace Axe.Managers
                         output = await stream.ReadToEndAsync();
                     }
                     output = output.Replace("\r\n", ""); // Console returnes this symbol in the end of the string
-                    if (output != codeBlock.TestCases[i].Output)
+                    if (output != testCase.Output)
                     {
-                        failedTestCases.Add("Test case where input is " + (codeBlock.TestCases[i].Input ?? " ") + " and output is " + codeBlock.TestCases[i].Output + " was failed");
+                        failedTestCases.Add("Test case where input is " + (testCase.Input ?? " ") + " and output is " + testCase.Output + " was failed");
                     }
 
                     if (!process.HasExited)
@@ -361,20 +357,24 @@ namespace Axe.Managers
                 {
                     File.Delete(pyFilePath);
                 }
-
-                string[] info = new string[] { failedTestCases.Count + " of " + codeBlock.TestCases.Count + " testcases ended in failure" }.Union(failedTestCases).ToArray();
-                return new Tuple<CodeBlockResult, string[]>((failedTestCases.Count == 0) ? CodeBlockResult.Success : CodeBlockResult.Failed, info);
+                if (failedTestCases.Count > 0)
+                {
+                    failedTestCases.Add(failedTestCases.Count + " of " + codeBlock.TestCases.Count + " testcases ended in failure");
+                }
+                return new CodeBlockResultVm
+                {
+                    TypeResult = (failedTestCases.Count == 0) ? CodeBlockResult.Success : CodeBlockResult.Failed,
+                    Content = failedTestCases.ToArray(),
+                };
             }
             catch (Exception exception)
             {
-                return new Tuple<CodeBlockResult, string[]>(CodeBlockResult.Error, new string[] { exception.Message });
+                return new CodeBlockResultVm
+                {
+                    TypeResult = CodeBlockResult.Error,
+                    Content = new string[] { exception.Message },
+                };
             }
-        }
-
-        public string FormatCode(string code)
-        {
-            return code; // It's temporary stub
-            //return CSharpSyntaxTree.ParseText(code).GetRoot().NormalizeWhitespace().ToFullString();
         }
 
         private string GenerateVerificationCodeCSharp(CodeBlockCreateVm model)
@@ -468,8 +468,8 @@ namespace Axe.Managers
                         case 'object':
                             {
                                 // Handle null
-                                if (x == null || y == null) {
-                                    if (x == null && y == null) {
+                                if (x === null || y === null) {
+                                    if (x === null && y === null) {
                                         return true;
                                     }
                                     else
@@ -518,5 +518,51 @@ namespace Axe.Managers
                 }
                 return true;
             };";
+
+        public async Task<List<T>> GetAttempts<T>(string userId) where T: class
+        {
+            var attempts = await context.AttemptCodeBlock
+                .Where(acb => acb.User.Id == userId)
+                .Include(acb => acb.CodeBlock)
+                .ThenInclude(cb => cb.Technology)
+                .ToListAsync();
+
+            var model = mapper.Map<List<T>>(attempts);
+            return model;
+        }
+
+        public async Task<T> GetAttempt<T>(string userId, int taskId) where T: class
+        {
+            var attempt = await context.AttemptCodeBlock
+                .Where(acb => acb.User.Id == userId)
+                .Include(acb => acb.CodeBlock)
+                .FirstOrDefaultAsync(acb => acb.CodeBlock.Id == taskId);
+            if (attempt == null) return null;
+
+            var model = mapper.Map<T>(attempt);
+            return model;
+        }
+
+        public async Task SaveAttempt(string userId, int codeBlockId, string sourceCode)
+        {
+            var attempt = await context.AttemptCodeBlock.FirstOrDefaultAsync(acb => acb.User.Id == userId && acb.CodeBlock.Id == codeBlockId);
+            if (attempt == null)
+            {
+                attempt = new AttemptCodeBlock
+                {
+                    SourceCode = sourceCode,
+                    UserId = userId,
+                    CodeBlockId = codeBlockId,
+                    DateLastChanges = DateTime.Now,
+                };
+                await context.AttemptCodeBlock.AddAsync(attempt);
+            }
+            else
+            {
+                attempt.DateLastChanges = DateTime.Now;
+                attempt.SourceCode = sourceCode;
+            }
+            await context.SaveChangesAsync();
+        }
     }
 }

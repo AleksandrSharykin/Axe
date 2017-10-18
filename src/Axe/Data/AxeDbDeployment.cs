@@ -31,6 +31,25 @@ namespace Axe.Models
 
             await userManager.CreateAsync(superuser, "T0pSecret");
             await userManager.AddToRolesAsync(superuser, new string[] { UserRole.Superuser, UserRole.Member });
+            //await userManager.AddToRoleAsync(superuser, UserRole.Superuser);
+
+            var user1 = new ApplicationUser
+            {
+                UserName = "a@a.a",
+                Email = "a@m.a",
+                JobPosition = "admin",
+            };
+            await userManager.CreateAsync(user1, "Qwerty11");
+            await userManager.AddToRolesAsync(user1, new string[] { UserRole.Superuser, UserRole.Member });
+
+            var user2 = new ApplicationUser
+            {
+                UserName = "s@s.s",
+                Email = "s@s.s",
+                JobPosition = "user",
+            };
+            await userManager.CreateAsync(user2, "Qwerty11");
+            await userManager.AddToRoleAsync(user2, UserRole.Member);
 
             #region Technologies
             if (context.Technology.Any())

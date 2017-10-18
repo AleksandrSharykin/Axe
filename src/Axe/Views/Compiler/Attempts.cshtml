@@ -1,0 +1,35 @@
+﻿@using Axe.Models;
+@model List<AttemptCodeBlock>;
+@{
+    ViewData["Title"] = "Your attempts";
+}
+
+<div class="row">
+    <div class="col-md-12">
+        <h4><b>Your attempts</b></h4>
+    </div>
+</div>
+
+<table class="table table-hover">
+    <tbody>
+        <tr>
+            <th>Attempt #</th>
+            <th>Task</th>
+            <th>Technology</th>
+            <th>Date of last changes</th>
+            <th>Action</th>
+        </tr>
+        @foreach (var item in Model)
+        {
+            <tr>
+                <td>@item.Id</td>
+                <td>#@item.CodeBlock.Id: @item.CodeBlock.Task.Substring(0, Math.Min(item.CodeBlock.Task.Length, 50))</td>
+                <td>@item.CodeBlock.Technology.Name</td>
+                <td>@item.DateLastChanges.ToString()</td>
+                <td>
+                    <a asp-controller="Compiler" asp-action="Solve" asp-route-id="@item.CodeBlock.Id" class="btn btn-primary">Continue</a>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>

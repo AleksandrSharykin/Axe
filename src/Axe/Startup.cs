@@ -16,6 +16,7 @@ using System.Net.WebSockets;
 using Microsoft.AspNetCore.Http;
 using System.Threading;
 using Newtonsoft.Json.Serialization;
+using AutoMapper;
 
 namespace Axe
 {
@@ -46,6 +47,8 @@ namespace Axe
 
             services.AddDbContext<AxeDbContext>(options =>
                     options.UseSqlServer(Configuration.GetConnectionString("AxeDbContext")));
+
+            services.AddAutoMapper();
 
             services.AddIdentity<ApplicationUser, IdentityRole>()
                     .AddEntityFrameworkStores<AxeDbContext>()

@@ -45,6 +45,16 @@ namespace Axe.Models
         /// </summary>
         [Required]
         public Technology Technology { get; set; }
+
+        /// <summary>
+        /// Gets or sets technology identifier
+        /// </summary>
+        public int TechnologyId { get; set; }
+
+        /// <summary>
+        /// Gets or sets attempts for current code block
+        /// </summary>
+        public List<AttemptCodeBlock> AttemptsCodeBlock { get; set; }
     }
 
     /// <summary>
